@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Audio;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,7 +88,7 @@ namespace RogueTower
         public float Lifetime;
 
         KeyboardState LastState;
-        SceneGame Game;
+        SceneGame SceneGame;
         
 
         public void Create(GameWorld world, float x, float y)
@@ -99,7 +100,7 @@ namespace RogueTower
 
         public void SetControl(SceneGame game)
         {
-            Game = game;
+            SceneGame = game;
         }
 
         private Vector2 CalculateMovement(float delta)
@@ -321,13 +322,13 @@ namespace RogueTower
 
             Velocity.X *= appliedFriction;
 
-            bool slashKey = Game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space);
+            bool slashKey = SceneGame.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space);
 
-            bool leftKey = Game.KeyState.IsKeyDown(Keys.A);
-            bool rightKey = Game.KeyState.IsKeyDown(Keys.D);
-            bool upKey = Game.KeyState.IsKeyDown(Keys.W);
-            bool jumpKey = Game.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift);
-            bool downKey = Game.KeyState.IsKeyDown(Keys.S);
+            bool leftKey = SceneGame.KeyState.IsKeyDown(Keys.A);
+            bool rightKey = SceneGame.KeyState.IsKeyDown(Keys.D);
+            bool upKey = SceneGame.KeyState.IsKeyDown(Keys.W);
+            bool jumpKey = SceneGame.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift);
+            bool downKey = SceneGame.KeyState.IsKeyDown(Keys.S);
             if (CurrentAction == Action.SlashDownward)
             {
                
@@ -372,7 +373,12 @@ namespace RogueTower
                 if (rightKey && Velocity.X < adjustedSpeedLimit)
                     Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
                 if (jumpKey && OnGround)
+                {
                     Velocity.Y -= GetJumpVelocity(60);
+                    Random random = new Random();
+                    float pitchmod = (float)(random.NextDouble() * (0.5 - 0.1) + 0);
+                    Game.jump_sfx.Play(1.0f, pitchmod, 0);
+                }
                 if (slashKey)
                 {
                     if (downKey && InAir)
@@ -405,7 +411,7 @@ namespace RogueTower
             else if(Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
 
-            LastState = Game.KeyState;
+            LastState = SceneGame.KeyState;
         }
 
         public void Slash()

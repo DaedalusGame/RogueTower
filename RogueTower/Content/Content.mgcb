@@ -19,3 +19,9 @@
 /processorParam:DebugMode=Auto
 /build:effects.fx
 
+#begin sounds/sfx/jump_sfx.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/sfx/jump_sfx.wav
+

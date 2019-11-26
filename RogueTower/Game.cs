@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Text;
+using System.Collections.Generic;
 
 namespace RogueTower
 {
@@ -16,6 +18,8 @@ namespace RogueTower
 
         public Texture2D Pixel;
         public Effect Shader;
+
+        public static SoundEffect jump_sfx;
 
         public Scene Scene;
 
@@ -89,7 +93,13 @@ namespace RogueTower
 
             Shader = Content.Load<Effect>("effects");
 
+            jump_sfx = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
+
             // TODO: use this.Content to load your game content here
+
+            // Readies the sounds used in our project.
+
+
         }
 
         /// <summary>
