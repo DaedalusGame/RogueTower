@@ -216,6 +216,7 @@ namespace RogueTower
 
         public static HeadState Forward => new HeadState("front", 0);
         public static HeadState Backward => new HeadState("back", 0);
+        public static HeadState Down => new HeadState("down", 0);
     }
 
     struct PlayerState
@@ -287,6 +288,7 @@ namespace RogueTower
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
+            var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
 
             for (int x = 0; x < map.Width; x++)
             {
@@ -306,6 +308,10 @@ namespace RogueTower
                     else if (tile is Ladder ladderTile)
                     {
                         SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), Color.White, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                    }
+                    else if (tile is Spike)
+                    {
+                        SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
                     else if (tile is Wall)
                     {
@@ -437,6 +443,11 @@ namespace RogueTower
                     leftArm = ArmState.Angular(4);
                     rightArm = ArmState.Angular(2);
                     weapon = WeaponState.Sword(MathHelper.ToRadians(90));
+                    break;
+                case (Player.Action.Hit):
+                    head = HeadState.Down;
+                    body = BodyState.Hit;
+                    rightArm = ArmState.Angular(3);
                     break;
             }
 

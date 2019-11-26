@@ -48,7 +48,21 @@ namespace RogueTower
                 }
             }
 
-            for(int i = 0; i < 20; i++)
+            for (int i = 0; i < 40; i++)
+            {
+                int spikewidth = random.Next(4) + 1;
+                int spikex = 8 + random.Next(Width - spikewidth - 16);
+                int spikey = random.Next(Height - 2) + 2;
+
+                for (int x = 0; x < spikewidth; x++)
+                {
+                    for(int y = 1; y <= 2; y++)
+                        Tiles[spikex + x, spikey - y] = new EmptySpace(this, spikex + x, spikey - y);
+                    Tiles[spikex + x, spikey] = new Spike(this, spikex + x, spikey);
+                }
+            }
+
+            for (int i = 0; i < 20; i++)
             {
                 int ladderheight = random.Next(15) + 3;
                 int ladderx = 8 + random.Next(Width - 16);
@@ -64,6 +78,8 @@ namespace RogueTower
                     Tiles[ladderx + facingOffset, laddery + y] = new Wall(this, ladderx + facingOffset, laddery + y);
                 }
             }
+
+            
         }
 
         public void SetWorld(GameWorld world)

@@ -77,6 +77,13 @@ namespace RogueTower
         }
     }
 
+    class Spike : Wall
+    {
+        public Spike(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;

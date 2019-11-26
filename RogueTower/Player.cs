@@ -89,6 +89,12 @@ namespace RogueTower
 
         public float ClimbFrame;
 
+        public bool DisableJumpControl; //Disables variable jump height for one jump
+        public bool DisableAirControl; //Disable aerial friction
+
+        public int Invincibility = 0;
+        public int HurtTime = 0;
+
         public SwordAction SlashAction;
         public float SlashStartTime;
         public float SlashUpTime;
@@ -147,6 +153,10 @@ namespace RogueTower
             Lifetime += delta;
 
             if (CurrentAction == Action.WallClimb)
+            {
+
+            }
+            else if (CurrentAction == Action.Hit)
             {
 
             }
@@ -232,7 +242,7 @@ namespace RogueTower
                 ClimbFrame += Velocity.Y * delta * 0.5f;
             }
 
-            if (CurrentAction == Action.Move)
+            if (CurrentAction == Action.Move && Walking)
             {
                 if (Velocity.X > 0)
                 {
@@ -246,7 +256,7 @@ namespace RogueTower
                 WalkFrame += Math.Abs(Velocity.X * delta * 0.125f) / (float)Math.Sqrt(GroundFriction);
             }
 
-            if (CurrentAction == Action.JumpUp || CurrentAction == Action.JumpDown)
+            if ((CurrentAction == Action.JumpUp || CurrentAction == Action.JumpDown) && Walking)
             {
                 if (Velocity.X > 0)
                 {
@@ -325,7 +335,7 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             float appliedFriction;
-            if(OnCeiling)
+            if (OnCeiling)
             {
                 Velocity.Y = 1;
                 appliedFriction = 1;
@@ -340,15 +350,19 @@ namespace RogueTower
                 Velocity.Y = 0;
                 appliedFriction = 0.85f;
                 appliedFriction = 1 - (1 - appliedFriction) * GroundFriction;
+                DisableJumpControl = false;
+                DisableAirControl = false;
             }
             else //Drag
             {
                 appliedFriction = 0.85f;
                 if (CurrentAction == Action.Slash)
                     appliedFriction = 1 - (1 - appliedFriction) * 0.1f;
+                if (DisableAirControl)
+                    appliedFriction = 1;
             }
 
-            if(OnWall)
+            if (OnWall)
             {
                 Velocity.X = 0;
                 var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
@@ -370,7 +384,7 @@ namespace RogueTower
             bool jumpKeyHeld = SceneGame.KeyState.IsKeyDown(Keys.LeftShift);
             bool downKey = SceneGame.KeyState.IsKeyDown(Keys.S);
 
-            if(CurrentAction == Action.WallClimb)
+            if (CurrentAction == Action.WallClimb)
             {
                 var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
                 if (!climbTiles.Any())
@@ -380,7 +394,7 @@ namespace RogueTower
                     Velocity.X = GetFacingVector(Facing).X;
                 }
 
-                if(upKey)
+                if (upKey)
                     Velocity.Y = -1;
                 if (downKey)
                     Velocity.Y = 1;
@@ -392,15 +406,19 @@ namespace RogueTower
                     CurrentAction = Action.JumpDown;
                     Velocity = GetFacingVector(Facing) * -GetJumpVelocity(30) + new Vector2(0, -GetJumpVelocity(30));
                 }
-                if((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left))
+                if ((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left))
                 {
                     OnWall = false;
                     CurrentAction = Action.JumpDown;
                 }
             }
+            else if (CurrentAction == Action.Hit)
+            {
+
+            }
             else if (CurrentAction == Action.SlashDownward)
             {
-               
+
             }
             else if (CurrentAction == Action.SlashKnife)
             {
@@ -447,7 +465,7 @@ namespace RogueTower
                     float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
                     Game.jump_sfx.Play(1.0f, pitchmod, 0);
                 }
-                if (!jumpKeyHeld && Velocity.Y < 0)
+                if (!DisableJumpControl && !jumpKeyHeld && Velocity.Y < 0)
                     Velocity.Y *= 0.7f;
                 if (slashKey)
                 {
@@ -465,13 +483,15 @@ namespace RogueTower
             else
                 Walking = false;
 
-            if(CurrentAction == Action.WallClimb)
+            HandleDamage();
+
+            if (CurrentAction == Action.WallClimb)
             {
 
             }
-            else if(CurrentAction == Action.SlashDownward)
+            else if (CurrentAction == Action.SlashDownward)
             {
-                if(SlashStartTime <= 0)
+                if (SlashStartTime <= 0)
                     Velocity.Y = 5;
                 if (OnGround)
                 {
@@ -479,8 +499,9 @@ namespace RogueTower
                     float pitchmod = CalculateRandomSFXPitch(0.1f, 0.4f);
                     Game.sword_bink_sfx.Play(1.0f, pitchmod, 0);
                     CurrentAction = Action.JumpUp;
+                    DisableJumpControl = true;
                     //SlashAction = SwordAction.FinishSwing;
-                    foreach(var tile in World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is WallIce))
+                    foreach (var tile in World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is WallIce))
                     {
                         tile.Health -= SwordSwingDownDamage;
                         if (tile.Health <= 0)
@@ -494,18 +515,36 @@ namespace RogueTower
                 if (SlashAction == SwordAction.FinishSwing && SlashFinishTime <= 0)
                     CurrentAction = Action.Idle;
             }
-            else if(Velocity.Y < GravityLimit)
+            else if (Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
-            /*if (OnWall)
+
+            if (OnGround) //Friction
             {
-                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
-                if(climbTiles.Any() && Velocity.Y > 0.5f)
-                    Velocity.Y = 0.5f;
-                else if(!climbTiles.Any())
-                    OnWall = false;
-            }*/
+                var tiles = World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is Spike);
+                if (tiles.Any())
+                {
+                    Hit(-GetFacingVector(Facing) * 1 + new Vector2(0, -2), 20, 50);
+                }
+            }
 
             LastState = SceneGame.KeyState;
+        }
+
+        private void HandleDamage()
+        {
+            if (CurrentAction != Action.Hit)
+                Invincibility--;
+            else
+            {
+                HurtTime--;
+                if (HurtTime < 0)
+                {
+                    if (OnGround)
+                        CurrentAction = Action.Idle;
+                    else
+                        CurrentAction = Action.JumpDown;
+                }
+            }
         }
 
         private Vector2 GetFacingVector(HorizontalFacing facing)
@@ -571,6 +610,17 @@ namespace RogueTower
         public float GetJumpVelocity(float height)
         {
             return (float)Math.Sqrt(2 * Gravity * height);
+        }
+
+        public void Hit(Vector2 velocity, int hurttime, int invincibility)
+        {
+            if (Invincibility > 0)
+                return;
+            Velocity = velocity;
+            HurtTime = hurttime;
+            Invincibility = invincibility;
+            CurrentAction = Action.Hit;
+            DisableAirControl = true;
         }
     }
 }
