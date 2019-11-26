@@ -84,6 +84,8 @@ namespace RogueTower
         public float SlashDownTime;
         public float SlashFinishTime;
         public SlashEffect SlashEffect;
+        public double SwordSwingDamage = 15.0;
+        public double SwordSwingDownDamage = 20.0;
 
         public float Lifetime;
 
@@ -412,11 +414,19 @@ namespace RogueTower
                 if (OnGround)
                 {
                     Velocity.Y = -4;
+                    float pitchmod = CalculateRandomSFXPitch(0.1f, 0.4f);
+                    Game.sword_bink_sfx.Play(1.0f, pitchmod, 0);
                     CurrentAction = Action.JumpUp;
                     //SlashAction = SwordAction.FinishSwing;
                     foreach(var tile in World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is WallIce))
                     {
-                        tile.Replace(new EmptySpace(tile.Map,tile.X,tile.Y));
+                        tile.Health -= SwordSwingDownDamage;
+                        if (tile.Health <= 0)
+                        {
+                            tile.Replace(new EmptySpace(tile.Map, tile.X, tile.Y));
+                            pitchmod = CalculateRandomSFXPitch(0.1f, 0.2f);
+                            Game.icetile_swordbreak_sfx.Play(1.0f, pitchmod, 0);
+                        }
                     }
                 }
                 if (SlashAction == SwordAction.FinishSwing && SlashFinishTime <= 0)

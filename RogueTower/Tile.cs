@@ -12,6 +12,7 @@ namespace RogueTower
         public int X, Y;
         public bool Passable;
         public float Friction = 1.0f;
+        public double Health = 100.0;
 
         public Tile(Map map, int x, int y, bool passable)
         {
@@ -59,6 +60,7 @@ namespace RogueTower
         public WallIce(Map map, int x, int y) : base(map, x, y)
         {
             Friction = 0.3f;
+            Health = 25.0;
         }
     }
 
