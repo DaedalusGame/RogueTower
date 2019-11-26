@@ -304,6 +304,11 @@ namespace RogueTower
             }
             else if (OnGround) //Friction
             {
+                var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
+                if (tiles.Any())
+                    GroundFriction = tiles.Max(tile => tile.Friction);
+                else
+                    GroundFriction = 1.0f;
                 Velocity.Y = 0;
                 appliedFriction = 0.85f;
                 appliedFriction = 1 - (1 - appliedFriction) * GroundFriction;
@@ -404,6 +409,10 @@ namespace RogueTower
                     Velocity.Y = -4;
                     CurrentAction = Action.JumpUp;
                     //SlashAction = SwordAction.FinishSwing;
+                    foreach(var tile in World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is WallIce))
+                    {
+                        tile.Replace(new EmptySpace(tile.Map,tile.X,tile.Y));
+                    }
                 }
                 if (SlashAction == SwordAction.FinishSwing && SlashFinishTime <= 0)
                     CurrentAction = Action.Idle;

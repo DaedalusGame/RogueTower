@@ -80,6 +80,7 @@ namespace RogueTower
                     if (!tile.Passable)
                     {
                         IBox box = World.Create(x * 16, y * 16, 16, 16);
+                        box.Data = tile;
                         CollisionTiles.Add(box);
                     }
                 }

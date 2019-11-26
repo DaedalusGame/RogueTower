@@ -1,4 +1,5 @@
 ﻿using Humper;
+using Humper.Base;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +22,26 @@ namespace RogueTower
         public GameWorld(int width, int height, float cellSize = 64) : base(width * 16, height * 16, cellSize)
         {
             Map = new Map(this, width, height);
+        }
+
+        public IEnumerable<IBox> FindBoxes(float x, float y, float w, float h)
+        {
+            return this.FindBoxes(new RectangleF(x, y, w, h));
+        }
+
+        public IEnumerable<IBox> FindBoxes(RectangleF area)
+        {
+            return Find(area).Where(box => box.Bounds.Intersects(area));
+        }
+
+        public IEnumerable<Tile> FindTiles(float x, float y, float w, float h)
+        {
+            return this.FindTiles(new RectangleF(x, y, w, h));
+        }
+
+        public IEnumerable<Tile> FindTiles(RectangleF area)
+        {
+            return FindBoxes(area).Where(box => box.Data is Tile).Select(box => (Tile)box.Data);
         }
 
         public void Update(float delta)

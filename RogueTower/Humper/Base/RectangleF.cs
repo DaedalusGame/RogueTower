@@ -361,39 +361,26 @@ namespace Humper.Base
 		/// </summary>
 		/// <param name="offsetX">The x coordinate to add to this <see cref="RectangleF"/>.</param>
 		/// <param name="offsetY">The y coordinate to add to this <see cref="RectangleF"/>.</param>
-		public void Offset(int offsetX, int offsetY)
+		public RectangleF Offset(float offsetX, float offsetY)
 		{
-			X += offsetX;
-			Y += offsetY;
+            return Offset(new Vector2(offsetX, offsetY));
 		}
 
-		/// <summary>
-		/// Changes the <see cref="Location"/> of this <see cref="RectangleF"/>.
-		/// </summary>
-		/// <param name="offsetX">The x coordinate to add to this <see cref="RectangleF"/>.</param>
-		/// <param name="offsetY">The y coordinate to add to this <see cref="RectangleF"/>.</param>
-		public void Offset(float offsetX, float offsetY)
-		{
-			X += offsetX;
-			Y += offsetY;
-		}
-
-		/// <summary>
+        /// <summary>
 		/// Changes the <see cref="Location"/> of this <see cref="RectangleF"/>.
 		/// </summary>
 		/// <param name="amount">The x and y components to add to this <see cref="RectangleF"/>.</param>
-		public void Offset(Vector2 amount)
-		{
-			X += amount.X;
-			Y += amount.Y;
-		}
+        public RectangleF Offset(Vector2 amount)
+        {
+            return new RectangleF(Location + amount, Size);
+        }
 
-		/// <summary>
-		/// Returns a <see cref="String"/> representation of this <see cref="RectangleF"/> in the format:
-		/// {X:[<see cref="X"/>] Y:[<see cref="Y"/>] Width:[<see cref="Width"/>] Height:[<see cref="Height"/>]}
-		/// </summary>
-		/// <returns><see cref="String"/> representation of this <see cref="RectangleF"/>.</returns>
-		public override string ToString()
+        /// <summary>
+        /// Returns a <see cref="String"/> representation of this <see cref="RectangleF"/> in the format:
+        /// {X:[<see cref="X"/>] Y:[<see cref="Y"/>] Width:[<see cref="Width"/>] Height:[<see cref="Height"/>]}
+        /// </summary>
+        /// <returns><see cref="String"/> representation of this <see cref="RectangleF"/>.</returns>
+        public override string ToString()
 		{
 			return "{X:" + X + " Y:" + Y + " Width:" + Width + " Height:" + Height + "}";
 		}
