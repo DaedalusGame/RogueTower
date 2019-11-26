@@ -11,6 +11,7 @@ namespace RogueTower
         public Map Map;
         public int X, Y;
         public bool Passable;
+        public float Friction = 1.0f;
 
         public Tile(Map map, int x, int y, bool passable)
         {
@@ -18,6 +19,24 @@ namespace RogueTower
             X = x;
             Y = y;
             Passable = passable;
+        }
+
+        public void Replace(Tile tile)
+        {
+            Map.Tiles[X, Y] = tile;
+            Map.CollisionDirty = true;
+            CopyTo(tile);
+        }
+
+        public void ReplaceEmpty()
+        {
+            Replace(new EmptySpace(Map, X, Y));
+        }
+
+        //Copy values over here
+        public virtual void CopyTo(Tile tile)
+        {
+            //NOOP
         }
     }
 
@@ -39,6 +58,7 @@ namespace RogueTower
     {
         public WallIce(Map map, int x, int y) : base(map, x, y)
         {
+            Friction = 0.3f;
         }
     }
 

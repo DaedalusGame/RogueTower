@@ -284,8 +284,8 @@ namespace RogueTower
         private void DrawMap(Map map)
         {
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
-            var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_ice");
-            var wallIce = SpriteLoader.Instance.AddSprite("content/wall_block");
+            var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
+            var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
 
             for (int x = 0; x < map.Width; x++)
             {
