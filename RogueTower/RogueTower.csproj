@@ -355,7 +355,9 @@
     <Content Include="Content\slash_round_strip11.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\sounds\sfx\icetile_swordbreak.wav" />
     <Content Include="Content\sounds\sfx\jump_sfx.wav" />
+    <Content Include="Content\sounds\sfx\sword_bink.wav" />
     <Content Include="Content\sounds\sfx\sword_swing.wav" />
     <Content Include="Content\stick.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

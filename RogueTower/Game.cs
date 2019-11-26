@@ -21,6 +21,8 @@ namespace RogueTower
 
         public static SoundEffect jump_sfx;
         public static SoundEffect swing_sword_sfx;
+        public static SoundEffect sword_bink_sfx;
+        public static SoundEffect icetile_swordbreak_sfx;
 
         public Scene Scene;
 
@@ -96,6 +98,8 @@ namespace RogueTower
 
             jump_sfx = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
             swing_sword_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
+            sword_bink_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
+            icetile_swordbreak_sfx = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
 
             // TODO: use this.Content to load your game content here
 
