@@ -47,6 +47,23 @@ namespace RogueTower
                         Tiles[x, y] = new EmptySpace(this, x, y);
                 }
             }
+
+            for(int i = 0; i < 20; i++)
+            {
+                int ladderheight = random.Next(15) + 3;
+                int ladderx = 8 + random.Next(Width - 16);
+                int laddery = random.Next(Height - ladderheight) ;
+                HorizontalFacing ladderfacing = HorizontalFacing.Left;
+                if(random.NextDouble() < 0.5)
+                    ladderfacing = HorizontalFacing.Right;
+
+                for (int y = 0; y < ladderheight; y++)
+                {
+                    int facingOffset = (ladderfacing == HorizontalFacing.Right ? 1 : -1);
+                    Tiles[ladderx, laddery + y] = new Ladder(this, ladderx, laddery + y, ladderfacing);
+                    Tiles[ladderx + facingOffset, laddery + y] = new Wall(this, ladderx + facingOffset, laddery + y);
+                }
+            }
         }
 
         public void SetWorld(GameWorld world)
@@ -79,7 +96,7 @@ namespace RogueTower
                     Tile tile = Tiles[x, y];
                     if (!tile.Passable)
                     {
-                        IBox box = World.Create(x * 16, y * 16, 16, 16);
+                        IBox box = World.Create(tile.GetBoundingBox().Offset(x*16,y*16));
                         box.Data = tile;
                         CollisionTiles.Add(box);
                     }

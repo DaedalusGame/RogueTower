@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Humper.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,11 @@ namespace RogueTower
         public void ReplaceEmpty()
         {
             Replace(new EmptySpace(Map, X, Y));
+        }
+
+        public virtual RectangleF GetBoundingBox()
+        {
+            return new RectangleF(0, 0, 16, 16);
         }
 
         //Copy values over here
@@ -66,6 +72,30 @@ namespace RogueTower
     {
         public WallBlock(Map map, int x, int y) : base(map, x, y)
         {
+        }
+    }
+
+    class Ladder : Wall
+    {
+        public HorizontalFacing Facing;
+
+        public Ladder(Map map, int x, int y, HorizontalFacing facing) : base(map, x, y)
+        {
+            Facing = facing;
+        }
+
+        public override RectangleF GetBoundingBox()
+        {
+            switch(Facing)
+            {
+                case (HorizontalFacing.Right):
+                    return new RectangleF(13, 0, 3, 16);
+                case (HorizontalFacing.Left):
+                    return new RectangleF(0, 0, 3, 16);
+            }
+            
+
+            return base.GetBoundingBox();
         }
     }
 }

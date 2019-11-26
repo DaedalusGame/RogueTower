@@ -30,6 +30,11 @@
 			return box;
 		}
 
+        public IBox Create(RectangleF rect)
+        {
+            return Create(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
         public void Add(IBox box)
         {
             this.grid.Add(box);

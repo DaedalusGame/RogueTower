@@ -193,6 +193,7 @@ namespace RogueTower
         public static BodyState Hit => new BodyState("hit", 0, Vector2.Zero);
         public static BodyState Crouch(Player player) => Crouch((int)player.WalkFrame);
         public static BodyState Crouch(int frame) => new BodyState("crouch", frame, new Vector2(1, 2));
+        public static BodyState Climb => new BodyState("climb", 0, new Vector2(4, 0));
     }
 
     class HeadState
@@ -274,9 +275,8 @@ namespace RogueTower
 
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.LightSkyBlue);
 
-            DrawMap(World.Map);
-
             DrawPlayer(World.Player);
+            DrawMap(World.Map);
 
             SpriteBatch.End();
         }
@@ -286,6 +286,7 @@ namespace RogueTower
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
+            var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
 
             for (int x = 0; x < map.Width; x++)
             {
@@ -301,6 +302,10 @@ namespace RogueTower
                     else if (tile is WallIce)
                     {
                         SpriteBatch.Draw(wallIce.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    }
+                    else if (tile is Ladder ladderTile)
+                    {
+                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), Color.White, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
                     }
                     else if (tile is Wall)
                     {
@@ -331,6 +336,12 @@ namespace RogueTower
             {
                 case (Player.Action.Move):
                     body = BodyState.Walk(player);
+                    break;
+                case (Player.Action.WallClimb):
+                    body = BodyState.Climb;
+                    leftArm = ArmState.Angular(11 + Util.PositiveMod(3 + (int)-player.ClimbFrame,7));
+                    rightArm = ArmState.Angular(11 + Util.PositiveMod((int)-player.ClimbFrame, 7));
+                    weapon = WeaponState.None;
                     break;
                 case (Player.Action.JumpUp):
                     if (player.Velocity.Y < -0.5)

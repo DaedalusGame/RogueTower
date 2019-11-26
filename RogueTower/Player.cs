@@ -18,6 +18,14 @@ namespace RogueTower
         Right,
     }
 
+    enum CollisionType
+    {
+        Air,
+        Floor,
+        Wall,
+        Ceiling,
+    }
+
     class Player : GameObject
     {
         public enum Action
@@ -26,6 +34,7 @@ namespace RogueTower
             Move,
             Brake,
             Jet,
+            WallClimb,
             JumpUp,
             JumpDown,
             Slash,
@@ -77,6 +86,8 @@ namespace RogueTower
         public Action CurrentAction;
 
         public float WalkFrame;
+
+        public float ClimbFrame;
 
         public SwordAction SlashAction;
         public float SlashStartTime;
@@ -133,7 +144,11 @@ namespace RogueTower
         {
             Lifetime += delta;
 
-            if (CurrentAction == Action.SlashDownward)
+            if (CurrentAction == Action.WallClimb)
+            {
+
+            }
+            else if (CurrentAction == Action.SlashDownward)
             {
                 switch (SlashAction)
                 {
@@ -208,6 +223,11 @@ namespace RogueTower
                     CurrentAction = Action.JumpUp;
                 else
                     CurrentAction = Action.JumpDown;
+            }
+
+            if(CurrentAction == Action.WallClimb)
+            {
+                ClimbFrame += Velocity.Y * delta * 0.5f;
             }
 
             if (CurrentAction == Action.Move)
@@ -329,6 +349,12 @@ namespace RogueTower
             if(OnWall)
             {
                 Velocity.X = 0;
+                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
+                if (InAir && climbTiles.Any() && Velocity.Y > 0 && (CurrentAction == Action.JumpDown || CurrentAction == Action.JumpUp))
+                {
+                    Velocity.Y = 0;
+                    CurrentAction = Action.WallClimb;
+                }
             }
 
             Velocity.X *= appliedFriction;
@@ -339,8 +365,38 @@ namespace RogueTower
             bool rightKey = SceneGame.KeyState.IsKeyDown(Keys.D);
             bool upKey = SceneGame.KeyState.IsKeyDown(Keys.W);
             bool jumpKey = SceneGame.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift);
+            bool jumpKeyHeld = SceneGame.KeyState.IsKeyDown(Keys.LeftShift);
             bool downKey = SceneGame.KeyState.IsKeyDown(Keys.S);
-            if (CurrentAction == Action.SlashDownward)
+
+            if(CurrentAction == Action.WallClimb)
+            {
+                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
+                if (!climbTiles.Any())
+                {
+                    OnWall = false;
+                    CurrentAction = Action.JumpDown;
+                    Velocity.X = GetFacingVector(Facing).X;
+                }
+
+                if(upKey)
+                    Velocity.Y = -1;
+                if (downKey)
+                    Velocity.Y = 1;
+                if (!upKey && !downKey)
+                    Velocity.Y = 0;
+                if (jumpKey)
+                {
+                    OnWall = false;
+                    CurrentAction = Action.JumpDown;
+                    Velocity = GetFacingVector(Facing) * -GetJumpVelocity(30) + new Vector2(0, -GetJumpVelocity(30));
+                }
+                if((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left))
+                {
+                    OnWall = false;
+                    CurrentAction = Action.JumpDown;
+                }
+            }
+            else if (CurrentAction == Action.SlashDownward)
             {
                
             }
@@ -375,7 +431,7 @@ namespace RogueTower
             else
             {
                 float adjustedSpeedLimit = SpeedLimit / appliedFriction;
-                float acceleration = 0.5f / appliedFriction;
+                float acceleration = 0.25f / appliedFriction;
                 if (OnGround)
                     acceleration *= GroundFriction;
 
@@ -389,6 +445,8 @@ namespace RogueTower
                     float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
                     Game.jump_sfx.Play(1.0f, pitchmod, 0);
                 }
+                if (!jumpKeyHeld && Velocity.Y < 0)
+                    Velocity.Y *= 0.7f;
                 if (slashKey)
                 {
                     if (downKey && InAir)
@@ -405,7 +463,11 @@ namespace RogueTower
             else
                 Walking = false;
 
-            if(CurrentAction == Action.SlashDownward)
+            if(CurrentAction == Action.WallClimb)
+            {
+
+            }
+            else if(CurrentAction == Action.SlashDownward)
             {
                 if(SlashStartTime <= 0)
                     Velocity.Y = 5;
@@ -424,8 +486,29 @@ namespace RogueTower
             }
             else if(Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
+            /*if (OnWall)
+            {
+                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
+                if(climbTiles.Any() && Velocity.Y > 0.5f)
+                    Velocity.Y = 0.5f;
+                else if(!climbTiles.Any())
+                    OnWall = false;
+            }*/
 
             LastState = SceneGame.KeyState;
+        }
+
+        private Vector2 GetFacingVector(HorizontalFacing facing)
+        {
+            switch(facing)
+            {
+                default:
+                    return Vector2.Zero;
+                case HorizontalFacing.Left:
+                    return new Vector2(-1,0);
+                case HorizontalFacing.Right:
+                    return new Vector2(1, 0);
+            }
         }
 
         public void Slash()
