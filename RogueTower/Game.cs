@@ -20,6 +20,7 @@ namespace RogueTower
         public Effect Shader;
 
         public static SoundEffect jump_sfx;
+        public static SoundEffect swing_sword_sfx;
 
         public Scene Scene;
 
@@ -94,6 +95,7 @@ namespace RogueTower
             Shader = Content.Load<Effect>("effects");
 
             jump_sfx = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
+            swing_sword_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
 
             // TODO: use this.Content to load your game content here
 

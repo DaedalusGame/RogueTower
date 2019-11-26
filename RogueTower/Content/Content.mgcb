@@ -25,3 +25,9 @@
 /processorParam:Quality=Best
 /build:sounds/sfx/jump_sfx.wav
 
+#begin sounds/sfx/sword_swing.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/sfx/sword_swing.wav
+

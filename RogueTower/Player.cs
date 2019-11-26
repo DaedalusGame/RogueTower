@@ -113,6 +113,12 @@ namespace RogueTower
             return movement;
         }
 
+        private float CalculateRandomSFXPitch(float min_modulation_val, float max_modulation_val)
+        {
+            Random random = new Random();
+            return (float)(random.NextDouble() * (max_modulation_val - min_modulation_val) + min_modulation_val);
+        }
+
         public override void Update(float delta)
         {
             base.Update(delta);
@@ -380,8 +386,7 @@ namespace RogueTower
                 if (jumpKey && OnGround)
                 {
                     Velocity.Y -= GetJumpVelocity(60);
-                    Random random = new Random();
-                    float pitchmod = (float)(random.NextDouble() * (0.5 - 0.1) + 0);
+                    float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
                     Game.jump_sfx.Play(1.0f, pitchmod, 0);
                 }
                 if (slashKey)
@@ -432,6 +437,8 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
+            float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
+            Game.swing_sword_sfx.Play(1.0f, pitchmod, 0);
         }
 
         public void SlashKnife()
@@ -454,6 +461,8 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
+            float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
+            Game.swing_sword_sfx.Play(1.0f, pitchmod, 0);
         }
 
         public void SlashDown()
