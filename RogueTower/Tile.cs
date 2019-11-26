@@ -34,4 +34,18 @@ namespace RogueTower
         {
         }
     }
+
+    class WallIce : Wall
+    {
+        public WallIce(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+    }
+
+    class WallBlock : Wall
+    {
+        public WallBlock(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+    }
 }

@@ -284,14 +284,25 @@ namespace RogueTower
         private void DrawMap(Map map)
         {
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
+            var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_ice");
+            var wallIce = SpriteLoader.Instance.AddSprite("content/wall_block");
 
-            for(int x = 0; x < map.Width; x++)
+            for (int x = 0; x < map.Width; x++)
             {
                 for (int y = 0; y < map.Height; y++)
                 {
                     Tile tile = map.Tiles[x, y];
 
-                    if(tile is Wall)
+                    //TODO: move tile draw code into a method on Tile
+                    if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
+                    {
+                        SpriteBatch.Draw(wallBlock.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    }
+                    else if (tile is WallIce)
+                    {
+                        SpriteBatch.Draw(wallIce.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    }
+                    else if (tile is Wall)
                     {
                         SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }

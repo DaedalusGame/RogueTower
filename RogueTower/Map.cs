@@ -33,10 +33,18 @@ namespace RogueTower
             {
                 for (int x = 0; x < Width; x++)
                 {
-                    if(x > 10 && x <= Width - 10 && random.NextDouble() <= 0.3)
-                        Tiles[x, y] = new Wall(this, x, y);
+                    var rand = random.NextDouble();
+                    if (x > 10 && x <= Width - 10 && rand <= 0.2)
+                    {
+                        if (random.NextDouble() < 0.3)
+                            Tiles[x, y] = new WallBlock(this, x, y);
+                        else
+                            Tiles[x, y] = new Wall(this, x, y);
+                    }
+                    else if (x > 8 && x <= Width - 8 && rand <= 0.3)
+                        Tiles[x, y] = new WallIce(this, x, y);
                     else
-                        Tiles[x, y] = new EmptySpace(this,x,y);
+                        Tiles[x, y] = new EmptySpace(this, x, y);
                 }
             }
         }
