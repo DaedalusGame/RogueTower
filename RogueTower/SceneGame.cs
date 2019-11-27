@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace RogueTower
 {
@@ -244,14 +245,17 @@ namespace RogueTower
         GameWorld World;
         public Map Map => World.Map;
 
+        Vector2 Camera;
         Vector2 CameraSize => new Vector2(320, 240);
-        Vector2 Camera => FitCamera(World.Player.Position - CameraSize / 2);
+        Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
         Matrix WorldTransform => CreateViewMatrix();
+
+        bool GameSpeedToggle = false;
 
         private Matrix CreateViewMatrix()
         {
             return Matrix.Identity
-                * Matrix.CreateTranslation(new Vector3(-Camera, 0))
+                * Matrix.CreateTranslation(new Vector3(-CameraPosition, 0))
                 * Matrix.CreateTranslation(new Vector3(-CameraSize / 2, 0)) //These two lines center the character on (0,0)
                 * Matrix.CreateScale(ViewScale, ViewScale, 1) //Scale it up by 2
                 * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0); //Translate the character to the middle of the viewport
@@ -279,6 +283,24 @@ namespace RogueTower
             if (camera.Y > World.Height - CameraSize.Y)
                 camera.Y = World.Height - CameraSize.Y;
             return camera;
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab))
+                GameSpeedToggle = !GameSpeedToggle;
+            World.Update(GameSpeedToggle ? 0.1f : 1.0f);
+            UpdateCamera();
+        }
+
+        public void UpdateCamera()
+        {
+            Camera.X = World.Player.Position.X;
+            float cameraDistance = World.Player.Position.Y - Camera.Y;
+            if (cameraDistance > 30)
+                Camera.Y = World.Player.Position.Y - 30;
+            if (cameraDistance < -30)
+                Camera.Y = World.Player.Position.Y + 30;
         }
 
         public override void Draw(GameTime gameTime)
@@ -526,11 +548,6 @@ namespace RogueTower
         public void StartNormalBatch()
         {
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: WorldTransform);
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            World.Update(1.0f);
         }
     }
 }
