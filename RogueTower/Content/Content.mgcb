@@ -19,6 +19,12 @@
 /processorParam:DebugMode=Auto
 /build:effects.fx
 
+#begin sounds/bgm/generic_theme.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:sounds/bgm/generic_theme.ogg
+
 #begin sounds/sfx/icetile_swordbreak.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor

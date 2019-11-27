@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace RogueTower
 
         public Texture2D Pixel;
         public Effect Shader;
+
+        public static Song bgm_title_theme;
 
         public static SoundEffect sfx_player_hurt;
         public static SoundEffect sfx_player_jump;
@@ -104,7 +107,10 @@ namespace RogueTower
             sfx_sword_bink = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
             sfx_sword_swing = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
             sfx_tile_icebreak = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
+            bgm_title_theme = Content.Load<Song>("sounds/bgm/generic_theme");
 
+            MediaPlayer.Play(bgm_title_theme);
+            MediaPlayer.IsRepeating = true;
             // TODO: use this.Content to load your game content here
 
             // Readies the sounds used in our project.
