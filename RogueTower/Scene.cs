@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,6 @@ namespace RogueTower
 
         public GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
         public SpriteBatch SpriteBatch => Game.SpriteBatch;
-        public SoundBank SFXSoundBank => Game.SFXSoundBank;
         public Texture2D Pixel => Game.Pixel;
         public int Frame => Game.Frame;
         public GameWindow Window => Game.Window;
