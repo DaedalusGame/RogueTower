@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace RogueTower
     class VisualEffect : GameObject
     {
         public float Frame;
+        public bool Destroyed;
 
         protected override void UpdateDelta(float delta)
         {
@@ -27,7 +29,6 @@ namespace RogueTower
         public float Angle;
         public bool Mirror;
         public float FrameEnd;
-        public bool Dead;
 
         public SlashEffect(float angle, bool mirror, float time)
         {
@@ -40,8 +41,47 @@ namespace RogueTower
         {
             if(Frame >= FrameEnd)
             {
-                Dead = true;
+                Destroyed = true;
             }
+        }
+    }
+
+    abstract class Particle : VisualEffect
+    {
+        public Vector2 Position;
+        public Vector2 Velocity;
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+            Position += Velocity * delta;
+        }
+
+        public Particle(Vector2 position, Vector2 velocity)
+        {
+            Position = position;
+            Velocity = velocity;
+        }
+    }
+
+    class KnifeBounced : Particle
+    {
+        public float FrameEnd;
+        public float Rotation;
+
+        public KnifeBounced(Vector2 position, Vector2 velocity, float rotation, float time) : base(position, velocity)
+        {
+            Rotation = rotation;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroyed = true;
+            }
+            Velocity += new Vector2(0, 0.4f);
         }
     }
 }

@@ -142,7 +142,7 @@ namespace RogueTower
         {
             base.Update(delta);
             SlashEffect?.Update(delta);
-            if(SlashEffect != null && SlashEffect.Dead)
+            if(SlashEffect != null && SlashEffect.Destroyed)
             {
                 SlashEffect = null;
             }
@@ -202,11 +202,13 @@ namespace RogueTower
                             
                             if (CurrentAction == Action.SlashKnife)
                             {
-                                /*Bullet bullet = new Bullet();
-                                bullet.Create(World, Position.X - 4, Position.Y - 4);
-                                bullet.Velocity = new Vector2(Facing == HorizontalFacing.Left ? -8 : 8, 0);
+                                Knife bullet = new Knife();
+                                Vector2 facing = GetFacingVector(Facing);
+                                bullet.Create(World, Position.X + facing.X * 5, Position.Y);
+                                bullet.Velocity = facing * 8;
                                 bullet.LifeTime = 20;
-                                World.Bullets.Add(bullet);*/
+                                bullet.Shooter = this;
+                                World.Bullets.Add(bullet);
                             }
                         }
                         break;

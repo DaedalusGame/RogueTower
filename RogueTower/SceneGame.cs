@@ -54,6 +54,7 @@ namespace RogueTower
 
         public static WeaponState None => new NoneState();
         public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
+        public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
     }
 
     class ArmState
@@ -312,6 +313,24 @@ namespace RogueTower
             DrawPlayer(World.Player);
             DrawMap(World.Map);
 
+            var knife = SpriteLoader.Instance.AddSprite("content/knife");
+            foreach(Bullet bullet in World.Bullets)
+            {
+                if(bullet is Knife)
+                {
+                    DrawSpriteExt(knife, 0, bullet.Position + knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
+                }
+            }
+
+            foreach (VisualEffect effect in World.Effects)
+            {
+                if (effect is KnifeBounced knifeBounced)
+                {
+                    DrawSpriteExt(knife, 0, knifeBounced.Position + knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
+                }
+            }
+
+
             SpriteBatch.End();
         }
 
@@ -460,11 +479,11 @@ namespace RogueTower
                     {
                         case (Player.SwordAction.StartSwing):
                             rightArm = ArmState.Angular(5);
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(90 + 45));
+                            weapon = WeaponState.Knife(MathHelper.ToRadians(90 + 45));
                             break;
                         case (Player.SwordAction.UpSwing):
                             rightArm = ArmState.Angular(6);
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(90 + 45 + 22));
+                            weapon = WeaponState.Knife(MathHelper.ToRadians(90 + 45 + 22));
                             break;
                         case (Player.SwordAction.DownSwing):
                             body = BodyState.Crouch(1);

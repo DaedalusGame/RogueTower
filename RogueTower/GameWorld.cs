@@ -13,6 +13,8 @@ namespace RogueTower
     {
         public Map Map;
         public Player Player;
+        public List<Bullet> Bullets = new List<Bullet>();
+        public List<VisualEffect> Effects = new List<VisualEffect>();
 
         public float Hitstop = 0;
 
@@ -54,6 +56,18 @@ namespace RogueTower
                 globalDelta = 0;
 
             Player.Update(globalDelta);
+
+            foreach (Bullet bullet in Bullets)
+            {
+                bullet.Update(globalDelta);
+            }
+            Bullets.RemoveAll(x => x.Destroyed);
+
+            foreach (VisualEffect effect in Effects)
+            {
+                effect.Update(globalDelta);
+            }
+            Effects.RemoveAll(x => x.Destroyed);
 
             Hitstop -= delta;
         }
