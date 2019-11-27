@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -25,6 +26,7 @@ namespace RogueTower
         public GameWindow Window => Game.Window;
         public Viewport Viewport => GraphicsDevice.Viewport;
         public Effect Shader => Game.Shader;
+        public SoundBank SFXSoundBank => Game.SFXSoundBank;
 
         public MouseState MouseState => Game.MouseState;
         public MouseState LastMouseState => Game.LastMouseState;

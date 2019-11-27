@@ -20,7 +20,12 @@ namespace RogueTower
         public Texture2D Pixel;
         public Effect Shader;
 
+        AudioEngine AudioEngine;
+
         public static Song bgm_title_theme;
+
+        public SoundBank SFXSoundBank;
+        public WaveBank SFXWaveBank;
 
         public static SoundEffect sfx_player_hurt;
         public static SoundEffect sfx_player_jump;
@@ -109,6 +114,11 @@ namespace RogueTower
             sfx_tile_icebreak = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
             bgm_title_theme = Content.Load<Song>("sounds/bgm/generic_theme");
 
+            AudioEngine = new AudioEngine("Content/sounds/Rogue Tower Sound Project.xgs");
+            SFXWaveBank = new WaveBank(AudioEngine, "Content/sounds/sfx wave bank.xwb");
+            SFXSoundBank = new SoundBank(AudioEngine, "Content/sounds/sfx sound bank.xsb");
+            Shader = Content.Load<Effect>("effects");
+
             MediaPlayer.Play(bgm_title_theme);
             MediaPlayer.IsRepeating = true;
             // TODO: use this.Content to load your game content here
@@ -173,6 +183,8 @@ namespace RogueTower
 
             LastMouseState = MouseState;
             LastKeyState = KeyState;
+
+            AudioEngine.Update();
 
             base.Update(gameTime);
         }
