@@ -20,6 +20,18 @@ namespace RogueTower
             return shuffled;
         }
 
+        public static HorizontalFacing Mirror(this HorizontalFacing facing)
+        {
+            switch(facing)
+            {
+                default:
+                case HorizontalFacing.Left:
+                    return HorizontalFacing.Right;
+                case HorizontalFacing.Right:
+                    return HorizontalFacing.Left;
+            }
+        }
+
         public static int PositiveMod(int x, int m)
         {
             int r = x % m;

@@ -239,12 +239,23 @@ namespace RogueTower
 
     class SceneGame : Scene
     {
+        const int ViewScale = 2;
+
         GameWorld World;
         public Map Map => World.Map;
 
         Vector2 CameraSize => new Vector2(320, 240);
         Vector2 Camera => FitCamera(World.Player.Position - CameraSize / 2);
-        Matrix WorldTransform => Matrix.Identity * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0) * Matrix.CreateTranslation(new Vector3(-Camera - CameraSize / 2, 0) );
+        Matrix WorldTransform => CreateViewMatrix();
+
+        private Matrix CreateViewMatrix()
+        {
+            return Matrix.Identity
+                * Matrix.CreateTranslation(new Vector3(-Camera, 0))
+                * Matrix.CreateTranslation(new Vector3(-CameraSize / 2, 0)) //These two lines center the character on (0,0)
+                * Matrix.CreateScale(ViewScale, ViewScale, 1) //Scale it up by 2
+                * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0); //Translate the character to the middle of the viewport
+        }
 
         public SceneGame(Game game) : base(game)
         {
@@ -354,7 +365,7 @@ namespace RogueTower
                     break;
                 case (Player.Action.WallClimb):
                     body = BodyState.Climb;
-                    leftArm = ArmState.Angular(11 + Util.PositiveMod(3 + (int)-player.ClimbFrame,7));
+                    leftArm = ArmState.Angular(11 + Util.PositiveMod(3 + (int)-player.ClimbFrame, 7));
                     rightArm = ArmState.Angular(11 + Util.PositiveMod((int)-player.ClimbFrame, 7));
                     weapon = WeaponState.None;
                     break;
@@ -465,7 +476,7 @@ namespace RogueTower
                 position += new Vector2(0, 1);
             }
 
-            DrawPlayerState(new PlayerState(head, body, leftArm, rightArm, weapon), position - new Vector2(8,8), mirror);
+            DrawPlayerState(new PlayerState(head, body, leftArm, rightArm, weapon), position - new Vector2(8, 8), mirror);
 
             if (player.SlashEffect is SlashEffect slashEffect)
             {

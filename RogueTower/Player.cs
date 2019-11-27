@@ -365,7 +365,7 @@ namespace RogueTower
             if (OnWall)
             {
                 Velocity.X = 0;
-                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
+                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile.CanClimb(Facing.Mirror()));
                 if (InAir && climbTiles.Any() && Velocity.Y > 0 && (CurrentAction == Action.JumpDown || CurrentAction == Action.JumpUp))
                 {
                     Velocity.Y = 0;
@@ -386,7 +386,7 @@ namespace RogueTower
 
             if (CurrentAction == Action.WallClimb)
             {
-                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile is Ladder);
+                var climbTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing))).Where(tile => tile.CanClimb(Facing.Mirror()));
                 if (!climbTiles.Any())
                 {
                     OnWall = false;
