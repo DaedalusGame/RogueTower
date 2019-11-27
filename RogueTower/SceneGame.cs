@@ -326,10 +326,6 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
-
-                    double slide = tile.Health / tile.OriginalHealth;
-                    float healthTrans = (float)((1-slide) * 1 + slide * 0);
-                    SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), Color.White * healthTrans);
                 }
             }
         }
