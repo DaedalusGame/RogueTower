@@ -44,6 +44,7 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
     <Compile Include="Effect.cs" />
+    <Compile Include="Enemy.cs" />
     <Compile Include="FontUtil.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameObject.cs" />

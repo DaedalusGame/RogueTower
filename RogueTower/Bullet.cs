@@ -78,7 +78,7 @@ namespace RogueTower
     {
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
-            if(collision.Box.HasTag(CollisionTag.NoCollision))
+            if(collision.Hit.Box.HasTag(CollisionTag.NoCollision))
                 return new CrossResponse(collision);
             return new TouchResponse(collision);
         }

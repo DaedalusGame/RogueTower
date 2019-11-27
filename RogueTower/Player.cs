@@ -194,9 +194,11 @@ namespace RogueTower
                             {
                                 case (Action.Slash):
                                     SlashEffect = new SlashEffect(0, false, 4);
+                                    Game.sfx_sword_swing.Play(1.0f, CalculateRandomSFXPitch(0.1f, 0.5f), 0);
                                     break;
                                 case (Action.SlashUp):
                                     SlashEffect = new SlashEffect(MathHelper.ToRadians(45), true, 4);
+                                    Game.sfx_sword_swing.Play(1.0f, CalculateRandomSFXPitch(0.1f, 0.5f), 0);
                                     break;
                             }
                             
@@ -577,7 +579,6 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
-            Game.sfx_sword_swing.Play(1.0f, CalculateRandomSFXPitch(0.1f, 0.5f), 0);
         }
 
         public void SlashKnife()
@@ -600,7 +601,6 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
-            Game.sfx_sword_swing.Play(1.0f, CalculateRandomSFXPitch(0.1f, 0.5f), 0);
         }
 
         public void SlashDown()
