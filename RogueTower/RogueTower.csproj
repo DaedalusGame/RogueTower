@@ -85,6 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\breaks.png" />
     <Content Include="Content\char_body_climb.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -360,6 +361,8 @@
     </Content>
     <Content Include="Content\sounds\sfx\icetile_swordbreak.wav" />
     <Content Include="Content\sounds\sfx\jump_sfx.wav" />
+    <Content Include="Content\sounds\sfx\player_hurt.wav" />
+    <Content Include="Content\sounds\sfx\player_land.wav" />
     <Content Include="Content\sounds\sfx\sword_bink.wav" />
     <Content Include="Content\sounds\sfx\sword_swing.wav" />
     <Content Include="Content\stick.png">

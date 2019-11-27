@@ -19,10 +19,12 @@ namespace RogueTower
         public Texture2D Pixel;
         public Effect Shader;
 
-        public static SoundEffect jump_sfx;
-        public static SoundEffect swing_sword_sfx;
-        public static SoundEffect sword_bink_sfx;
-        public static SoundEffect icetile_swordbreak_sfx;
+        public static SoundEffect sfx_player_hurt;
+        public static SoundEffect sfx_player_jump;
+        public static SoundEffect sfx_player_land;
+        public static SoundEffect sfx_sword_swing;
+        public static SoundEffect sfx_sword_bink;
+        public static SoundEffect sfx_tile_icebreak;
 
         public Scene Scene;
 
@@ -96,10 +98,12 @@ namespace RogueTower
 
             Shader = Content.Load<Effect>("effects");
 
-            jump_sfx = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
-            swing_sword_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
-            sword_bink_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
-            icetile_swordbreak_sfx = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
+            sfx_player_hurt = Content.Load<SoundEffect>("sounds/sfx/player_hurt");
+            sfx_player_jump = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
+            sfx_player_land = Content.Load<SoundEffect>("sounds/sfx/player_land");
+            sfx_sword_bink = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
+            sfx_sword_swing = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
+            sfx_tile_icebreak = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
 
             // TODO: use this.Content to load your game content here
 

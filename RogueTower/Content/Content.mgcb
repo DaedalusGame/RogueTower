@@ -31,6 +31,18 @@
 /processorParam:Quality=Best
 /build:sounds/sfx/jump_sfx.wav
 
+#begin sounds/sfx/player_hurt.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/sfx/player_hurt.wav
+
+#begin sounds/sfx/player_land.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/sfx/player_land.wav
+
 #begin sounds/sfx/sword_bink.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
