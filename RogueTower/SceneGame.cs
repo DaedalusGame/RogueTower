@@ -262,8 +262,7 @@ namespace RogueTower
             World = new GameWorld(50, 200);
 
             World.Player = new Player();
-            //World.Player.Create(World, 50, World.Height - 50);
-            World.Player.Create(World, World.Width / 2, World.Height / 2);
+            World.Player.Create(World, 50, World.Height - 50);
             World.Player.SetControl(this);
         }
 

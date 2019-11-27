@@ -40,6 +40,11 @@ namespace RogueTower
             return new RectangleF(0, 0, 16, 16);
         }
 
+        public virtual bool CanClimb(HorizontalFacing side)
+        {
+            return false;
+        }
+
         //Copy values over here
         public virtual void CopyTo(Tile tile)
         {
@@ -105,6 +110,11 @@ namespace RogueTower
             
 
             return base.GetBoundingBox();
+        }
+
+        public override bool CanClimb(HorizontalFacing side)
+        {
+            return Facing == side.Mirror();
         }
     }
 }
