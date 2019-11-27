@@ -15,14 +15,12 @@ namespace RogueTower
     {
         GraphicsDeviceManager Graphics;
         public SpriteBatch SpriteBatch;
+        AudioEngine AudioEngine;
+        public SoundBank SFXSoundBank;
+        public WaveBank SFXWaveBank;
 
         public Texture2D Pixel;
         public Effect Shader;
-
-        public static SoundEffect jump_sfx;
-        public static SoundEffect swing_sword_sfx;
-        public static SoundEffect sword_bink_sfx;
-        public static SoundEffect icetile_swordbreak_sfx;
 
         public Scene Scene;
 
@@ -93,13 +91,12 @@ namespace RogueTower
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
+            AudioEngine = new AudioEngine("Content/sounds/Rogue Tower Sound Project.xgs");
+            SFXWaveBank = new WaveBank(AudioEngine, "Content/sounds/sfx wave bank.xwb");
+            SFXSoundBank = new SoundBank(AudioEngine, "Content/sounds/sfx sound bank.xsb");
+            AudioEngine.Update();
             Shader = Content.Load<Effect>("effects");
 
-            jump_sfx = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
-            swing_sword_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
-            sword_bink_sfx = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
-            icetile_swordbreak_sfx = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
 
             // TODO: use this.Content to load your game content here
 

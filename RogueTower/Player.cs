@@ -462,8 +462,7 @@ namespace RogueTower
                 if (jumpKey && OnGround)
                 {
                     Velocity.Y -= GetJumpVelocity(60);
-                    float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
-                    Game.jump_sfx.Play(1.0f, pitchmod, 0);
+                    SceneGame.SFXSoundBank.GetCue("sfx_player_jump").Play();
                 }
                 if (!DisableJumpControl && !jumpKeyHeld && Velocity.Y < 0)
                     Velocity.Y *= 0.7f;
@@ -497,8 +496,7 @@ namespace RogueTower
                 {
                     Velocity.Y = -4;
                     OnGround = false;
-                    float pitchmod = CalculateRandomSFXPitch(0.1f, 0.4f);
-                    Game.sword_bink_sfx.Play(1.0f, pitchmod, 0);
+                    SceneGame.SFXSoundBank.GetCue("sfx_sword_bink").Play();
                     CurrentAction = Action.JumpUp;
                     DisableJumpControl = true;
                     //SlashAction = SwordAction.FinishSwing;
@@ -508,8 +506,7 @@ namespace RogueTower
                         if (tile.Health <= 0)
                         {
                             tile.Replace(new EmptySpace(tile.Map, tile.X, tile.Y));
-                            pitchmod = CalculateRandomSFXPitch(0.1f, 0.2f);
-                            Game.icetile_swordbreak_sfx.Play(1.0f, pitchmod, 0);
+                            SceneGame.SFXSoundBank.GetCue("sfx_tile_icebreak").Play();
                         }
                     }
                 }
@@ -570,8 +567,7 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
-            float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
-            Game.swing_sword_sfx.Play(1.0f, pitchmod, 0);
+            SceneGame.SFXSoundBank.GetCue("sfx_sword_swing").Play();
         }
 
         public void SlashKnife()
@@ -594,8 +590,7 @@ namespace RogueTower
             SlashFinishTime = 2;
             SlashAction = SwordAction.StartSwing;
             Velocity.Y *= 0.3f;
-            float pitchmod = CalculateRandomSFXPitch(0.1f, 0.5f);
-            Game.swing_sword_sfx.Play(1.0f, pitchmod, 0);
+            SceneGame.SFXSoundBank.GetCue("sfx_sword_swing").Play();
         }
 
         public void SlashDown()

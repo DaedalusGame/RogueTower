@@ -19,27 +19,3 @@
 /processorParam:DebugMode=Auto
 /build:effects.fx
 
-#begin sounds/sfx/icetile_swordbreak.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/icetile_swordbreak.wav
-
-#begin sounds/sfx/jump_sfx.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/jump_sfx.wav
-
-#begin sounds/sfx/sword_bink.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/sword_bink.wav
-
-#begin sounds/sfx/sword_swing.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/sword_swing.wav
-
