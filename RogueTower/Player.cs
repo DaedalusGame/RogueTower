@@ -496,6 +496,7 @@ namespace RogueTower
                 if (OnGround)
                 {
                     Velocity.Y = -4;
+                    OnGround = false;
                     float pitchmod = CalculateRandomSFXPitch(0.1f, 0.4f);
                     Game.sword_bink_sfx.Play(1.0f, pitchmod, 0);
                     CurrentAction = Action.JumpUp;

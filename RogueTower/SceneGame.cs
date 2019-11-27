@@ -244,7 +244,7 @@ namespace RogueTower
 
         Vector2 CameraSize => new Vector2(320, 240);
         Vector2 Camera => FitCamera(World.Player.Position - CameraSize / 2);
-        Matrix WorldTransform => Matrix.Identity * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0) * Matrix.CreateTranslation(new Vector3(-Camera - CameraSize / 2, 0));
+        Matrix WorldTransform => Matrix.Identity * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0) * Matrix.CreateTranslation(new Vector3(-Camera - CameraSize / 2, 0) );
 
         public SceneGame(Game game) : base(game)
         {
@@ -289,11 +289,20 @@ namespace RogueTower
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
+            var breaks = SpriteLoader.Instance.AddSprite("content/break");
+
+            var drawZone = Viewport.Bounds;
+            drawZone.Inflate(32, 32);
 
             for (int x = 0; x < map.Width; x++)
             {
                 for (int y = 0; y < map.Height; y++)
                 {
+                    Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
+
+                    if (!drawZone.Contains(truePos))
+                        continue;
+
                     Tile tile = map.Tiles[x, y];
 
                     //TODO: move tile draw code into a method on Tile
@@ -317,6 +326,10 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
+
+                    double slide = tile.Health / tile.OriginalHealth;
+                    float healthTrans = (float)((1-slide) * 1 + slide * 0);
+                    SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), Color.White * healthTrans);
                 }
             }
         }
