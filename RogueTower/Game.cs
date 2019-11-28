@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Media;
 using System;
 using System.Text;
 using System.Collections.Generic;
+using ChaiFoxes.FMODAudio;
 
 namespace RogueTower
 {
@@ -123,8 +124,12 @@ namespace RogueTower
             catch { }
             Shader = Content.Load<Effect>("effects");
 
-            MediaPlayer.Play(bgm_title_theme);
-            MediaPlayer.IsRepeating = true;
+            AudioMgr.Init("content");
+            var sound =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
+            var channel = sound.Play();
+            channel.Looping = true;
+            //MediaPlayer.Play(bgm_title_theme);
+            //MediaPlayer.IsRepeating = true;
             // TODO: use this.Content to load your game content here
 
             // Readies the sounds used in our project.
