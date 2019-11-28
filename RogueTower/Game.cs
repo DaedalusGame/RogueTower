@@ -21,19 +21,13 @@ namespace RogueTower
         public Texture2D Pixel;
         public Effect Shader;
 
-        AudioEngine AudioEngine;
-
-        public static Song bgm_title_theme;
-
-        public SoundBank SFXSoundBank;
-        public WaveBank SFXWaveBank;
-
-        public static SoundEffect sfx_player_hurt;
-        public static SoundEffect sfx_player_jump;
-        public static SoundEffect sfx_player_land;
-        public static SoundEffect sfx_sword_swing;
-        public static SoundEffect sfx_sword_bink;
-        public static SoundEffect sfx_tile_icebreak;
+        public static Sound bgm_title_theme;
+        public static Sound sfx_player_hurt;
+        public static Sound sfx_player_jump;
+        public static Sound sfx_player_land;
+        public static Sound sfx_sword_swing;
+        public static Sound sfx_sword_bink;
+        public static Sound sfx_tile_icebreak;
 
         public Scene Scene;
 
@@ -107,27 +101,18 @@ namespace RogueTower
 
             Shader = Content.Load<Effect>("effects");
 
-            sfx_player_hurt = Content.Load<SoundEffect>("sounds/sfx/player_hurt");
-            sfx_player_jump = Content.Load<SoundEffect>("sounds/sfx/jump_sfx");
-            sfx_player_land = Content.Load<SoundEffect>("sounds/sfx/player_land");
-            sfx_sword_bink = Content.Load<SoundEffect>("sounds/sfx/sword_bink");
-            sfx_sword_swing = Content.Load<SoundEffect>("sounds/sfx/sword_swing");
-            sfx_tile_icebreak = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
-            bgm_title_theme = Content.Load<Song>("sounds/bgm/generic_theme");
-
-            try
-            {
-                AudioEngine = new AudioEngine("Content/sounds/Rogue Tower Sound Project.xgs");
-                SFXWaveBank = new WaveBank(AudioEngine, "Content/sounds/sfx wave bank.xwb");
-                SFXSoundBank = new SoundBank(AudioEngine, "Content/sounds/sfx sound bank.xsb");
-            }
-            catch { }
-            Shader = Content.Load<Effect>("effects");
-
             AudioMgr.Init("content");
-            var sound =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
-            var channel = sound.Play();
-            channel.Looping = true;
+            bgm_title_theme =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
+
+            sfx_player_hurt = AudioMgr.LoadSound("sounds/sfx/player_hurt.wav");
+            sfx_player_jump = AudioMgr.LoadSound("sounds/sfx/jump_sfx.wav");
+            sfx_player_land = AudioMgr.LoadSound("sounds/sfx/player_land.wav");
+            sfx_sword_bink = AudioMgr.LoadSound("sounds/sfx/sword_bink.wav");
+            sfx_sword_swing = AudioMgr.LoadSound("sounds/sfx/sword_swing.wav");
+            sfx_tile_icebreak = AudioMgr.LoadSound("sounds/sfx/icetile_swordbreak.wav");
+
+            var musicChannel = bgm_title_theme.Play();
+            musicChannel.Looping = true;
             //MediaPlayer.Play(bgm_title_theme);
             //MediaPlayer.IsRepeating = true;
             // TODO: use this.Content to load your game content here
@@ -136,13 +121,14 @@ namespace RogueTower
 
 
         }
-
+        
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
         /// </summary>
         protected override void UnloadContent()
         {
+            AudioMgr.Unload();
             // TODO: Unload any non ContentManager content here
         }
 
@@ -182,7 +168,7 @@ namespace RogueTower
                 Exit();
 
             SpriteLoader.Instance.Update(gameTime);
-
+            AudioMgr.Update();
             MouseState = Mouse.GetState();
             KeyState = Keyboard.GetState();
 
@@ -192,9 +178,6 @@ namespace RogueTower
 
             LastMouseState = MouseState;
             LastKeyState = KeyState;
-
-            if(AudioEngine != null)
-                AudioEngine.Update();
 
             base.Update(gameTime);
         }
