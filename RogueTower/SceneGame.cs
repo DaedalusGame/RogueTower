@@ -239,6 +239,29 @@ namespace RogueTower
         }
     }
 
+    struct Shear
+    {
+        public double Lower, Upper;
+
+        public static Shear All => new Shear(double.NegativeInfinity, double.PositiveInfinity);
+
+        public Shear(double lower, double upper)
+        {
+            Lower = Math.Min(lower, upper);
+            Upper = Math.Max(lower, upper);
+        }
+
+        public bool Contains(double value)
+        {
+            return value >= Lower && value <= Upper;
+        }
+
+        public override string ToString()
+        {
+            return $"{Lower}-{Upper}";
+        }
+    }
+
     class SceneGame : Scene
     {
         const int ViewScale = 2;
@@ -250,6 +273,8 @@ namespace RogueTower
         Vector2 CameraSize => new Vector2(320, 240);
         Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
         Matrix WorldTransform => CreateViewMatrix();
+
+        Shear DepthShear = Shear.All;
 
         bool GameSpeedToggle = false;
 
@@ -310,13 +335,18 @@ namespace RogueTower
 
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.LightSkyBlue);
 
+            DepthShear = new Shear(double.NegativeInfinity, 0.75);
             DrawPlayer(World.Player);
+            DepthShear = Shear.All;
             DrawMap(World.Map);
+            DepthShear = new Shear(0.75, double.PositiveInfinity);
+            DrawPlayer(World.Player);
+            DepthShear = Shear.All;
 
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
-            foreach(Bullet bullet in World.Bullets)
+            foreach (Bullet bullet in World.Bullets)
             {
-                if(bullet is Knife)
+                if (bullet is Knife)
                 {
                     DrawSpriteExt(knife, 0, bullet.Position + knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
                 }
@@ -556,11 +586,15 @@ namespace RogueTower
 
         public void DrawSprite(SpriteReference sprite, int frame, Vector2 position, SpriteEffects mirror, float depth)
         {
+            if (!DepthShear.Contains(depth))
+                return;
             SpriteBatch.Draw(sprite.Texture, position, sprite.GetFrameRect(frame), Color.White, 0, Vector2.Zero, 1, mirror, depth);
         }
 
         public void DrawSpriteExt(SpriteReference sprite, int frame, Vector2 position, Vector2 origin, float angle, SpriteEffects mirror, float depth)
         {
+            if (!DepthShear.Contains(depth))
+                return;
             SpriteBatch.Draw(sprite.Texture, position - origin, sprite.GetFrameRect(frame), Color.White, angle, origin, 1, mirror, depth);
         }
 

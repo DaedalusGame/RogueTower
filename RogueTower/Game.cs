@@ -114,9 +114,13 @@ namespace RogueTower
             sfx_tile_icebreak = Content.Load<SoundEffect>("sounds/sfx/icetile_swordbreak");
             bgm_title_theme = Content.Load<Song>("sounds/bgm/generic_theme");
 
-            AudioEngine = new AudioEngine("Content/sounds/Rogue Tower Sound Project.xgs");
-            SFXWaveBank = new WaveBank(AudioEngine, "Content/sounds/sfx wave bank.xwb");
-            SFXSoundBank = new SoundBank(AudioEngine, "Content/sounds/sfx sound bank.xsb");
+            try
+            {
+                AudioEngine = new AudioEngine("Content/sounds/Rogue Tower Sound Project.xgs");
+                SFXWaveBank = new WaveBank(AudioEngine, "Content/sounds/sfx wave bank.xwb");
+                SFXSoundBank = new SoundBank(AudioEngine, "Content/sounds/sfx sound bank.xsb");
+            }
+            catch { }
             Shader = Content.Load<Effect>("effects");
 
             MediaPlayer.Play(bgm_title_theme);
@@ -184,7 +188,8 @@ namespace RogueTower
             LastMouseState = MouseState;
             LastKeyState = KeyState;
 
-            AudioEngine.Update();
+            if(AudioEngine != null)
+                AudioEngine.Update();
 
             base.Update(gameTime);
         }

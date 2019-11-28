@@ -407,9 +407,9 @@ namespace RogueTower
                 }
 
                 if (upKey)
-                    Velocity.Y = -1;
+                    Velocity.Y = -0.5f;
                 if (downKey)
-                    Velocity.Y = 1;
+                    Velocity.Y = 0.5f;
                 if (!upKey && !downKey)
                     Velocity.Y = 0;
                 if (jumpKey)
@@ -508,6 +508,7 @@ namespace RogueTower
                 {
                     Velocity.Y = -4;
                     OnGround = false;
+                    World.Hitstop = 4;
                     Game.sfx_sword_bink.Play(1.0f, CalculateRandomSFXPitch(0.1f, 0.4f), 0);
                     CurrentAction = Action.JumpUp;
                     DisableJumpControl = true;
