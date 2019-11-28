@@ -22,11 +22,13 @@ namespace RogueTower
         public Effect Shader;
 
         public static Sound bgm_title_theme;
+        public static Sound sfx_knife_throw;
         public static Sound sfx_player_hurt;
         public static Sound sfx_player_jump;
         public static Sound sfx_player_land;
         public static Sound sfx_sword_swing;
         public static Sound sfx_sword_bink;
+        public static Sound sfx_tile_break;
         public static Sound sfx_tile_icebreak;
 
         public Scene Scene;
@@ -104,11 +106,13 @@ namespace RogueTower
             AudioMgr.Init("content");
             bgm_title_theme =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
 
+            sfx_knife_throw = AudioMgr.LoadSound("sounds/sfx/knife_throw.wav");
             sfx_player_hurt = AudioMgr.LoadSound("sounds/sfx/player_hurt.wav");
             sfx_player_jump = AudioMgr.LoadSound("sounds/sfx/jump_sfx.wav");
             sfx_player_land = AudioMgr.LoadSound("sounds/sfx/player_land.wav");
             sfx_sword_bink = AudioMgr.LoadSound("sounds/sfx/sword_bink.wav");
             sfx_sword_swing = AudioMgr.LoadSound("sounds/sfx/sword_swing.wav");
+            sfx_tile_break = AudioMgr.LoadSound("sounds/sfx/tilebreak_default.wav");
             sfx_tile_icebreak = AudioMgr.LoadSound("sounds/sfx/icetile_swordbreak.wav");
 
             var musicChannel = bgm_title_theme.Play();
@@ -180,6 +184,15 @@ namespace RogueTower
             LastKeyState = KeyState;
 
             base.Update(gameTime);
+        }
+        public static Sound PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
+        {
+            Random random = new Random();
+            float pitchmodcalc = (float)(random.NextDouble() * (max_pitchmod_val - min_pitchmod_val) + min_pitchmod_val);
+            sfx.Volume = volume;
+            sfx.Pitch = (float)Math.Pow(2, pitchmodcalc);
+            sfx.Play();
+            return sfx;
         }
 
         /// <summary>

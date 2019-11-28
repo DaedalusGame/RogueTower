@@ -2,6 +2,7 @@
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using System;
+using static RogueTower.Game;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,7 @@ namespace RogueTower
 
     class Knife : Bullet
     {
+        double knifeDamage = 15.0;
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
             if(collision.Hit.Box.HasTag(CollisionTag.NoCollision))
@@ -88,6 +90,9 @@ namespace RogueTower
             if (hit.Box.HasTag(CollisionTag.NoCollision) || hit.Box.Data == Shooter)
                 return;
             World.Effects.Add(new KnifeBounced(Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24));
+            if (hit.Box.Data is Tile tile)
+                tile.HandleTileDamage(knifeDamage);
+            PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
             Destroy();
         }
     }

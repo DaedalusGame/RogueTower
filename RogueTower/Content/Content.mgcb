@@ -20,44 +20,26 @@
 /build:effects.fx
 
 #begin sounds/bgm/generic_theme.ogg
-/importer:OggImporter
-/processor:SongProcessor
-/processorParam:Quality=Best
-/build:sounds/bgm/generic_theme.ogg
+/copy:sounds/bgm/generic_theme.ogg
 
 #begin sounds/sfx/icetile_swordbreak.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/icetile_swordbreak.wav
+/copy:sounds/sfx/icetile_swordbreak.wav
 
 #begin sounds/sfx/jump_sfx.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/jump_sfx.wav
+/copy:sounds/sfx/jump_sfx.wav
 
 #begin sounds/sfx/player_hurt.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/player_hurt.wav
+/copy:sounds/sfx/player_hurt.wav
 
 #begin sounds/sfx/player_land.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/player_land.wav
+/copy:sounds/sfx/player_land.wav
 
 #begin sounds/sfx/sword_bink.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/sword_bink.wav
+/copy:sounds/sfx/sword_bink.wav
 
 #begin sounds/sfx/sword_swing.wav
-/importer:WavImporter
-/processor:SoundEffectProcessor
-/processorParam:Quality=Best
-/build:sounds/sfx/sword_swing.wav
+/copy:sounds/sfx/sword_swing.wav
+
+#begin sounds/sfx/tilebreak_default.wav
+/copy:sounds/sfx/tilebreak_default.wav
 

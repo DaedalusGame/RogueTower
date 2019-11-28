@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ChaiFoxes.FMODAudio;
+using static RogueTower.Game;
 
 namespace RogueTower
 {
@@ -133,16 +134,6 @@ namespace RogueTower
             return movement;
         }
 
-        private Sound PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
-        {
-            Random random = new Random();
-            float pitchmodcalc = (float)(random.NextDouble() * (max_pitchmod_val - min_pitchmod_val) + min_pitchmod_val);
-            sfx.Volume = volume;
-            sfx.Pitch = (float)Math.Pow(2, pitchmodcalc);
-            sfx.Play();
-            return sfx;
-        }
-
         public override void Update(float delta)
         {
             base.Update(delta);
@@ -199,11 +190,11 @@ namespace RogueTower
                             {
                                 case (Action.Slash):
                                     SlashEffect = new SlashEffect(0, false, 4);
-                                    PlaySFX(Game.sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
                                     break;
                                 case (Action.SlashUp):
                                     SlashEffect = new SlashEffect(MathHelper.ToRadians(45), true, 4);
-                                    PlaySFX(Game.sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
                                     break;
                             }
                             
@@ -216,6 +207,7 @@ namespace RogueTower
                                 bullet.LifeTime = 20;
                                 bullet.Shooter = this;
                                 World.Bullets.Add(bullet);
+                                PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
                             }
                         }
                         break;
@@ -482,7 +474,7 @@ namespace RogueTower
                 if (jumpKey && OnGround)
                 {
                     Velocity.Y -= GetJumpVelocity(60);
-                    PlaySFX(Game.sfx_player_jump, 0.7f, 0.1f, 0.5f);
+                    PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
                 }
                 if (!DisableJumpControl && !jumpKeyHeld && Velocity.Y < 0)
                     Velocity.Y *= 0.7f;
@@ -517,18 +509,13 @@ namespace RogueTower
                     Velocity.Y = -4;
                     OnGround = false;
                     World.Hitstop = 4;
-                    PlaySFX(Game.sfx_sword_bink, 1.0f, 0.1f, 0.4f);
+                    PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
                     CurrentAction = Action.JumpUp;
                     DisableJumpControl = true;
                     //SlashAction = SwordAction.FinishSwing;
-                    foreach (var tile in World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is WallIce))
+                    foreach (var tile in World.FindTiles(Box.Bounds.Offset(0, 1)))
                     {
-                        tile.Health -= SwordSwingDownDamage;
-                        if (tile.Health <= 0)
-                        {
-                            tile.Replace(new EmptySpace(tile.Map, tile.X, tile.Y));
-                            PlaySFX(Game.sfx_tile_icebreak, 1.0f, 0.1f, 0.2f);
-                        }
+                        tile.HandleTileDamage(SwordSwingDownDamage);
                     }
                 }
                 if (SlashAction == SwordAction.FinishSwing && SlashFinishTime <= 0)
@@ -636,7 +623,7 @@ namespace RogueTower
             Invincibility = invincibility;
             CurrentAction = Action.Hit;
             DisableAirControl = true;
-            PlaySFX(Game.sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
         }
     }
 }

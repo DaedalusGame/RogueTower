@@ -1,4 +1,6 @@
 ﻿using Humper.Base;
+using static RogueTower.Game;
+using ChaiFoxes.FMODAudio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +14,10 @@ namespace RogueTower
         public Map Map;
         public int X, Y;
         public bool Passable;
+        public bool CanDamage = false;
         public float Friction = 1.0f;
         public double Health = 100.0;
+        public virtual Sound breakSound => sfx_tile_break;
 
         public Tile(Map map, int x, int y, bool passable)
         {
@@ -21,7 +25,7 @@ namespace RogueTower
             X = x;
             Y = y;
             Passable = passable;
-        }
+    }
 
         public void Replace(Tile tile)
         {
@@ -35,6 +39,17 @@ namespace RogueTower
             Replace(new EmptySpace(Map, X, Y));
         }
 
+        public void HandleTileDamage(double damagein)
+        {
+            if(CanDamage == false)
+                return;
+            Health -= damagein;
+            if(Health <= 0)
+            {
+                PlaySFX(breakSound, 1.0f, 0.1f, 0.2f);
+                Replace(new EmptySpace(Map, X, Y));
+            }
+        }
         public virtual RectangleF GetBoundingBox()
         {
             return new RectangleF(0, 0, 16, 16);
@@ -70,9 +85,12 @@ namespace RogueTower
     {
         public WallIce(Map map, int x, int y) : base(map, x, y)
         {
+            
+            CanDamage = true;
             Friction = 0.3f;
             Health = 25.0;
         }
+        public override Sound breakSound => sfx_tile_icebreak;
     }
 
     class WallBlock : Wall
