@@ -416,12 +416,15 @@ namespace RogueTower
                 {
                     OnWall = false;
                     CurrentAction = Action.JumpDown;
-                    Velocity = GetFacingVector(Facing) * -GetJumpVelocity(30) + new Vector2(0, -GetJumpVelocity(30));
+                    Velocity = GetFacingVector(Facing) * -GetJumpVelocity(30) * 0.5f + new Vector2(0, -GetJumpVelocity(30));
+                    DisableAirControl = true;
+                    Facing = Facing.Mirror();
                 }
-                if ((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left))
+                if (OnGround && ((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left)))
                 {
                     OnWall = false;
-                    CurrentAction = Action.JumpDown;
+                    CurrentAction = Action.Move;
+                    Facing = Facing.Mirror();
                 }
             }
             else if (CurrentAction == Action.Hit)
