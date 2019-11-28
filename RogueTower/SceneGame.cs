@@ -343,6 +343,21 @@ namespace RogueTower
             DrawPlayer(World.Player);
             DepthShear = Shear.All;
 
+            var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
+            var chain = SpriteLoader.Instance.AddSprite("content/chain");
+
+            foreach(GameObject obj in World.Objects)
+            {
+                if(obj is BallAndChain ballAndChain)
+                {
+                    for(float i = 0; i < ballAndChain.Distance; i += 6f)
+                    {
+                        DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
+                    }
+                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle, SpriteEffects.None, 0);
+                }
+            }
+
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
             foreach (Bullet bullet in World.Bullets)
             {

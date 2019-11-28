@@ -9,6 +9,16 @@ namespace RogueTower
     abstract class GameObject
     {
         private float LastDelta;
+        public bool Destroyed
+        {
+            get;
+            private set;
+        }
+
+        public virtual void Destroy()
+        {
+            Destroyed = true;
+        }
 
         public virtual void Update(float delta)
         {

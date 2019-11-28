@@ -91,6 +91,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\breaks.png" />
+    <Content Include="Content\chain.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\char_body_climb.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -390,6 +393,9 @@
     </Content>
     <Content Include="Content\sounds\sfx\tilebreak_default.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\spikeball.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\stick.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

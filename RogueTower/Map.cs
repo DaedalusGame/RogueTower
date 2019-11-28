@@ -1,4 +1,5 @@
 ﻿using Humper;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,7 +80,40 @@ namespace RogueTower
                 }
             }
 
-            
+            List<Tile> walls = EnumerateTiles().Where(tile => tile is Wall).ToList();
+            for(int i = 0; i < 70; i++)
+            {
+                int select = random.Next(walls.Count);
+                Tile pickWall = walls[select];
+                walls.RemoveAt(select);
+
+                float n = 1;
+
+                float angle = random.NextFloat() * MathHelper.TwoPi;
+                float speed = 0.025f + random.NextFloat() * 0.05f;
+                int length = random.Next(60) + 40;
+
+                if (random.NextDouble() < 0.3)
+                    n = random.Next(3) + 1;
+
+                for (int e = 0; e < n; e++)
+                {
+                    var ballAndChain = new BallAndChain(angle + e * MathHelper.TwoPi / n, speed, length);
+                    ballAndChain.Create(World, pickWall.X * 16 + 8, pickWall.Y * 16 + 8);
+                    World.Objects.Add(ballAndChain);
+                }
+            }
+        }
+
+        public IEnumerable<Tile> EnumerateTiles()
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    yield return Tiles[x, y];
+                }
+            }
         }
 
         public void SetWorld(GameWorld world)

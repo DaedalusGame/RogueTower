@@ -11,7 +11,6 @@ namespace RogueTower
     class VisualEffect : GameObject
     {
         public float Frame;
-        public bool Destroyed;
 
         protected override void UpdateDelta(float delta)
         {
@@ -41,7 +40,7 @@ namespace RogueTower
         {
             if(Frame >= FrameEnd)
             {
-                Destroyed = true;
+                Destroy();
             }
         }
     }
@@ -79,7 +78,7 @@ namespace RogueTower
         {
             if (Frame >= FrameEnd)
             {
-                Destroyed = true;
+                Destroy();
             }
             Velocity += new Vector2(0, 0.4f);
         }

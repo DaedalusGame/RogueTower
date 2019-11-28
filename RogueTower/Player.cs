@@ -206,7 +206,7 @@ namespace RogueTower
                                 bullet.Velocity = facing * 8;
                                 bullet.LifeTime = 20;
                                 bullet.Shooter = this;
-                                World.Bullets.Add(bullet);
+                                World.Objects.Add(bullet);
                                 PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
                             }
                         }

@@ -30,16 +30,10 @@ namespace RogueTower
         public float LifeTime;
         public GameObject Shooter;
 
-        public bool Destroyed
+        public override void Destroy()
         {
-            get;
-            private set;
-        }
-
-        public void Destroy()
-        {
+            base.Destroy();
             World.Remove(Box);
-            Destroyed = true;
         }
 
         public void Create(GameWorld world, float x, float y)
@@ -89,7 +83,7 @@ namespace RogueTower
         {
             if (hit.Box.HasTag(CollisionTag.NoCollision) || hit.Box.Data == Shooter)
                 return;
-            World.Effects.Add(new KnifeBounced(Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24));
+            World.Objects.Add(new KnifeBounced(Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24));
             if (hit.Box.Data is Tile tile)
                 tile.HandleTileDamage(knifeDamage);
             PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);

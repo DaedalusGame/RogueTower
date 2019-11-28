@@ -32,6 +32,11 @@ namespace RogueTower
             }
         }
 
+        public static float NextFloat(this Random random)
+        {
+            return (float)random.NextDouble();
+        }
+
         public static int PositiveMod(int x, int m)
         {
             int r = x % m;
