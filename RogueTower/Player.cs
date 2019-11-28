@@ -416,6 +416,7 @@ namespace RogueTower
                     Velocity = GetFacingVector(Facing) * -GetJumpVelocity(30) * 0.5f + new Vector2(0, -GetJumpVelocity(30));
                     DisableAirControl = true;
                     Facing = Facing.Mirror();
+                    PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
                 }
                 if (OnGround && ((leftKey && Facing == HorizontalFacing.Right) || (rightKey && Facing == HorizontalFacing.Left)))
                 {
