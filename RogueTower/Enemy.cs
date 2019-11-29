@@ -31,11 +31,8 @@ namespace RogueTower
         public float Angle = 0;
         public float Speed = 0;
         public float Distance = 0;
-<<<<<<< HEAD
         public bool Swings = false;
-=======
         public double Damage = 10;
->>>>>>> 09bb3384a368139d95b51f10d81af1c4fff61700
 
         public Vector2 OffsetUnit => Swings ? AngleToVector(MathHelper.Pi + MathHelper.PiOver2 * (float)Math.Sin(Angle / MathHelper.PiOver2)) : AngleToVector(Angle);
         public Vector2 Offset => OffsetUnit * Distance;
