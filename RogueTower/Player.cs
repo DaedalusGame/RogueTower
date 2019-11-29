@@ -136,6 +136,21 @@ namespace RogueTower
             return movement;
         }
 
+        private void SwingWeapon(RectangleF hitmask, double damageIn = 0)
+        {
+           var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if(Box.Data is Enemy enemy)
+                {
+                    enemy.HandleDamage(damageIn);
+                }
+                if(Box.Data is Tile tile)
+                {
+                    tile.HandleTileDamage(damageIn);
+                }
+            }
+        }
         public override void Update(float delta)
         {
             base.Update(delta);
@@ -187,16 +202,22 @@ namespace RogueTower
                         SlashUpTime -= delta;
                         if (SlashUpTime < 0)
                         {
+                            var facingLength = 8;
+                            Vector2 playerFacing = Position + GetFacingVector(Facing) * facingLength;
+                            Vector2 weaponSize = new Vector2(facingLength / 2, facingLength);
+                            RectangleF swordMask = new RectangleF(playerFacing, weaponSize);
                             SlashAction = SwordAction.DownSwing;
                             switch(CurrentAction)
                             {
                                 case (Action.Slash):
                                     SlashEffect = new SlashEffect(World, 0, false, 4);
                                     PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                                    SwingWeapon(swordMask, 10);
                                     break;
                                 case (Action.SlashUp):
                                     SlashEffect = new SlashEffect(World, MathHelper.ToRadians(45), true, 4);
                                     PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                                    SwingWeapon(swordMask, 10);
                                     break;
                             }
                             
