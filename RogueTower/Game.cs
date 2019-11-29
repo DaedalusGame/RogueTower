@@ -48,6 +48,9 @@ namespace RogueTower
         const int FontSpritesAmount = 64;
         SpriteReference[] FontSprites = new SpriteReference[FontSpritesAmount];
 
+        FrameCounter FPS = new FrameCounter();
+        FrameCounter GFPS = new FrameCounter();
+
         public Game()
         {
             Graphics = new GraphicsDeviceManager(this);
@@ -185,6 +188,8 @@ namespace RogueTower
             LastMouseState = MouseState;
             LastKeyState = KeyState;
 
+            FPS.Update(gameTime);
+
             base.Update(gameTime);
         }
         public static Sound PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
@@ -208,6 +213,12 @@ namespace RogueTower
             Frame++;
 
             Scene.Draw(gameTime);
+
+            GFPS.Update(gameTime);
+
+            SpriteBatch.Begin(blendState:BlendState.NonPremultiplied);
+            DrawText($"FPS: {FPS.AverageFramesPerSecond.ToString("f1")}\nGFPS: {GFPS.AverageFramesPerSecond.ToString("f1")}", new Vector2(0, 0), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+            SpriteBatch.End();
 
             base.Draw(gameTime);
         }

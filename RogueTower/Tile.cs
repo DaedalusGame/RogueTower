@@ -16,16 +16,18 @@ namespace RogueTower
         public bool Passable;
         public bool CanDamage = false;
         public float Friction = 1.0f;
-        public double Health = 100.0;
+        public double Health, MaxHealth;
         public double Damage = 0;
         public virtual Sound breakSound => sfx_tile_break;
 
-        public Tile(Map map, int x, int y, bool passable)
+        public Tile(Map map, int x, int y, bool passable, double health)
         {
             Map = map;
             X = x;
             Y = y;
             Passable = passable;
+            Health = health;
+            MaxHealth = Health;
     }
 
         public void Replace(Tile tile)
@@ -70,26 +72,28 @@ namespace RogueTower
 
     class EmptySpace : Tile
     {
-        public EmptySpace(Map map, int x, int y) : base(map, x, y, true)
+        public EmptySpace(Map map, int x, int y) : base(map, x, y, true, double.PositiveInfinity)
         {
         }
     }
 
     class Wall : Tile
     {
-        public Wall(Map map, int x, int y) : base(map, x, y, false)
+        public Wall(Map map, int x, int y, double health) : base(map, x, y, false, health)
+        {
+        }
+
+        public Wall(Map map, int x, int y) : this(map, x, y, 100)
         {
         }
     }
 
     class WallIce : Wall
     {
-        public WallIce(Map map, int x, int y) : base(map, x, y)
+        public WallIce(Map map, int x, int y) : base(map, x, y, 25)
         {
-            
             CanDamage = true;
             Friction = 0.3f;
-            Health = 25.0;
         }
         public override Sound breakSound => sfx_tile_icebreak;
     }

@@ -335,6 +335,8 @@ namespace RogueTower
         {
             StartNormalBatch();
 
+            Rectangle drawZone = GetDrawZone();
+
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.LightSkyBlue);
 
             DepthShear = new Shear(double.NegativeInfinity, 0.75);
@@ -352,7 +354,11 @@ namespace RogueTower
             {
                 if(obj is BallAndChain ballAndChain)
                 {
-                    for(float i = 0; i < ballAndChain.Distance; i += 6f)
+                    Vector2 truePosA = Vector2.Transform(ballAndChain.Position, WorldTransform);
+                    Vector2 truePosB = Vector2.Transform(ballAndChain.Position + ballAndChain.Offset, WorldTransform);
+                    if (!drawZone.Contains(truePosA) && !drawZone.Contains(truePosB))
+                        continue;
+                    for (float i = 0; i < ballAndChain.Distance; i += 6f)
                     {
                         DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
                     }
@@ -388,10 +394,9 @@ namespace RogueTower
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
-            var breaks = SpriteLoader.Instance.AddSprite("content/break");
+            var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
 
-            var drawZone = Viewport.Bounds;
-            drawZone.Inflate(32, 32);
+            Rectangle drawZone = GetDrawZone();
 
             for (int x = 0; x < map.Width; x++)
             {
@@ -425,8 +430,18 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
+
+                    if (tile.Health < tile.MaxHealth)
+                        SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));
                 }
             }
+        }
+
+        private Rectangle GetDrawZone()
+        {
+            var drawZone = Viewport.Bounds;
+            drawZone.Inflate(32, 32);
+            return drawZone;
         }
 
         private void DrawPlayer(Player player)

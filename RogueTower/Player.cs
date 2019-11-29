@@ -527,7 +527,7 @@ namespace RogueTower
 
             if (OnGround) //Friction
             {
-                var tiles = World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is Spike);
+                var tiles = World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile.Damage > 0);
                 if (tiles.Any())
                 {
                     Hit(-GetFacingVector(Facing) * 1 + new Vector2(0, -2), 20, 50, tiles.First().Damage);

@@ -65,7 +65,7 @@ namespace RogueTower
 
             Objects.RemoveAll(x => x.Destroyed);
 
-            Hitstop -= delta;
+            Hitstop -= 1;
         }
     }
 }
