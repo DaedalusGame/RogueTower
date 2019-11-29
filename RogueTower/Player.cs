@@ -203,10 +203,10 @@ namespace RogueTower
                         SlashUpTime -= delta;
                         if (SlashUpTime < 0)
                         {
-                            var facingLength = 8;
+                            var facingLength = 14;
                             Vector2 playerFacing = Position + GetFacingVector(Facing) * facingLength;
-                            Vector2 weaponSize = new Vector2(facingLength / 2, facingLength);
-                            RectangleF swordMask = new RectangleF(playerFacing, weaponSize);
+                            Vector2 weaponSize = new Vector2((facingLength / 2), facingLength * 2);
+                            RectangleF swordMask = new RectangleF(playerFacing - weaponSize / 2, weaponSize);
                             SlashAction = SwordAction.DownSwing;
                             switch(CurrentAction)
                             {
