@@ -1,4 +1,6 @@
-﻿using Humper.Base;
+﻿using Humper;
+using Humper.Base;
+using Humper.Responses;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -30,6 +32,7 @@ namespace RogueTower
 
     class BallAndChain : Enemy
     {
+        public IBox Box;
         public float Angle = 0;
         public float Speed = 0;
         public float Distance = 0;
@@ -49,6 +52,14 @@ namespace RogueTower
             Health = 240.00; //If we ever do want to make these destroyable, this is the value I propose for health.
         }
 
+        public override void Create(float x, float y)
+        {
+            base.Create(x, y);
+            Box = World.Create(x-8, y-8, 16, 16);
+            Box.AddTags(CollisionTag.NoCollision);
+            Box.Data = this;
+        }
+
         private Vector2 AngleToVector(float angle)
         {
             return new Vector2((float)Math.Sin(angle), -(float)Math.Cos(angle));
@@ -62,20 +73,34 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             //Damage here
-            Vector2 size = new Vector2(16, 16);
-            var hitPlayers = World.FindBoxes(new RectangleF(Position + Offset - size / 2, size)).Where(box => box.Data is Player).Select(box => box.Data);
-            foreach (Player player in hitPlayers)
+            var size = Box.Bounds.Size;
+            var move = Position + Offset - size / 2;
+            var response = Box.Move(move.X,move.Y,collision =>
+            {
+                return new CrossResponse(collision);
+            });
+            foreach(var hit in response.Hits)
+            {
+                OnCollision(hit);
+            }
+            LastOffset = Offset;
+        }
+
+        protected void OnCollision(IHit hit)
+        {
+            if (hit.Box.HasTag(CollisionTag.NoCollision))
+                return;
+            if (hit.Box.Data is Player player)
             {
                 var hitVelocity = (Offset - LastOffset);
                 hitVelocity.Normalize();
                 player.Hit(hitVelocity * 5, 40, 30, Damage);
             }
-            LastOffset = Offset;
         }
 
         public override void ShowDamage(double damage)
         {
-            //NOOP
+            new DamagePopup(World, Position + Offset, damage.ToString(), 30);
         }
     }
 }

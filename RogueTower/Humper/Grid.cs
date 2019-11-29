@@ -121,7 +121,7 @@
 		public void Update(IBox box, RectangleF from)
 		{
 			var fromCells = this.QueryCells(from.X, from.Y, from.Width, from.Height);
-			var removed = false;
+			var removed = !fromCells.Any();
 			foreach (var cell in fromCells)
 			{
 				removed |= cell.Remove(box);

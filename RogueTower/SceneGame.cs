@@ -394,6 +394,13 @@ namespace RogueTower
                 }
             }
 
+            /*foreach(var box in World.Find(World.Bounds))
+            {
+                Color debugColor = Color.Red;
+                if (box.Data is Enemy)
+                    debugColor = Color.Lime;
+                SpriteBatch.Draw(Pixel, box.Bounds.ToRectangle(), new Color(debugColor, 0.2f));
+            }*/
 
             SpriteBatch.End();
         }

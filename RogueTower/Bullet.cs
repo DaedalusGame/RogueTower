@@ -87,14 +87,14 @@ namespace RogueTower
 
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
-            if(collision.Hit.Box.HasTag(CollisionTag.NoCollision))
+            if(collision.Hit.Box.Data == Shooter)
                 return new CrossResponse(collision);
             return new TouchResponse(collision);
         }
 
         protected override void OnCollision(IHit hit)
         {
-            if (hit.Box.HasTag(CollisionTag.NoCollision) || hit.Box.Data == Shooter)
+            if (Destroyed || hit.Box.Data == Shooter)
                 return;
             new KnifeBounced(World,Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24);
             if (hit.Box.Data is Tile tile)
