@@ -69,6 +69,7 @@
     <Compile Include="Humper\Responses\SlideResponse.cs" />
     <Compile Include="Humper\Responses\TouchResponse.cs" />
     <Compile Include="Humper\World.cs" />
+    <Compile Include="Lerp.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />

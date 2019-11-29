@@ -87,7 +87,7 @@ namespace RogueTower
                 Tile pickWall = walls[select];
                 walls.RemoveAt(select);
 
-                float n = 1;
+                int n = 1;
 
                 float angle = random.NextFloat() * MathHelper.TwoPi;
                 float speed = 0.025f + random.NextFloat() * 0.05f;
@@ -104,10 +104,8 @@ namespace RogueTower
 
                 for (int e = 0; e < n; e++)
                 {
-                    var ballAndChain = new BallAndChain(angle + e * MathHelper.TwoPi / n, speed, length);
+                    var ballAndChain = new BallAndChain(World, new Vector2(pickWall.X * 16 + 8,pickWall.Y * 16 + 8), angle + e * MathHelper.TwoPi / n, speed, length);
                     ballAndChain.Swings = swings;
-                    ballAndChain.Create(World, pickWall.X * 16 + 8, pickWall.Y * 16 + 8);
-                    World.Objects.Add(ballAndChain);
                 }
             }
         }

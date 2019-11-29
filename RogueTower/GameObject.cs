@@ -8,6 +8,7 @@ namespace RogueTower
 {
     abstract class GameObject
     {
+        public GameWorld World;
         public bool CanDamage = false;
         public double Health;
         private float LastDelta;
@@ -15,6 +16,12 @@ namespace RogueTower
         {
             get;
             private set;
+        }
+
+        public GameObject(GameWorld world)
+        {
+            World = world;
+            World.Objects.Add(this);
         }
 
         public virtual void Destroy()
@@ -44,6 +51,8 @@ namespace RogueTower
 
         protected abstract void UpdateDiscrete();
 
+        public abstract void ShowDamage(double damage);
+
         public void HandleDamage(double damageIn)
         {
             if(CanDamage == false)
@@ -52,6 +61,7 @@ namespace RogueTower
             if(Health <= 0)
             {
             }
+            ShowDamage(damageIn);
         }
     }
 }

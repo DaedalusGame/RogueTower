@@ -12,12 +12,21 @@ namespace RogueTower
     {
         public float Frame;
 
+        public VisualEffect(GameWorld world) : base(world)
+        {
+        }
+
         protected override void UpdateDelta(float delta)
         {
             Frame += delta;
         }
 
         protected override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+
+        public override void ShowDamage(double damage)
         {
             //NOOP
         }
@@ -29,7 +38,7 @@ namespace RogueTower
         public bool Mirror;
         public float FrameEnd;
 
-        public SlashEffect(float angle, bool mirror, float time)
+        public SlashEffect(GameWorld world, float angle, bool mirror, float time) : base(world)
         {
             Angle = angle;
             Mirror = mirror;
@@ -56,7 +65,7 @@ namespace RogueTower
             Position += Velocity * delta;
         }
 
-        public Particle(Vector2 position, Vector2 velocity)
+        public Particle(GameWorld world, Vector2 position, Vector2 velocity) : base(world)
         {
             Position = position;
             Velocity = velocity;
@@ -68,7 +77,7 @@ namespace RogueTower
         public float FrameEnd;
         public float Rotation;
 
-        public KnifeBounced(Vector2 position, Vector2 velocity, float rotation, float time) : base(position, velocity)
+        public KnifeBounced(GameWorld world, Vector2 position, Vector2 velocity, float rotation, float time) : base(world, position, velocity)
         {
             Rotation = rotation;
             FrameEnd = time;
@@ -81,6 +90,27 @@ namespace RogueTower
                 Destroy();
             }
             Velocity += new Vector2(0, 0.4f);
+        }
+    }
+
+    class DamagePopup : Particle
+    {
+        public float FrameEnd;
+        public string Text;
+        public Vector2 Offset => new Vector2(0,-16) * (float)LerpHelper.QuadraticOut(0,1,Frame/FrameEnd);
+
+        public DamagePopup(GameWorld world, Vector2 position, string text, float time) : base(world, position, new Vector2(0,0f))
+        {
+            Text = text;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
         }
     }
 }

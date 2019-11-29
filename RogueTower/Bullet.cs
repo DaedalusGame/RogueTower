@@ -12,7 +12,6 @@ namespace RogueTower
 {
     abstract class Bullet : GameObject
     {
-        public GameWorld World;
         public IBox Box;
         public Vector2 Position
         {
@@ -30,15 +29,19 @@ namespace RogueTower
         public float LifeTime;
         public GameObject Shooter;
 
+        protected Bullet(GameWorld world, Vector2 position) : base(world)
+        {
+            Create(position.X, position.Y);
+        }
+
         public override void Destroy()
         {
             base.Destroy();
             World.Remove(Box);
         }
 
-        public void Create(GameWorld world, float x, float y)
+        public void Create(float x, float y)
         {
-            World = world;
             Box = World.Create(x-4, y-4, 8, 8);
             Box.Data = this;
             Box.AddTags(CollisionTag.NoCollision);
@@ -67,11 +70,21 @@ namespace RogueTower
             if (LifeTime <= 0)
                 Destroy();
         }
+
+        public override void ShowDamage(double damage)
+        {
+            //NOOP
+        }
     }
 
     class Knife : Bullet
     {
         double knifeDamage = 15.0;
+
+        public Knife(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
             if(collision.Hit.Box.HasTag(CollisionTag.NoCollision))
@@ -83,7 +96,7 @@ namespace RogueTower
         {
             if (hit.Box.HasTag(CollisionTag.NoCollision) || hit.Box.Data == Shooter)
                 return;
-            World.Objects.Add(new KnifeBounced(Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24));
+            new KnifeBounced(World,Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24);
             if (hit.Box.Data is Tile tile)
                 tile.HandleTileDamage(knifeDamage);
             if (hit.Box.Data is Enemy enemy)

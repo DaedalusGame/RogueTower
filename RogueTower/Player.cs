@@ -56,7 +56,6 @@ namespace RogueTower
             FinishSwing,
         }
 
-        public GameWorld World;
         public IBox Box;
         public Vector2 Position
         {
@@ -110,11 +109,14 @@ namespace RogueTower
 
         KeyboardState LastState;
         SceneGame SceneGame;
-        
 
-        public void Create(GameWorld world, float x, float y)
+        public Player(GameWorld world, Vector2 position) : base(world)
         {
-            World = world;
+            Create(position.X, position.Y);
+        }
+
+        public void Create(float x, float y)
+        {
             Box = World.Create(x, y, 12, 14);
             Box.Data = this;
         }
@@ -189,24 +191,23 @@ namespace RogueTower
                             switch(CurrentAction)
                             {
                                 case (Action.Slash):
-                                    SlashEffect = new SlashEffect(0, false, 4);
+                                    SlashEffect = new SlashEffect(World, 0, false, 4);
                                     PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
                                     break;
                                 case (Action.SlashUp):
-                                    SlashEffect = new SlashEffect(MathHelper.ToRadians(45), true, 4);
+                                    SlashEffect = new SlashEffect(World, MathHelper.ToRadians(45), true, 4);
                                     PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
                                     break;
                             }
                             
                             if (CurrentAction == Action.SlashKnife)
                             {
-                                Knife bullet = new Knife();
+                                
                                 Vector2 facing = GetFacingVector(Facing);
-                                bullet.Create(World, Position.X + facing.X * 5, Position.Y);
+                                Knife bullet = new Knife(World, Position + facing * 5);
                                 bullet.Velocity = facing * 8;
                                 bullet.LifeTime = 20;
                                 bullet.Shooter = this;
-                                World.Objects.Add(bullet);
                                 PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
                             }
                         }
@@ -626,6 +627,11 @@ namespace RogueTower
             DisableAirControl = true;
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            new DamagePopup(World, Position, damage.ToString(), 30);
         }
     }
 }

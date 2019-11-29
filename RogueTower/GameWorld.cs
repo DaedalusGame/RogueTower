@@ -56,8 +56,6 @@ namespace RogueTower
             if (Hitstop > 0)
                 globalDelta = 0;
 
-            Player.Update(globalDelta);
-
             foreach (GameObject obj in Objects.ToList())
             {
                 obj.Update(globalDelta);

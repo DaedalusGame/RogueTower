@@ -11,17 +11,19 @@ namespace RogueTower
 {
     abstract class Enemy : GameObject
     {
+        public Enemy(GameWorld world, Vector2 position) : base(world)
+        {
+            Create(position.X, position.Y);
+        }
 
-        public GameWorld World;
         public virtual Vector2 Position
         {
             get;
             set;
         }
 
-        public virtual void Create(GameWorld world, float x, float y)
+        public virtual void Create(float x, float y)
         {
-            World = world;
             Position = new Vector2(x, y);
         }
     }
@@ -38,14 +40,13 @@ namespace RogueTower
         public Vector2 Offset => OffsetUnit * Distance;
         public Vector2 LastOffset;
 
-        public BallAndChain(float angle, float speed, float distance)
+        public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world,position)
         {
             Angle = angle;
             Speed = speed;
             Distance = distance;
             CanDamage = false;
             Health = 240.00; //If we ever do want to make these destroyable, this is the value I propose for health.
-            
         }
 
         private Vector2 AngleToVector(float angle)
@@ -70,6 +71,11 @@ namespace RogueTower
                 player.Hit(hitVelocity * 5, 40, 30, Damage);
             }
             LastOffset = Offset;
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            //NOOP
         }
     }
 }

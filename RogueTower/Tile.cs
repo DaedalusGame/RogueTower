@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace RogueTower
 {
@@ -52,6 +53,7 @@ namespace RogueTower
                 PlaySFX(breakSound, 1.0f, 0.1f, 0.2f);
                 Replace(new EmptySpace(Map, X, Y));
             }
+            new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8), damagein.ToString(), 30);
         }
         public virtual RectangleF GetBoundingBox()
         {
