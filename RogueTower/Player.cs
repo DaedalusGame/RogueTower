@@ -530,7 +530,7 @@ namespace RogueTower
                 var tiles = World.FindTiles(Box.Bounds.Offset(0, 1)).Where(tile => tile is Spike);
                 if (tiles.Any())
                 {
-                    Hit(-GetFacingVector(Facing) * 1 + new Vector2(0, -2), 20, 50);
+                    Hit(-GetFacingVector(Facing) * 1 + new Vector2(0, -2), 20, 50, tiles.First().Damage);
                 }
             }
 
@@ -615,7 +615,7 @@ namespace RogueTower
             return (float)Math.Sqrt(2 * Gravity * height);
         }
 
-        public void Hit(Vector2 velocity, int hurttime, int invincibility)
+        public void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
             if (Invincibility > 0)
                 return;
@@ -625,6 +625,7 @@ namespace RogueTower
             CurrentAction = Action.Hit;
             DisableAirControl = true;
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            HandleDamage(damageIn);
         }
     }
 }

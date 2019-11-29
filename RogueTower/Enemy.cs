@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RogueTower.Game;
 
 namespace RogueTower
 {
     abstract class Enemy : GameObject
     {
-        double Health;
 
         public GameWorld World;
         public virtual Vector2 Position
@@ -31,6 +31,7 @@ namespace RogueTower
         public float Angle = 0;
         public float Speed = 0;
         public float Distance = 0;
+        public double Damage = 10;
 
         public Vector2 OffsetUnit => new Vector2((float)Math.Sin(Angle), -(float)Math.Cos(Angle));
         public Vector2 Offset => OffsetUnit * Distance;
@@ -41,6 +42,9 @@ namespace RogueTower
             Angle = angle;
             Speed = speed;
             Distance = distance;
+            CanDamage = false;
+            Health = 240.00; //If we ever do want to make these destroyable, this is the value I propose for health.
+            
         }
 
         protected override void UpdateDelta(float delta)
@@ -57,7 +61,7 @@ namespace RogueTower
             {
                 var hitVelocity = (Offset - LastOffset);
                 hitVelocity.Normalize();
-                player.Hit(hitVelocity * 5, 40, 30);
+                player.Hit(hitVelocity * 5, 40, 30, Damage);
             }
             LastOffset = Offset;
         }

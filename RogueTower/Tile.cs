@@ -17,6 +17,7 @@ namespace RogueTower
         public bool CanDamage = false;
         public float Friction = 1.0f;
         public double Health = 100.0;
+        public double Damage = 0;
         public virtual Sound breakSound => sfx_tile_break;
 
         public Tile(Map map, int x, int y, bool passable)
@@ -104,6 +105,7 @@ namespace RogueTower
     {
         public Spike(Map map, int x, int y) : base(map, x, y)
         {
+            Damage = 10.0;
         }
     }
 
