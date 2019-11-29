@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Humper.Base;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -102,6 +103,28 @@ namespace RogueTower
         public DamagePopup(GameWorld world, Vector2 position, string text, float time) : base(world, position, new Vector2(0,0f))
         {
             Text = text;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
+
+    class RectangleDebug : VisualEffect
+    {
+        public RectangleF Rectangle;
+        public Color Color;
+        public int FrameEnd;
+        
+        public RectangleDebug(GameWorld world, RectangleF rect, Color color, int time) : base(world)
+        {
+            Rectangle = rect;
+            Color = color;
             FrameEnd = time;
         }
 

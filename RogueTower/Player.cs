@@ -138,6 +138,7 @@ namespace RogueTower
 
         private void SwingWeapon(RectangleF hitmask, double damageIn = 0)
         {
+            new RectangleDebug(World, hitmask, Color.Lime, 20);
            var affectedHitboxes = World.FindBoxes(hitmask);
             foreach (Box Box in affectedHitboxes)
             {

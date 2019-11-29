@@ -388,6 +388,10 @@ namespace RogueTower
                     var height = FontUtil.GetStringHeight(fit);
                     DrawText(fit, damagePopup.Position + damagePopup.Offset - new Vector2(128,height) / 2, Alignment.Center, new TextParameters().SetColor(Color.White,Color.Black).SetConstraints(128, height + 64));
                 }
+                if(effect is RectangleDebug rectDebug)
+                {
+                    SpriteBatch.Draw(Pixel, rectDebug.Rectangle.ToRectangle(), rectDebug.Color);
+                }
             }
 
 
