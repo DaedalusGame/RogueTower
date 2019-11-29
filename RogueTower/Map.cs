@@ -92,13 +92,20 @@ namespace RogueTower
                 float angle = random.NextFloat() * MathHelper.TwoPi;
                 float speed = 0.025f + random.NextFloat() * 0.05f;
                 int length = random.Next(60) + 40;
+                bool swings = false;
 
+                if (random.NextDouble() < 0.5)
+                    swings = true;
                 if (random.NextDouble() < 0.3)
-                    n = random.Next(3) + 1;
+                {
+                    n = random.Next(3) + 2;
+                    swings = false;
+                }
 
                 for (int e = 0; e < n; e++)
                 {
                     var ballAndChain = new BallAndChain(angle + e * MathHelper.TwoPi / n, speed, length);
+                    ballAndChain.Swings = swings;
                     ballAndChain.Create(World, pickWall.X * 16 + 8, pickWall.Y * 16 + 8);
                     World.Objects.Add(ballAndChain);
                 }

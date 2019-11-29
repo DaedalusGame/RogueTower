@@ -31,8 +31,9 @@ namespace RogueTower
         public float Angle = 0;
         public float Speed = 0;
         public float Distance = 0;
+        public bool Swings = false;
 
-        public Vector2 OffsetUnit => new Vector2((float)Math.Sin(Angle), -(float)Math.Cos(Angle));
+        public Vector2 OffsetUnit => Swings ? AngleToVector(MathHelper.Pi + MathHelper.PiOver2 * (float)Math.Sin(Angle / MathHelper.PiOver2)) : AngleToVector(Angle);
         public Vector2 Offset => OffsetUnit * Distance;
         public Vector2 LastOffset;
 
@@ -41,6 +42,11 @@ namespace RogueTower
             Angle = angle;
             Speed = speed;
             Distance = distance;
+        }
+
+        private Vector2 AngleToVector(float angle)
+        {
+            return new Vector2((float)Math.Sin(angle), -(float)Math.Cos(angle));
         }
 
         protected override void UpdateDelta(float delta)
@@ -53,7 +59,7 @@ namespace RogueTower
             //Damage here
             Vector2 size = new Vector2(16, 16);
             var hitPlayers = World.FindBoxes(new RectangleF(Position + Offset - size / 2, size)).Where(box => box.Data is Player).Select(box => box.Data);
-            foreach(Player player in hitPlayers)
+            foreach (Player player in hitPlayers)
             {
                 var hitVelocity = (Offset - LastOffset);
                 hitVelocity.Normalize();
