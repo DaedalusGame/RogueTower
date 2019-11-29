@@ -86,6 +86,8 @@ namespace RogueTower
             World.Objects.Add(new KnifeBounced(Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24));
             if (hit.Box.Data is Tile tile)
                 tile.HandleTileDamage(knifeDamage);
+            if (hit.Box.Data is Enemy enemy)
+                enemy.HandleDamage(knifeDamage);
             PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
             Destroy();
         }

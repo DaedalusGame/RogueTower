@@ -292,6 +292,8 @@ namespace RogueTower
             World = new GameWorld(50, 200);
 
             World.Player = new Player();
+            World.Player.Health = 100.0;
+            World.Player.CanDamage = true;
             World.Player.Create(World, 50, World.Height - 50);
             World.Player.SetControl(this);
         }

@@ -25,6 +25,9 @@
 #begin sounds/sfx/icetile_swordbreak.wav
 /copy:sounds/sfx/icetile_swordbreak.wav
 
+#begin sounds/sfx/impact_blunt.wav
+/copy:sounds/sfx/impact_blunt.wav
+
 #begin sounds/sfx/jump_sfx.wav
 /copy:sounds/sfx/jump_sfx.wav
 
