@@ -366,6 +366,7 @@ namespace RogueTower
             }
 
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
+            var crit = SpriteLoader.Instance.AddSprite("content/crit");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
@@ -380,7 +381,11 @@ namespace RogueTower
                 {
                     DrawSpriteExt(knife, 0, knifeBounced.Position + knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
                 }
-                if(effect is DamagePopup damagePopup)
+                if (effect is ParryEffect parryEffect)
+                {
+                    DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position + crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
+                }
+                if (effect is DamagePopup damagePopup)
                 {
                     var calcParams = new TextParameters().SetColor(Color.White, Color.Black).SetConstraints(128, 64);
                     string fit = FontUtil.FitString(Game.ConvertToSmallPixelText(damagePopup.Text), calcParams);
@@ -608,6 +613,11 @@ namespace RogueTower
                 SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, 0.5f, slashMirror, 0);
                 SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd))), Color.White, slashAngle, slash.Middle, 0.7f, slashMirror, 0);
             }
+        }
+
+        private int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
+        {
+            return (int)MathHelper.Clamp(sprite.SubImageCount * frame / frameEnd, 0, sprite.SubImageCount - 1);
         }
 
         public void DrawPlayerState(PlayerState state, Vector2 position, SpriteEffects mirror)

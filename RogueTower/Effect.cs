@@ -73,6 +73,31 @@ namespace RogueTower
         }
     }
 
+    class ParryEffect : Particle
+    {
+        public float Angle;
+        public float FrameEnd;
+
+        public ParryEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, Vector2.Zero)
+        {
+            Angle = angle;
+            FrameEnd = time;
+        }
+
+        public override void Update(float delta)
+        {
+            base.Update(1.0f);
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
+
     class KnifeBounced : Particle
     {
         public float FrameEnd;

@@ -83,6 +83,8 @@ namespace RogueTower
         public bool Walking;
         public float GroundFriction = 1.0f;
 
+        public int ExtraJumps = 0;
+
         public HorizontalFacing Facing;
         public Action CurrentAction;
 
@@ -136,9 +138,27 @@ namespace RogueTower
             return movement;
         }
 
+        private void Parry(RectangleF hitmask)
+        {
+            //new RectangleDebug(World, hitmask, Color.Orange, 20);
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is Enemy enemy)
+                {
+                    PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
+                    World.Hitstop = 30;
+                    Invincibility = 30;
+                    Velocity.Y -= GetJumpVelocity(60);
+                    DisableJumpControl = true;
+                    new ParryEffect(World, Box.Bounds.Center, 0, 10);
+                }
+            }
+        }
+
         private void SwingWeapon(RectangleF hitmask, double damageIn = 0)
         {
-            new RectangleDebug(World, hitmask, Color.Lime, 20);
+            //new RectangleDebug(World, hitmask, Color.Lime, 20);
            var affectedHitboxes = World.FindBoxes(hitmask);
             foreach (Box Box in affectedHitboxes)
             {
@@ -151,6 +171,8 @@ namespace RogueTower
                     tile.HandleTileDamage(damageIn);
                 }
             }
+
+            
         }
         public override void Update(float delta)
         {
@@ -203,35 +225,7 @@ namespace RogueTower
                         SlashUpTime -= delta;
                         if (SlashUpTime < 0)
                         {
-                            var facingLength = 14;
-                            Vector2 playerFacing = Position + GetFacingVector(Facing) * facingLength;
-                            Vector2 weaponSize = new Vector2((facingLength / 2), facingLength * 2);
-                            RectangleF swordMask = new RectangleF(playerFacing - weaponSize / 2, weaponSize);
-                            SlashAction = SwordAction.DownSwing;
-                            switch(CurrentAction)
-                            {
-                                case (Action.Slash):
-                                    SlashEffect = new SlashEffect(World, 0, false, 4);
-                                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
-                                    SwingWeapon(swordMask, 10);
-                                    break;
-                                case (Action.SlashUp):
-                                    SlashEffect = new SlashEffect(World, MathHelper.ToRadians(45), true, 4);
-                                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
-                                    SwingWeapon(swordMask, 10);
-                                    break;
-                            }
-                            
-                            if (CurrentAction == Action.SlashKnife)
-                            {
-                                
-                                Vector2 facing = GetFacingVector(Facing);
-                                Knife bullet = new Knife(World, Position + facing * 5);
-                                bullet.Velocity = facing * 8;
-                                bullet.LifeTime = 20;
-                                bullet.Shooter = this;
-                                PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
-                            }
+                            DownSwing();
                         }
                         break;
                     case (SwordAction.DownSwing):
@@ -307,11 +301,6 @@ namespace RogueTower
                 IsMovingVertically = false;
             }
 
-            if (move.Hits.Any(c => c.Box.Data is Enemy))
-            {
-
-            }
-
             if (IsMovingVertically)
             {
                 if (hits.Any((c) => c.Normal.Y < 0))
@@ -350,6 +339,44 @@ namespace RogueTower
             if (found.Any(x => x != Box && !x.HasTag(CollisionTag.NoCollision) && x.Bounds.Intersects(Box.Bounds)))
             {
                 Box.Teleport(move.Origin.X, move.Origin.Y);
+            }
+        }
+
+        private void DownSwing()
+        {
+            var facingLength = 14;
+            if (CurrentAction == Action.Slash || CurrentAction == Action.SlashUp)
+            {
+                Vector2 facing = GetFacingVector(Facing);
+                Vector2 playerFacing = Position + facing * facingLength;
+                Vector2 weaponSize = new Vector2((facingLength / 2), facingLength * 2);
+                RectangleF swordMask = new RectangleF(playerFacing - weaponSize / 2, weaponSize);
+                Vector2 parrySize = new Vector2(22, 22);
+                SwingWeapon(swordMask, 10);
+                Parry(new RectangleF(Position + facing * 8 - parrySize / 2, parrySize));
+            }
+            SlashAction = SwordAction.DownSwing;
+            switch (CurrentAction)
+            {
+                case (Action.Slash):
+                    SlashEffect = new SlashEffect(World, 0, false, 4);
+                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                    break;
+                case (Action.SlashUp):
+                    SlashEffect = new SlashEffect(World, MathHelper.ToRadians(45), true, 4);
+                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+                    break;
+            }
+
+            if (CurrentAction == Action.SlashKnife)
+            {
+
+                Vector2 facing = GetFacingVector(Facing);
+                Knife bullet = new Knife(World, Position + facing * 5);
+                bullet.Velocity = facing * 8;
+                bullet.LifeTime = 20;
+                bullet.Shooter = this;
+                PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
             }
         }
 
@@ -502,8 +529,10 @@ namespace RogueTower
                     Velocity.X = Math.Max(Velocity.X - acceleration, -adjustedSpeedLimit);
                 if (rightKey && Velocity.X < adjustedSpeedLimit)
                     Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
-                if (jumpKey && OnGround)
+                if (jumpKey && (ExtraJumps > 0 || OnGround))
                 {
+                    if (!OnGround)
+                        ExtraJumps--;
                     Velocity.Y -= GetJumpVelocity(60);
                     PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
                 }
@@ -647,6 +676,12 @@ namespace RogueTower
 
         public void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
+            if ((CurrentAction == Action.Slash || CurrentAction == Action.SlashUp) && SlashAction == SwordAction.UpSwing)
+            {
+                //Parry
+                DownSwing();
+                return;
+            }
             if (Invincibility > 0)
                 return;
             Velocity = velocity;
