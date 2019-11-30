@@ -80,6 +80,7 @@
     <Compile Include="SpriteLoader.cs" />
     <Compile Include="Tile.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="Weapon.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ChaiFoxes.FMODAudio.Desktop, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
