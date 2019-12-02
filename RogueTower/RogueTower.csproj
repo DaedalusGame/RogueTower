@@ -41,6 +41,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TileBG.cs" />
     <Compile Include="Action.cs" />
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Humper\World.cs" />
     <Compile Include="Lerp.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="MapGenerator.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,6 +84,7 @@
     <Compile Include="Tile.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Weapon.cs" />
+    <Compile Include="WeightedList.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ChaiFoxes.FMODAudio.Desktop, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -94,6 +97,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\bg_brick1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bg_brick2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bg_brick3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\breaks.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
