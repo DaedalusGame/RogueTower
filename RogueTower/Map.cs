@@ -13,6 +13,7 @@ namespace RogueTower
     {
         public int Width, Height;
         public Tile[,] Tiles;
+        public TileBG[,] Background;
 
         public GameWorld World;
         public List<IBox> CollisionTiles = new List<IBox>();
@@ -29,8 +30,14 @@ namespace RogueTower
             Width = width;
             Height = height;
             Tiles = new Tile[Width, Height];
+            Background = new TileBG[Width, Height];
+
+            MapGenerator generator = new MapGenerator(10, Height / 8);
+
+            generator.Generate();
+
             Random random = new Random();
-            for (int y = 0; y < Height; y++)
+            /*for (int y = 0; y < Height; y++)
             {
                 for (int x = 0; x < Width; x++)
                 {
@@ -47,7 +54,9 @@ namespace RogueTower
                     else
                         Tiles[x, y] = new EmptySpace(this, x, y);
                 }
-            }
+            }*/
+
+            generator.Build(this);
 
             for (int i = 0; i < 40; i++)
             {
@@ -63,24 +72,18 @@ namespace RogueTower
                 }
             }
 
-            for (int i = 0; i < 20; i++)
+            /*for (int i = 0; i < 20; i++)
             {
                 int ladderheight = random.Next(15) + 3;
                 int ladderx = 8 + random.Next(Width - 16);
-                int laddery = random.Next(Height - ladderheight) ;
+                int laddery = random.Next(Height - ladderheight);
                 HorizontalFacing ladderfacing = HorizontalFacing.Left;
-                if(random.NextDouble() < 0.5)
+                if (random.NextDouble() < 0.5)
                     ladderfacing = HorizontalFacing.Right;
+                BuildLadder(ladderx, laddery, ladderheight, ladderfacing);
+            }*/
 
-                for (int y = 0; y < ladderheight; y++)
-                {
-                    int facingOffset = (ladderfacing == HorizontalFacing.Right ? 1 : -1);
-                    Tiles[ladderx, laddery + y] = new Ladder(this, ladderx, laddery + y, ladderfacing);
-                    Tiles[ladderx + facingOffset, laddery + y] = new Wall(this, ladderx + facingOffset, laddery + y);
-                }
-            }
-
-            List<Tile> walls = EnumerateTiles().Where(tile => tile is Wall).ToList();
+            List<Tile> walls = EnumerateTiles().Where(tile => tile is Wall && tile.GetAdjacentNeighbors().Any(x => x.Passable)).ToList();
             for(int i = 0; i < 70; i++)
             {
                 int select = random.Next(walls.Count);
@@ -108,6 +111,29 @@ namespace RogueTower
                     ballAndChain.Swings = swings;
                 }
             }
+        }
+
+        public void BuildLadder(int ladderx, int laddery, int ladderheight, HorizontalFacing ladderfacing)
+        {
+            for (int y = 0; y < ladderheight; y++)
+            {
+                int facingOffset = (ladderfacing == HorizontalFacing.Right ? 1 : -1);
+                Tiles[ladderx, laddery + y] = new Ladder(this, ladderx, laddery + y, ladderfacing);
+                Tiles[ladderx + facingOffset, laddery + y] = new Wall(this, ladderx + facingOffset, laddery + y);
+            }
+        }
+
+        public Tile GetTile(int x, int y)
+        {
+            if (InMap(x, y))
+                return Tiles[x, y];
+            else
+                return new Wall(this, x, y);
+        }
+
+        public bool InMap(int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < Width && y < Height;
         }
 
         public IEnumerable<Tile> EnumerateTiles()
@@ -143,6 +169,7 @@ namespace RogueTower
             {
                 World.Remove(box);
             }
+            CollisionTiles.Clear();
 
             for (int y = 0; y < Height; y++)
             {

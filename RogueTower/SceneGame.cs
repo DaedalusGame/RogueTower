@@ -275,7 +275,7 @@ namespace RogueTower
         Matrix WorldTransform => CreateViewMatrix();
 
         Shear DepthShear = Shear.All;
-
+        
         bool GameSpeedToggle = false;
 
         private Matrix CreateViewMatrix()
@@ -289,7 +289,7 @@ namespace RogueTower
 
         public SceneGame(Game game) : base(game)
         {
-            World = new GameWorld(50, 200);
+            World = new GameWorld(100, 800);
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
             World.Player.Health = 100.0;
@@ -338,6 +338,7 @@ namespace RogueTower
 
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.LightSkyBlue);
 
+            DrawMapBackground(World.Map);
             DepthShear = new Shear(double.NegativeInfinity, 0.75);
             DrawPlayer(World.Player);
             DepthShear = Shear.All;
@@ -410,9 +411,37 @@ namespace RogueTower
             SpriteBatch.End();
         }
 
+        private void DrawMapBackground(Map map)
+        {
+            var wall = SpriteLoader.Instance.AddSprite("content/bg_brick1");
+
+            Rectangle drawZone = GetDrawZone();
+            int drawMid = (int)(Camera.Y / 16);
+
+            for (int x = 0; x < map.Width; x++)
+            {
+                for (int y = MathHelper.Clamp(drawMid - 20, 0, map.Height - 1); y <= MathHelper.Clamp(drawMid + 20, 0, map.Height - 1); y++)
+                {
+                    Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
+
+                    if (!drawZone.Contains(truePos))
+                        continue;
+
+                    TileBG tile = map.Background[x, y];
+
+                    if(tile == TileBG.Wall)
+                    {
+                        SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    }
+                }
+            }
+        }
+
         private void DrawMap(Map map)
         {
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
+            var wallTop = SpriteLoader.Instance.AddSprite("content/wall_top");
+            var wallBottom = SpriteLoader.Instance.AddSprite("content/wall_bottom");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
@@ -420,10 +449,11 @@ namespace RogueTower
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
 
             Rectangle drawZone = GetDrawZone();
+            int drawMid = (int)(Camera.Y / 16);
 
             for (int x = 0; x < map.Width; x++)
             {
-                for (int y = 0; y < map.Height; y++)
+                for (int y = MathHelper.Clamp(drawMid-40, 0,map.Height-1); y <= MathHelper.Clamp(drawMid + 40, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 

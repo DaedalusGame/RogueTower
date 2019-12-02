@@ -65,6 +65,16 @@ namespace RogueTower
             return false;
         }
 
+        public Tile GetNeighbor(int dx, int dy)
+        {
+            return Map.GetTile(X + dx, Y + dy);
+        }
+
+        public IEnumerable<Tile> GetAdjacentNeighbors()
+        {
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1) }.Shuffle();
+        }
+
         //Copy values over here
         public virtual void CopyTo(Tile tile)
         {
