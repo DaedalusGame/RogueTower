@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ChaiFoxes.FMODAudio;
 using static RogueTower.Game;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -48,14 +49,6 @@ namespace RogueTower
             Hit,
         }
 
-        public enum SwordAction
-        {
-            StartSwing,
-            UpSwing,
-            DownSwing,
-            FinishSwing,
-        }
-
         public IBox Box;
         public Vector2 Position
         {
@@ -72,6 +65,7 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
+        public Weapon PlayerWeapon = new Sword(15, 14, new Vector2(14 / 2, 14 *2));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
@@ -88,8 +82,6 @@ namespace RogueTower
         public HorizontalFacing Facing;
         public Action CurrentAction;
 
-        public float WalkFrame;
-
         public float ClimbFrame;
 
         public bool DisableJumpControl; //Disables variable jump height for one jump
@@ -98,11 +90,6 @@ namespace RogueTower
         public int Invincibility = 0;
         public int HurtTime = 0;
 
-        public SwordAction SlashAction;
-        public float SlashStartTime;
-        public float SlashUpTime;
-        public float SlashDownTime;
-        public float SlashFinishTime;
         public SlashEffect SlashEffect;
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;
@@ -138,7 +125,7 @@ namespace RogueTower
             return movement;
         }
 
-        private void Parry(RectangleF hitmask)
+        public void Parry(RectangleF hitmask)
         {
             //new RectangleDebug(World, hitmask, Color.Orange, 20);
             var affectedHitboxes = World.FindBoxes(hitmask);
@@ -156,7 +143,7 @@ namespace RogueTower
             }
         }
 
-        private void SwingWeapon(RectangleF hitmask, double damageIn = 0)
+        public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
         {
             //new RectangleDebug(World, hitmask, Color.Lime, 20);
            var affectedHitboxes = World.FindBoxes(hitmask);
@@ -171,7 +158,6 @@ namespace RogueTower
                     tile.HandleTileDamage(damageIn);
                 }
             }
-
             
         }
         public override void Update(float delta)
@@ -214,29 +200,6 @@ namespace RogueTower
             }
             else if ((CurrentAction == Action.Slash || CurrentAction == Action.SlashUp || CurrentAction == Action.SlashKnife) && SlashFinishTime > 0)
             {
-                switch (SlashAction)
-                {
-                    case (SwordAction.StartSwing):
-                        SlashStartTime -= delta;
-                        if (SlashStartTime < 0)
-                            SlashAction = SwordAction.UpSwing;
-                        break;
-                    case (SwordAction.UpSwing):
-                        SlashUpTime -= delta;
-                        if (SlashUpTime < 0)
-                        {
-                            DownSwing();
-                        }
-                        break;
-                    case (SwordAction.DownSwing):
-                        SlashDownTime -= delta;
-                        if (SlashDownTime < 0)
-                            SlashAction = SwordAction.FinishSwing;
-                        break;
-                    case (SwordAction.FinishSwing):
-                        SlashFinishTime -= delta;
-                        break;
-                }
             }
             else if (OnGround)
             {
@@ -262,16 +225,6 @@ namespace RogueTower
 
             if (CurrentAction == Action.Move && Walking)
             {
-                if (Velocity.X > 0)
-                {
-                    Facing = HorizontalFacing.Right;
-                }
-                else if (Velocity.X < 0)
-                {
-                    Facing = HorizontalFacing.Left;
-                }
-
-                WalkFrame += Math.Abs(Velocity.X * delta * 0.125f) / (float)Math.Sqrt(GroundFriction);
             }
 
             if ((CurrentAction == Action.JumpUp || CurrentAction == Action.JumpDown) && Walking)
@@ -347,24 +300,14 @@ namespace RogueTower
             var facingLength = 14;
             if (CurrentAction == Action.Slash || CurrentAction == Action.SlashUp)
             {
-                Vector2 facing = GetFacingVector(Facing);
-                Vector2 playerFacing = Position + facing * facingLength;
-                Vector2 weaponSize = new Vector2((facingLength / 2), facingLength * 2);
-                RectangleF swordMask = new RectangleF(playerFacing - weaponSize / 2, weaponSize);
-                Vector2 parrySize = new Vector2(22, 22);
-                SwingWeapon(swordMask, 10);
-                Parry(new RectangleF(Position + facing * 8 - parrySize / 2, parrySize));
             }
             SlashAction = SwordAction.DownSwing;
             switch (CurrentAction)
             {
                 case (Action.Slash):
-                    SlashEffect = new SlashEffect(World, 0, false, 4);
-                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+
                     break;
                 case (Action.SlashUp):
-                    SlashEffect = new SlashEffect(World, MathHelper.ToRadians(45), true, 4);
-                    PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
                     break;
             }
 
@@ -562,24 +505,7 @@ namespace RogueTower
             }
             else if (CurrentAction == Action.SlashDownward)
             {
-                if (SlashStartTime <= 0)
-                    Velocity.Y = 5;
-                if (OnGround)
-                {
-                    Velocity.Y = -4;
-                    OnGround = false;
-                    World.Hitstop = 4;
-                    PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
-                    CurrentAction = Action.JumpUp;
-                    DisableJumpControl = true;
-                    //SlashAction = SwordAction.FinishSwing;
-                    foreach (var tile in World.FindTiles(Box.Bounds.Offset(0, 1)))
-                    {
-                        tile.HandleTileDamage(SwordSwingDownDamage);
-                    }
-                }
-                if (SlashAction == SwordAction.FinishSwing && SlashFinishTime <= 0)
-                    CurrentAction = Action.Idle;
+
             }
             else if (Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
@@ -610,19 +536,6 @@ namespace RogueTower
                     else
                         CurrentAction = Action.JumpDown;
                 }
-            }
-        }
-
-        private Vector2 GetFacingVector(HorizontalFacing facing)
-        {
-            switch(facing)
-            {
-                default:
-                    return Vector2.Zero;
-                case HorizontalFacing.Left:
-                    return new Vector2(-1,0);
-                case HorizontalFacing.Right:
-                    return new Vector2(1, 0);
             }
         }
 

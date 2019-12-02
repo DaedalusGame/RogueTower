@@ -9,6 +9,7 @@ namespace RogueTower
 {
     abstract class Weapon
     {
+        public bool CanParry = false;
         public double Damage;
         public float WeaponSizeMult = 0;
         public Vector2 WeaponSize;
@@ -26,6 +27,7 @@ namespace RogueTower
     {
         public Sword(Double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize)
         {
+            CanParry = true;
         }
     }
 

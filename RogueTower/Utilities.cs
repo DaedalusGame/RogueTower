@@ -59,5 +59,18 @@ namespace RogueTower
         {
             return MathHelper.Pi - angle;
         }
+
+        public static Vector2 GetFacingVector(HorizontalFacing facing)
+        {
+            switch (facing)
+            {
+                default:
+                    return Vector2.Zero;
+                case HorizontalFacing.Left:
+                    return new Vector2(-1, 0);
+                case HorizontalFacing.Right:
+                    return new Vector2(1, 0);
+            }
+        }
     }
 }

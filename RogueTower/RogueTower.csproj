@@ -41,6 +41,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Action.cs" />
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
     <Compile Include="Effect.cs" />
