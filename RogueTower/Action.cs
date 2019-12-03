@@ -590,7 +590,6 @@ namespace RogueTower
                 Player.World.Hitstop = 4;
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
                 Player.CurrentAction = new ActionJump(Player, true, false);
-                Player.DisableJumpControl = true;
                 PlungeFinished = true;
                 foreach (var tile in Player.World.FindTiles(Player.Box.Bounds.Offset(0, 1)))
                 {

@@ -106,7 +106,6 @@ namespace RogueTower
         public bool InAir => !OnGround;
         public bool OnWall;
         public bool OnCeiling;
-        public bool Walking;
         public float GroundFriction = 1.0f;
         public float AppliedFriction;
 
@@ -115,11 +114,7 @@ namespace RogueTower
         public HorizontalFacing Facing;
         public Action CurrentAction;
 
-        public bool DisableJumpControl; //Disables variable jump height for one jump
-        public bool DisableAirControl; //Disable aerial friction
-
         public int Invincibility = 0;
-        public int HurtTime = 0;
 
         public SlashEffect SlashEffect;
 
@@ -182,7 +177,7 @@ namespace RogueTower
                     World.Hitstop = 30;
                     Invincibility = 30;
                     Velocity.Y -= GetJumpVelocity(60);
-                    DisableJumpControl = true;
+                    CurrentAction = new ActionJump(this, true, false);
                     new ParryEffect(World, Box.Bounds.Center, 0, 10);
                 }
             }
@@ -430,7 +425,6 @@ namespace RogueTower
             Velocity = velocity;
             Invincibility = invincibility;
             CurrentAction = new ActionHit(this, hurttime);
-            DisableAirControl = true;
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
         }
