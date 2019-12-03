@@ -189,11 +189,9 @@ namespace RogueTower
         }
 
         public static BodyState Stand => new BodyState("walk", 0, Vector2.Zero);
-        public static BodyState Walk(Player player) => Walk((int)player.WalkFrame);
         public static BodyState Walk(int frame) => new BodyState("walk", frame, Vector2.Zero);
         public static BodyState Kneel => new BodyState("kneel", 0, new Vector2(0, 1));
         public static BodyState Hit => new BodyState("hit", 0, Vector2.Zero);
-        public static BodyState Crouch(Player player) => Crouch((int)player.WalkFrame);
         public static BodyState Crouch(int frame) => new BodyState("crouch", frame, new Vector2(1, 2));
         public static BodyState Climb => new BodyState("climb", 0, new Vector2(4, 0));
     }
@@ -221,7 +219,7 @@ namespace RogueTower
         public static HeadState Down => new HeadState("down", 0);
     }
 
-    struct PlayerState
+    class PlayerState
     {
         public HeadState Head;
         public BodyState Body;
@@ -501,12 +499,6 @@ namespace RogueTower
         {
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
 
-            var head = HeadState.Forward;
-            var body = BodyState.Stand;
-            var leftArm = ArmState.Shield;
-            var rightArm = ArmState.Neutral;
-            var weapon = WeaponState.Sword(MathHelper.ToRadians(0));
-
             SpriteEffects mirror = SpriteEffects.None;
 
             if (player.Facing == HorizontalFacing.Left)
@@ -514,125 +506,21 @@ namespace RogueTower
 
             Vector2 position = player.Position;
 
-            switch (player.CurrentAction)
-            {
-                case (Player.Action.Move):
-                    body = BodyState.Walk(player);
-                    break;
-                case (Player.Action.WallClimb):
-                    body = BodyState.Climb;
-                    leftArm = ArmState.Angular(11 + Util.PositiveMod(3 + (int)-player.ClimbFrame, 7));
-                    rightArm = ArmState.Angular(11 + Util.PositiveMod((int)-player.ClimbFrame, 7));
-                    weapon = WeaponState.None;
-                    break;
-                case (Player.Action.JumpUp):
-                    if (player.Velocity.Y < -0.5)
-                        body = BodyState.Walk(1);
-                    else
-                        body = BodyState.Walk(0);
-                    //leftArm = rightArm = ArmState.Up;
-                    break;
-                case (Player.Action.JumpDown):
-                    body = BodyState.Walk(2);
-                    //leftArm = rightArm = ArmState.Up;
-                    break;
-                case (Player.Action.Slash):
-                    if (player.InAir)
-                        body = BodyState.Walk(1);
-                    switch (player.SlashAction)
-                    {
-                        case (Player.SwordAction.StartSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(-90 - 22));
-                            rightArm = ArmState.Angular(11);
-                            break;
-                        case (Player.SwordAction.UpSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(-90 - 45));
-                            rightArm = ArmState.Angular(11);
-                            break;
-                        case (Player.SwordAction.DownSwing):
-                            //weapon = WeaponState.Sword(MathHelper.ToRadians(22));
-                            //rightArm = ArmState.Angular(2);
-                            body = BodyState.Crouch(1);
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(45 + 22));
-                            rightArm = ArmState.Angular(4);
-                            break;
-                        case (Player.SwordAction.FinishSwing):
-                            //weapon = WeaponState.Sword(MathHelper.ToRadians(22));
-                            //rightArm = ArmState.Angular(3);
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(45 + 22));
-                            rightArm = ArmState.Angular(4);
-                            break;
-                    }
-                    break;
-                case (Player.Action.SlashUp):
-                    if (player.InAir)
-                        body = BodyState.Walk(1);
-                    switch (player.SlashAction)
-                    {
-                        case (Player.SwordAction.StartSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(100));
-                            body = BodyState.Crouch(1);
-                            rightArm = ArmState.Angular(6);
-                            break;
-                        case (Player.SwordAction.UpSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(125));
-                            body = BodyState.Crouch(1);
-                            rightArm = ArmState.Angular(6);
-                            break;
-                        case (Player.SwordAction.DownSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(-75));
-                            rightArm = ArmState.Angular(11);
-                            break;
-                        case (Player.SwordAction.FinishSwing):
-                            weapon = WeaponState.Sword(MathHelper.ToRadians(-75));
-                            rightArm = ArmState.Angular(11);
-                            break;
-                    }
-                    break;
-                case (Player.Action.SlashKnife):
-                    switch (player.SlashAction)
-                    {
-                        case (Player.SwordAction.StartSwing):
-                            rightArm = ArmState.Angular(5);
-                            weapon = WeaponState.Knife(MathHelper.ToRadians(90 + 45));
-                            break;
-                        case (Player.SwordAction.UpSwing):
-                            rightArm = ArmState.Angular(6);
-                            weapon = WeaponState.Knife(MathHelper.ToRadians(90 + 45 + 22));
-                            break;
-                        case (Player.SwordAction.DownSwing):
-                            body = BodyState.Crouch(1);
-                            rightArm = ArmState.Angular(0);
-                            //weapon = WeaponState.Sword(MathHelper.ToRadians(0));
-                            weapon = WeaponState.None;
-                            break;
-                        case (Player.SwordAction.FinishSwing):
-                            body = BodyState.Crouch(2);
-                            rightArm = ArmState.Angular(0);
-                            //weapon = WeaponState.Sword(MathHelper.ToRadians(0));
-                            weapon = WeaponState.None;
-                            break;
-                    }
-                    break;
-                case (Player.Action.SlashDownward):
-                    body = BodyState.Crouch(1);
-                    leftArm = ArmState.Angular(4);
-                    rightArm = ArmState.Angular(2);
-                    weapon = WeaponState.Sword(MathHelper.ToRadians(90));
-                    break;
-                case (Player.Action.Hit):
-                    head = HeadState.Down;
-                    body = BodyState.Hit;
-                    rightArm = ArmState.Angular(3);
-                    break;
-            }
+            PlayerState state = new PlayerState(
+                HeadState.Forward,
+                BodyState.Stand,
+                ArmState.Shield,
+                ArmState.Neutral,
+                WeaponState.Sword(MathHelper.ToRadians(0))
+            );
+            player.CurrentAction.GetPose(state);
 
-            if (body == BodyState.Kneel)
+            if (state.Body == BodyState.Kneel)
             {
                 position += new Vector2(0, 1);
             }
 
-            DrawPlayerState(new PlayerState(head, body, leftArm, rightArm, weapon), position - new Vector2(8, 8), mirror);
+            DrawPlayerState(state, position - new Vector2(8, 8), mirror);
 
             if (player.SlashEffect is SlashEffect slashEffect)
             {
