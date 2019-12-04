@@ -29,13 +29,21 @@ namespace RogueTower
 
         abstract public void UpdateDiscreet();
 
-        protected void HandleJumpInput()
+        protected bool HandleJumpInput()
         {
             if (Player.Controls.Jump)
             {
                 Player.Velocity.Y -= Player.GetJumpVelocity(60);
                 PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
+                return true;
             }
+            return false;
+        }
+
+        protected void HandleExtraJump()
+        {
+            if (Player.ExtraJumps > 0 && HandleJumpInput())
+                Player.ExtraJumps--;
         }
 
         protected bool HandleMoveInput()
@@ -177,7 +185,7 @@ namespace RogueTower
             Control = HandleMoveInput();
             if (AllowJumpControl && !Player.Controls.JumpHeld && Player.Velocity.Y < 0)
                 Player.Velocity.Y *= 0.7f;
-            //TODO: Extra jumps
+            HandleExtraJump();
             HandleSlashInput();
         }
 
@@ -338,6 +346,7 @@ namespace RogueTower
         public float SlashDownTime;
         public float SlashFinishTime;
 
+        public bool Parried;
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing || SlashAction == SwingAction.StartSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing || SlashAction == SwingAction.FinishSwing;
 
@@ -368,20 +377,20 @@ namespace RogueTower
                 default:
                 case (SwingAction.StartSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(-90 - 22));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 22));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(-90 - 45));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
                     break;
             }
             
@@ -398,6 +407,8 @@ namespace RogueTower
                 else
                     Player.SlashUp();
             }
+            if (Parried)
+                HandleExtraJump();
         }
 
         public override void UpdateDelta(float delta)
@@ -412,9 +423,7 @@ namespace RogueTower
                 case (SwingAction.UpSwing):
                     SlashUpTime -= delta;
                     if (SlashUpTime < 0)
-                    {
                         Swing();
-                    }
                     break;
                 case (SwingAction.DownSwing):
                     SlashDownTime -= delta;
@@ -434,13 +443,15 @@ namespace RogueTower
             Vector2 Position = Player.Position;
             HorizontalFacing Facing = Player.Facing;
             Vector2 FacingVector = GetFacingVector(Facing);
-            Vector2 PlayerWeaponOffset = Position + FacingVector * Player.PlayerWeapon.WeaponSizeMult;
-            Vector2 WeaponSize = Player.PlayerWeapon.WeaponSize;
+            Vector2 PlayerWeaponOffset = Position + FacingVector * Player.Weapon.WeaponSizeMult;
+            Vector2 WeaponSize = Player.Weapon.WeaponSize;
             RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
-            if (Player.PlayerWeapon.CanParry == true)
+            if (Player.Weapon.CanParry == true)
             {
                 Vector2 parrySize = new Vector2(22, 22);
-                Player.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                bool success = Player.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                if(success)
+                    Parried = true;
             }
             Player.SwingWeapon(weaponMask, 10);
             SwingVisual();
@@ -474,22 +485,24 @@ namespace RogueTower
                 case (SwingAction.StartSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(100));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(100));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(125));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(125));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-75));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-75));
                     break;
             }
+            if (Parried)
+                HandleExtraJump();
         }
 
         public override void OnInput()
@@ -593,7 +606,7 @@ namespace RogueTower
                 PlungeFinished = true;
                 foreach (var tile in Player.World.FindTiles(Player.Box.Bounds.Offset(0, 1)))
                 {
-                    tile.HandleTileDamage(Player.PlayerWeapon.Damage * 1.5);
+                    tile.HandleTileDamage(Player.Weapon.Damage * 1.5);
                 }
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
@@ -614,7 +627,7 @@ namespace RogueTower
             basePose.Body = BodyState.Crouch(1);
             basePose.LeftArm = ArmState.Angular(4);
             basePose.RightArm = ArmState.Angular(2);
-            basePose.Weapon = WeaponState.Sword(MathHelper.ToRadians(90));
+            basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(90));
         }
     }
 

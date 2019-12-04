@@ -55,6 +55,7 @@ namespace RogueTower
         public static WeaponState None => new NoneState();
         public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
+        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
     }
 
     class ArmState
@@ -422,9 +423,9 @@ namespace RogueTower
             Random random = new Random();
             int ChosenBG;
             WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
-            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 50);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 100);
             TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall2"), 5);
-            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 15);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 25);
 
             Rectangle drawZone = GetDrawZone();
             int drawMid = (int)(Camera.Y / 16);
@@ -525,7 +526,7 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Shield,
                 ArmState.Neutral,
-                WeaponState.Sword(MathHelper.ToRadians(0))
+                player.Weapon.GetWeaponState(MathHelper.ToRadians(0))
             );
             player.CurrentAction.GetPose(state);
 

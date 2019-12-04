@@ -97,7 +97,7 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        public Weapon PlayerWeapon = new Sword(15, 14, new Vector2(14 / 2, 14 * 2));
+        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
@@ -165,7 +165,7 @@ namespace RogueTower
             return movement;
         }
 
-        public void Parry(RectangleF hitmask)
+        public bool Parry(RectangleF hitmask)
         {
             //new RectangleDebug(World, hitmask, Color.Orange, 20);
             var affectedHitboxes = World.FindBoxes(hitmask);
@@ -176,11 +176,14 @@ namespace RogueTower
                     PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
                     World.Hitstop = 30;
                     Invincibility = 30;
-                    Velocity.Y -= GetJumpVelocity(60);
-                    CurrentAction = new ActionJump(this, true, false);
+                    ExtraJumps = Math.Max(ExtraJumps, 1);
+                    Velocity.Y = 0;
                     new ParryEffect(World, Box.Bounds.Center, 0, 10);
+                    return true;
                 }
             }
+
+            return false;
         }
 
         public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
@@ -324,6 +327,7 @@ namespace RogueTower
                 UpdateGroundFriction();
                 Velocity.Y = 0;
                 AppliedFriction = CurrentAction.Friction;
+                ExtraJumps = 0;
             }
             else //Drag
             {
