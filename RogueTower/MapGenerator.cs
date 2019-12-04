@@ -160,7 +160,7 @@ namespace RogueTower
 
                     if (x > 10 && x <= map.Width - 10)
                     {
-                       
+
                         if (Random.NextDouble() < 0.1)
                             map.Tiles[x, y] = new WallBlock(map, x, y);
                         else
@@ -168,6 +168,8 @@ namespace RogueTower
                     }
                     else if (x > 8 && x <= map.Width - 8 && rand <= 0.3)
                         map.Tiles[x, y] = new WallIce(map, x, y);
+                    else if (y >= map.Height - 1)
+                        map.Tiles[x, y] = new Grass(map, x, y);
                     else
                         map.Tiles[x, y] = new EmptySpace(map, x, y);
                 }
