@@ -421,19 +421,10 @@ namespace RogueTower
         {
             Random random = new Random();
             int ChosenBG;
-            string[] TextureStrings =
-            {
-                "content/bg-defaultwall",
-                "content/bg-defaultwall2",
-                "content/bg-defaultwall3",
-            };
-            List<SpriteReference> TextureList = new List<SpriteReference>();
-            
-            for(int i = 0; i < TextureStrings.Length; i++)
-            {
-                TextureList.Add(SpriteLoader.Instance.AddSprite(TextureStrings[i]));
-            }
-
+            WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 50);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall2"), 5);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 15);
 
             Rectangle drawZone = GetDrawZone();
             int drawMid = (int)(Camera.Y / 16);
@@ -451,8 +442,8 @@ namespace RogueTower
 
                     if(tile == TileBG.Wall)
                     {
-                        ChosenBG = GetNoiseValue(x, y) % TextureList.Count;
-                        SpriteBatch.Draw(TextureList[ChosenBG].Texture, new Vector2(x * 16, y * 16), Color.White);
+                        ChosenBG = GetNoiseValue(x, y);
+                        SpriteBatch.Draw(TextureList.GetWeighted(ChosenBG).Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
                 }
             }
