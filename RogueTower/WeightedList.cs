@@ -111,12 +111,14 @@ namespace RogueTower
 
         public T GetWeighted(int value)
         {
+            int totalweight = TotalWeight;
+
             if (Items.Count <= 0)
             {
                 return default(T);
             }
 
-            int pick = value;
+            int pick = Util.PositiveMod(value, totalweight);
             int i = 0;
 
             while (pick > 0 && i < Items.Count)
