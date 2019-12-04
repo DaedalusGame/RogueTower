@@ -109,16 +109,14 @@ namespace RogueTower
             return sum;
         }
 
-        public T GetWeighted(Random selector)
+        public T GetWeighted(int value)
         {
-            int totalweight = TotalWeight;
-
             if (Items.Count <= 0)
             {
                 return default(T);
             }
 
-            int pick = selector.Next(totalweight);
+            int pick = value;
             int i = 0;
 
             while (pick > 0 && i < Items.Count)
@@ -132,27 +130,11 @@ namespace RogueTower
             return Items[i].Item;
         }
 
-        public WeightedItem<T> GetWeightedItem(Random selector)
+        public T GetWeighted(Random selector)
         {
             int totalweight = TotalWeight;
 
-            if (Items.Count <= 0)
-            {
-                return null;
-            }
-
-            int pick = selector.Next(totalweight);
-            int i = 0;
-
-            while (pick > 0 && i < Items.Count)
-            {
-                pick -= Items[i].Weight;
-
-                if (pick > 0)
-                    i++;
-            }
-
-            return Items[i];
+            return GetWeighted(selector.Next(totalweight));
         }
 
         public T GetWeighted(Random selector, IEnumerable<T> blacklist)
