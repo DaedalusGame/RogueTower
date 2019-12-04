@@ -55,6 +55,7 @@ namespace RogueTower
         public static WeaponState None => new NoneState();
         public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
+        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
     }
 
     class ArmState
@@ -532,7 +533,7 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Shield,
                 ArmState.Neutral,
-                WeaponState.Sword(MathHelper.ToRadians(0))
+                player.Weapon.GetWeaponState(MathHelper.ToRadians(0))
             );
             player.CurrentAction.GetPose(state);
 
