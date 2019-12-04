@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Humper.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,12 @@ namespace RogueTower
             get;
             private set;
         }
+
+        public abstract RectangleF ActivityZone
+        {
+            get;
+        }
+        public bool Active => ActivityZone.Contains(World.Player.Position);
 
         public GameObject(GameWorld world)
         {

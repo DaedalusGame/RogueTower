@@ -81,6 +81,8 @@ namespace RogueTower
     {
         public InputQueue Controls = new InputQueue();
 
+        public override RectangleF ActivityZone => World.Bounds;
+
         public IBox Box;
         public Vector2 Position
         {

@@ -111,6 +111,16 @@ namespace RogueTower
                     ballAndChain.Swings = swings;
                 }
             }
+
+            List<Tile> floors = EnumerateTiles().Where(tile => tile is EmptySpace && tile.GetNeighbor(0,1) is Wall).ToList();
+            for (int i = 0; i < 80; i++)
+            {
+                int select = random.Next(floors.Count);
+                Tile pickWall = floors[select];
+                floors.RemoveAt(select);
+
+                new MoaiMan(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
+            }
         }
 
         public void BuildLadder(int ladderx, int laddery, int ladderheight, HorizontalFacing ladderfacing)

@@ -38,8 +38,6 @@ namespace RogueTower
             game.DrawSpriteExt(sprite, Frame, position + Origin, Origin, angle, mirror, depth);
         }
 
-
-
         public class NoneState : WeaponState
         {
             public NoneState() : base("", 0, Vector2.Zero, 0)
@@ -56,6 +54,7 @@ namespace RogueTower
         public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
+        public static WeaponState WandOrange(float angle) => new WeaponState("wand_orange", 0, new Vector2(2, 4), angle);
     }
 
     class ArmState
@@ -67,6 +66,7 @@ namespace RogueTower
         }
 
         public string Pose;
+        public string PhenoType = "char";
         public int Frame;
         public Vector2[] HoldOffsetLeft;
         public Vector2[] HoldOffsetRight;
@@ -81,6 +81,12 @@ namespace RogueTower
 
         public ArmState(string pose, int frame, Vector2 holdOffsetLeft, Vector2 holdOffsetRight) : this(pose, frame, new[] { holdOffsetLeft }, new[] { holdOffsetRight })
         {
+        }
+
+        public ArmState SetPhenoType(string phenoType)
+        {
+            PhenoType = phenoType;
+            return this;
         }
 
         public Vector2 GetHoldOffset(Type type)
@@ -109,7 +115,7 @@ namespace RogueTower
 
         public virtual void Draw(SceneGame game, Type type, Vector2 position, SpriteEffects mirror, float depth)
         {
-            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/char_{GetTypeString(type)}arm_{Pose}", true);
+            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_{GetTypeString(type)}arm_{Pose}", true);
 
             game.DrawSprite(sprite, Frame, position, mirror, depth);
         }
@@ -174,6 +180,7 @@ namespace RogueTower
         public string Pose;
         public int Frame;
         public Vector2 Offset;
+        public string PhenoType = "char";
 
         public BodyState(string pose, int frame, Vector2 offset)
         {
@@ -182,9 +189,15 @@ namespace RogueTower
             Offset = offset;
         }
 
+        public BodyState SetPhenoType(string phenoType)
+        {
+            PhenoType = phenoType;
+            return this;
+        }
+
         public virtual void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
         {
-            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/char_body_{Pose}", true);
+            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_body_{Pose}", true);
 
             game.DrawSprite(sprite, Frame, position, mirror, depth);
         }
@@ -201,6 +214,7 @@ namespace RogueTower
     {
         public string Pose;
         public int Frame;
+        public string PhenoType = "char";
 
         public HeadState(string pose, int frame)
         {
@@ -208,11 +222,17 @@ namespace RogueTower
             Frame = frame;
         }
 
+        public HeadState SetPhenoType(string phenoType)
+        {
+            PhenoType = phenoType;
+            return this;
+        }
+
         public virtual void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
         {
-            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/char_head_{Pose}", true);
+            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_head_{Pose}", true);
 
-            game.DrawSprite(sprite, Frame, position, mirror, depth);
+            game.DrawSprite(sprite, Frame, position + new Vector2(0,16 - sprite.Height), mirror, depth);
         }
 
         public static HeadState Forward => new HeadState("front", 0);
@@ -271,7 +291,7 @@ namespace RogueTower
         Vector2 Camera;
         Vector2 CameraSize => new Vector2(320, 240);
         Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
-        Matrix WorldTransform => CreateViewMatrix();
+        Matrix WorldTransform;
 
         Shear DepthShear = Shear.All;
         
@@ -333,6 +353,8 @@ namespace RogueTower
 
         public override void Draw(GameTime gameTime)
         {
+            WorldTransform = CreateViewMatrix();
+
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
 
             StartNormalBatch();
@@ -366,6 +388,13 @@ namespace RogueTower
                         DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
                     }
                     DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle, SpriteEffects.None, 0);
+                }
+                if(obj is MoaiMan moaiMan)
+                {
+                    Vector2 truePos = Vector2.Transform(moaiMan.Position, WorldTransform);
+                    if (!drawZone.Contains(truePos))
+                        continue;
+                    DrawMoaiMan(moaiMan);
                 }
             }
 
@@ -421,6 +450,9 @@ namespace RogueTower
         private void DrawMapBackground(Map map)
         {
             Random random = new Random();
+
+            //var backWall = SpriteLoader.Instance.AddSprite("content/bg-defaultwall");
+
             int ChosenBG;
             WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
             TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 100);
@@ -428,11 +460,12 @@ namespace RogueTower
             TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 25);
 
             Rectangle drawZone = GetDrawZone();
-            int drawMid = (int)(Camera.Y / 16);
+            int drawX = (int)(Camera.X / 16);
+            int drawY = (int)(Camera.Y / 16);
 
-            for (int x = 0; x < map.Width; x++)
+            for (int x = MathHelper.Clamp(drawX - 20, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + 20, 0, map.Width - 1); x++)
             {
-                for (int y = MathHelper.Clamp(drawMid - 20, 0, map.Height - 1); y <= MathHelper.Clamp(drawMid + 20, 0, map.Height - 1); y++)
+                for (int y = MathHelper.Clamp(drawY - 20, 0, map.Height - 1); y <= MathHelper.Clamp(drawY + 20, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 
@@ -462,11 +495,12 @@ namespace RogueTower
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
 
             Rectangle drawZone = GetDrawZone();
-            int drawMid = (int)(Camera.Y / 16);
+            int drawX = (int)(Camera.X / 16);
+            int drawY = (int)(Camera.Y / 16);
 
-            for (int x = 0; x < map.Width; x++)
+            for (int x = MathHelper.Clamp(drawX - 20, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + 20, 0, map.Width - 1); x++)
             {
-                for (int y = MathHelper.Clamp(drawMid-20, 0,map.Height-1); y <= MathHelper.Clamp(drawMid + 20, 0, map.Height - 1); y++)
+                for (int y = MathHelper.Clamp(drawY - 20, 0,map.Height-1); y <= MathHelper.Clamp(drawY + 20, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 
@@ -546,6 +580,35 @@ namespace RogueTower
                 SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, 0.5f, slashMirror, 0);
                 SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd))), Color.White, slashAngle, slash.Middle, 0.7f, slashMirror, 0);
             }
+        }
+
+        private void DrawMoaiMan(MoaiMan moaiMan)
+        {
+            SpriteEffects mirror = SpriteEffects.None;
+
+            if (moaiMan.Facing == HorizontalFacing.Left)
+                mirror = SpriteEffects.FlipHorizontally;
+
+            Vector2 position = moaiMan.Position;
+
+            PlayerState state = new PlayerState(
+                HeadState.Forward,
+                BodyState.Stand,
+                ArmState.Angular(5),
+                ArmState.Angular(3),
+                WeaponState.WandOrange(MathHelper.ToRadians(270-20))
+            );  
+
+            if (state.Body == BodyState.Kneel)
+            {
+                position += new Vector2(0, 1);
+            }
+
+            state.Head.SetPhenoType("moai");
+            state.LeftArm.SetPhenoType("moai");
+            state.RightArm.SetPhenoType("moai");
+
+            DrawPlayerState(state, position - new Vector2(8, 8), mirror);
         }
 
         private int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)

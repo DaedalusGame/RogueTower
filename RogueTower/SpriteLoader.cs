@@ -14,7 +14,7 @@ namespace RogueTower
     public class SpriteReference
     {
         //In ms
-        long unloadTime = 5000;
+        long unloadTime = 50000;
 
         public string FileName;
         private Texture2D _Texture;

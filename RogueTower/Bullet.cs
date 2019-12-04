@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Humper.Base;
 
 namespace RogueTower
 {
@@ -81,6 +82,8 @@ namespace RogueTower
     {
         double knifeDamage = 15.0;
 
+        public override RectangleF ActivityZone => World.Bounds;
+
         public Knife(GameWorld world, Vector2 position) : base(world, position)
         {
         }
@@ -96,12 +99,21 @@ namespace RogueTower
         {
             if (Destroyed || hit.Box.Data == Shooter)
                 return;
-            new KnifeBounced(World,Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24);
+            bool bounced = true;
+            
             if (hit.Box.Data is Tile tile)
                 tile.HandleTileDamage(knifeDamage);
             if (hit.Box.Data is Enemy enemy)
+            {
+                if (enemy.CanDamage)
+                    bounced = false;
                 enemy.HandleDamage(knifeDamage);
-            PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
+            }
+            if (bounced)
+            {
+                new KnifeBounced(World, Position, new Vector2(Math.Sign(Velocity.X) * -1.5f, -3f), MathHelper.Pi * 0.3f, 24);
+                PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
+            }
             Destroy();
         }
     }

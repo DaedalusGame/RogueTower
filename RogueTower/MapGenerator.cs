@@ -173,6 +173,8 @@ namespace RogueTower
                 }
             }
 
+            int origin = map.Width / 2 - Width * 8 / 2 + 1;
+
             for (int x = 0; x < Width; x++)
             {
                 for (int y = 0; y < Height; y++)
@@ -181,16 +183,16 @@ namespace RogueTower
                     switch(room.Type)
                     {
                         case (RoomType.Horizontal):
-                            BuildHorizontal(map, 8 + x * 8, y * 8);
+                            BuildHorizontal(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.HubVertical):
-                            BuildShaft(map, 8 + x * 8, y * 8);
+                            BuildShaft(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.HubDown):
-                            BuildHubDown(map, 8 + x * 8, y * 8);
+                            BuildHubDown(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.HubUp):
-                            BuildHubUp(map, 8 + x * 8, y * 8);
+                            BuildHubUp(map, origin + x * 8, y * 8);
                             break;
                     }
                 }

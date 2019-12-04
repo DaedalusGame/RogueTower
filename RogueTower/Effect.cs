@@ -13,6 +13,8 @@ namespace RogueTower
     {
         public float Frame;
 
+        public override RectangleF ActivityZone => World.Bounds;
+
         public VisualEffect(GameWorld world) : base(world)
         {
         }

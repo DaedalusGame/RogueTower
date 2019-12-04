@@ -189,7 +189,7 @@ namespace RogueTower
             LastMouseState = MouseState;
             LastKeyState = KeyState;
 
-            FPS.Update(gameTime);
+            GFPS.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -215,7 +215,7 @@ namespace RogueTower
 
             Scene.Draw(gameTime);
 
-            GFPS.Update(gameTime);
+            FPS.Update(gameTime);
 
 
             SpriteBatch.Begin(blendState:BlendState.NonPremultiplied);
