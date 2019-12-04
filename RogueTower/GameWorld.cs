@@ -23,7 +23,7 @@ namespace RogueTower
         public int Width => Map.Width * 16;
         public int Height => Map.Height * 16;
 
-        public GameWorld(int width, int height, float cellSize = 64) : base(width * 16, height * 16, cellSize)
+        public GameWorld(int width, int height, float cellSize = 32) : base(width * 16, height * 16, cellSize)
         {
             Map = new Map(this, width, height);
         }

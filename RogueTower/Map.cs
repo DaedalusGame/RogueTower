@@ -84,7 +84,7 @@ namespace RogueTower
             }*/
 
             List<Tile> walls = EnumerateTiles().Where(tile => tile is Wall && tile.GetAdjacentNeighbors().Any(x => x.Passable)).ToList();
-            for(int i = 0; i < 70; i++)
+            for(int i = 0; i < 570; i++)
             {
                 int select = random.Next(walls.Count);
                 Tile pickWall = walls[select];
