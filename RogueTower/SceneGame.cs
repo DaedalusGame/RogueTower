@@ -422,9 +422,13 @@ namespace RogueTower
             Random random = new Random();
             int ChosenBG;
             WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
-            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 50);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall"), 40);
             TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall2"), 5);
-            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 15);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall3"), 25);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall4"), 1);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall6"), 1);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall7"), 1);
+            TextureList.Add(SpriteLoader.Instance.AddSprite("content/bg-defaultwall8"), 1);
 
             Rectangle drawZone = GetDrawZone();
             int drawMid = (int)(Camera.Y / 16);
@@ -456,6 +460,7 @@ namespace RogueTower
             var wallBottom = SpriteLoader.Instance.AddSprite("content/wall_bottom");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
+            var grass = SpriteLoader.Instance.AddSprite("content/grass-top");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
@@ -495,6 +500,8 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
+                    else if (tile is Grass)
+                        SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);
 
                     if (tile.Health < tile.MaxHealth)
                         SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));

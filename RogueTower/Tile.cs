@@ -89,6 +89,13 @@ namespace RogueTower
         }
     }
 
+    class Grass : Tile
+    {
+        public Grass(Map map, int x, int y) : base(map, x, y, false, 0)
+        {
+        }
+    }
+
     class Wall : Tile
     {
         public Wall(Map map, int x, int y, double health) : base(map, x, y, false, health)
