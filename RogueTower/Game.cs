@@ -50,6 +50,7 @@ namespace RogueTower
 
         FrameCounter FPS = new FrameCounter();
         FrameCounter GFPS = new FrameCounter();
+        public int HeightTraversed;
 
         public Game()
         {
@@ -215,6 +216,7 @@ namespace RogueTower
             Scene.Draw(gameTime);
 
             GFPS.Update(gameTime);
+
 
             SpriteBatch.Begin(blendState:BlendState.NonPremultiplied);
             DrawText($"FPS: {FPS.AverageFramesPerSecond.ToString("f1")}\nGFPS: {GFPS.AverageFramesPerSecond.ToString("f1")}", new Vector2(0, 0), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));

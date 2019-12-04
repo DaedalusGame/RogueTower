@@ -276,6 +276,8 @@ namespace RogueTower
         
         bool GameSpeedToggle = false;
 
+        public int HeightTraversed;
+
         private Matrix CreateViewMatrix()
         {
             return Matrix.Identity
@@ -330,6 +332,8 @@ namespace RogueTower
 
         public override void Draw(GameTime gameTime)
         {
+            HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
+
             StartNormalBatch();
 
             Rectangle drawZone = GetDrawZone();
@@ -407,11 +411,29 @@ namespace RogueTower
             }*/
 
             SpriteBatch.End();
+
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
+            DrawText($"Tiles Ascended: {HeightTraversed}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+            SpriteBatch.End();
         }
 
         private void DrawMapBackground(Map map)
         {
-            var wall = SpriteLoader.Instance.AddSprite("content/bg_brick1");
+            Random random = new Random();
+            int ChosenBG;
+            string[] TextureStrings =
+            {
+                "content/bg-defaultwall",
+                "content/bg-defaultwall2",
+                "content/bg-defaultwall3",
+            };
+            List<SpriteReference> TextureList = new List<SpriteReference>();
+            
+            for(int i = 0; i < TextureStrings.Length; i++)
+            {
+                TextureList.Add(SpriteLoader.Instance.AddSprite(TextureStrings[i]));
+            }
+
 
             Rectangle drawZone = GetDrawZone();
             int drawMid = (int)(Camera.Y / 16);
@@ -429,7 +451,8 @@ namespace RogueTower
 
                     if(tile == TileBG.Wall)
                     {
-                        SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
+                        ChosenBG = GetNoiseValue(x, y) % TextureList.Count;
+                        SpriteBatch.Draw(TextureList[ChosenBG].Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
                 }
             }
@@ -451,7 +474,7 @@ namespace RogueTower
 
             for (int x = 0; x < map.Width; x++)
             {
-                for (int y = MathHelper.Clamp(drawMid-40, 0,map.Height-1); y <= MathHelper.Clamp(drawMid + 40, 0, map.Height - 1); y++)
+                for (int y = MathHelper.Clamp(drawMid-20, 0,map.Height-1); y <= MathHelper.Clamp(drawMid + 20, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 
