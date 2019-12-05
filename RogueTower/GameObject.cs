@@ -60,7 +60,7 @@ namespace RogueTower
 
         public abstract void ShowDamage(double damage);
 
-        public void HandleDamage(double damageIn)
+        public virtual void HandleDamage(double damageIn)
         {
             if(CanDamage == false)
                 return;

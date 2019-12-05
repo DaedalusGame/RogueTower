@@ -410,6 +410,18 @@ namespace RogueTower
 
             foreach (VisualEffect effect in World.Effects)
             {
+                var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
+
+
+                if (effect is SlashEffect slashEffect)
+                {
+                    var slashAngle = slashEffect.Angle;
+                    if (slashEffect.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                        slashAngle = -slashAngle;
+                    if (slashEffect.Size > 0.2)
+                        SpriteBatch.Draw(slash.Texture, slashEffect.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, slashEffect.Size - 0.2f, slashEffect.Mirror, 0);
+                    SpriteBatch.Draw(slash.Texture, slashEffect.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd))), Color.White, slashAngle, slash.Middle, slashEffect.Size, slashEffect.Mirror, 0);
+                }
                 if (effect is KnifeBounced knifeBounced)
                 {
                     DrawSpriteExt(knife, 0, knifeBounced.Position + knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
@@ -577,16 +589,6 @@ namespace RogueTower
             }
 
             DrawPlayerState(state, position - new Vector2(8, 8), mirror);
-
-            if (player.SlashEffect is SlashEffect slashEffect)
-            {
-                var slashAngle = slashEffect.Angle;
-                if (mirror == SpriteEffects.FlipHorizontally)
-                    slashAngle = -slashAngle;
-                var slashMirror = mirror | (slashEffect.Mirror ? SpriteEffects.FlipVertically : SpriteEffects.None);
-                SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, 0.5f, slashMirror, 0);
-                SpriteBatch.Draw(slash.Texture, position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd))), Color.White, slashAngle, slash.Middle, 0.7f, slashMirror, 0);
-            }
         }
 
         private void DrawMoaiMan(MoaiMan moaiMan)
@@ -604,7 +606,9 @@ namespace RogueTower
                 ArmState.Angular(5),
                 ArmState.Angular(3),
                 WeaponState.WandOrange(MathHelper.ToRadians(270-20))
-            );  
+            );
+
+            moaiMan.CurrentAction.GetPose(state);
 
             if (state.Body == BodyState.Kneel)
             {

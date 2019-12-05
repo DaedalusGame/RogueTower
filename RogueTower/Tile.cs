@@ -53,7 +53,7 @@ namespace RogueTower
                 PlaySFX(breakSound, 1.0f, 0.1f, 0.2f);
                 Replace(new EmptySpace(Map, X, Y));
             }
-            new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8), damagein.ToString(), 30);
+            new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8) + new Vector2(0, -16), damagein.ToString(), 30);
         }
         public virtual RectangleF GetBoundingBox()
         {

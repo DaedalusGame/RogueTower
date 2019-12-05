@@ -35,15 +35,31 @@ namespace RogueTower
         }
     }
 
-    class SlashEffect : VisualEffect
+    class SlashEffect : Particle
     {
+        public Func<Vector2> Anchor;
         public float Angle;
-        public bool Mirror;
+        public SpriteEffects Mirror;
         public float FrameEnd;
+        public float Size;
 
-        public SlashEffect(GameWorld world, float angle, bool mirror, float time) : base(world)
+        public override Vector2 Position
         {
+            get
+            {
+                return Anchor();
+            }
+            set
+            {
+                //NOOP
+            }
+        }
+
+        public SlashEffect(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, Vector2.Zero)
+        {
+            Anchor = anchor;
             Angle = angle;
+            Size = size;
             Mirror = mirror;
             FrameEnd = time;
         }
@@ -59,19 +75,15 @@ namespace RogueTower
 
     abstract class Particle : VisualEffect
     {
-        public Vector2 Position;
-        public Vector2 Velocity;
-
-        protected override void UpdateDelta(float delta)
+        public virtual Vector2 Position
         {
-            base.UpdateDelta(delta);
-            Position += Velocity * delta;
+            get;
+            set;
         }
 
-        public Particle(GameWorld world, Vector2 position, Vector2 velocity) : base(world)
+        public Particle(GameWorld world, Vector2 position) : base(world)
         {
             Position = position;
-            Velocity = velocity;
         }
     }
 
@@ -80,7 +92,7 @@ namespace RogueTower
         public float Angle;
         public float FrameEnd;
 
-        public ParryEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, Vector2.Zero)
+        public ParryEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
         {
             Angle = angle;
             FrameEnd = time;
@@ -102,13 +114,21 @@ namespace RogueTower
 
     class KnifeBounced : Particle
     {
+        public Vector2 Velocity;
         public float FrameEnd;
         public float Rotation;
 
-        public KnifeBounced(GameWorld world, Vector2 position, Vector2 velocity, float rotation, float time) : base(world, position, velocity)
+        public KnifeBounced(GameWorld world, Vector2 position, Vector2 velocity, float rotation, float time) : base(world, position)
         {
+            Velocity = velocity;
             Rotation = rotation;
             FrameEnd = time;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+            Position += Velocity * delta;
         }
 
         protected override void UpdateDiscrete()
@@ -127,7 +147,7 @@ namespace RogueTower
         public string Text;
         public Vector2 Offset => new Vector2(0,-16) * (float)LerpHelper.QuadraticOut(0,1,Frame/FrameEnd);
 
-        public DamagePopup(GameWorld world, Vector2 position, string text, float time) : base(world, position, new Vector2(0,0f))
+        public DamagePopup(GameWorld world, Vector2 position, string text, float time) : base(world, position)
         {
             Text = text;
             FrameEnd = time;

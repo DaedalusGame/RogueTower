@@ -99,7 +99,7 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
+        public Weapon Weapon = new WeaponSword(15, 14, new Vector2(14 / 2, 14 * 2));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
@@ -118,7 +118,7 @@ namespace RogueTower
 
         public int Invincibility = 0;
 
-        public SlashEffect SlashEffect;
+        public bool Attacking => CurrentAction.Attacking;
 
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;
@@ -173,14 +173,21 @@ namespace RogueTower
             var affectedHitboxes = World.FindBoxes(hitmask);
             foreach (Box Box in affectedHitboxes)
             {
-                if (Box.Data is Enemy enemy)
+                if (Box.Data is Enemy enemy && enemy.Attacking)
                 {
                     PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
-                    World.Hitstop = 30;
-                    Invincibility = 30;
-                    ExtraJumps = Math.Max(ExtraJumps, 1);
-                    Velocity.Y = 0;
-                    new ParryEffect(World, Box.Bounds.Center, 0, 10);
+                    World.Hitstop = 15;
+                    Invincibility = 10;
+                    if (OnGround)
+                    {
+                        Velocity += GetFacingVector(Facing) * -2;
+                    }
+                    else
+                    {
+                        ExtraJumps = Math.Max(ExtraJumps, 1);
+                        Velocity.Y = 0;
+                    }
+                    new ParryEffect(World, Vector2.Lerp(Box.Bounds.Center,Position,0.5f), 0, 10);
                     return true;
                 }
             }
@@ -196,7 +203,7 @@ namespace RogueTower
             {
                 if (Box.Data is Enemy enemy)
                 {
-                    enemy.HandleDamage(damageIn);
+                    enemy.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
                 }
                 if (Box.Data is Tile tile)
                 {
@@ -204,15 +211,6 @@ namespace RogueTower
                 }
             }
 
-        }
-        public override void Update(float delta)
-        {
-            base.Update(delta);
-            SlashEffect?.Update(delta);
-            if (SlashEffect != null && SlashEffect.Destroyed)
-            {
-                SlashEffect = null;
-            }
         }
 
         protected override void UpdateDelta(float delta)
@@ -437,7 +435,7 @@ namespace RogueTower
 
         public override void ShowDamage(double damage)
         {
-            new DamagePopup(World, Position, damage.ToString(), 30);
+            new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
         }
     }
 }

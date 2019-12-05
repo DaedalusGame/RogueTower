@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Humper;
 using Humper.Base;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using static RogueTower.Game;
 using static RogueTower.Util;
 
@@ -22,6 +23,7 @@ namespace RogueTower
         public virtual bool HasGravity => true;
         public virtual float Friction => 1 - (1 - 0.85f) * Player.GroundFriction;
         public virtual float Drag => 0.85f;
+        public virtual bool Attacking => false;
 
         abstract public void OnInput();
 
@@ -350,7 +352,9 @@ namespace RogueTower
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing || SlashAction == SwingAction.StartSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing || SlashAction == SwingAction.FinishSwing;
 
+        public override float Friction => Parried ? 1 : base.Friction;
         public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+        public override bool Attacking => true;
 
         public enum SwingAction
         {
@@ -453,14 +457,17 @@ namespace RogueTower
                 if(success)
                     Parried = true;
             }
-            Player.SwingWeapon(weaponMask, 10);
-            SwingVisual();
+            if (!Parried)
+                Player.SwingWeapon(weaponMask, 10);
+            SwingVisual(Parried);
             SlashAction = SwingAction.DownSwing;
         }
 
-        public virtual void SwingVisual()
+        public virtual void SwingVisual(bool parry)
         {
-            Player.SlashEffect = new SlashEffect(Player.World, 0, false, 4);
+            var effect = new SlashEffect(Player.World, () => Player.Position, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            if (parry)
+                effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
         }
 
@@ -513,15 +520,19 @@ namespace RogueTower
             }
         }
 
-        public override void SwingVisual()
+        public override void SwingVisual(bool parry)
         {
-            Player.SlashEffect = new SlashEffect(Player.World, MathHelper.ToRadians(45), true, 4);
+            var effect = new SlashEffect(Player.World, () => Player.Position, Player.Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
+            if (parry)
+                effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
         }
     }
 
     class ActionKnifeThrow : ActionSlash
     {
+        public override bool Attacking => false;
+
         public ActionKnifeThrow(Player player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime)
         {
 
@@ -604,9 +615,14 @@ namespace RogueTower
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
                 Player.CurrentAction = new ActionJump(Player, true, false);
                 PlungeFinished = true;
-                foreach (var tile in Player.World.FindTiles(Player.Box.Bounds.Offset(0, 1)))
+
+                double damageIn = Player.Weapon.Damage * 1.5;
+                foreach (var box in Player.World.FindBoxes(Player.Box.Bounds.Offset(0, 1)))
                 {
-                    tile.HandleTileDamage(Player.Weapon.Damage * 1.5);
+                    if(box.Data is Tile tile)
+                        tile.HandleTileDamage(damageIn);
+                    if (box.Data is Enemy enemy)
+                        enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
                 }
             }
             if (PlungeFinished && PlungeFinishTime <= 0)

@@ -2,6 +2,7 @@
 using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,12 @@ namespace RogueTower
 {
     abstract class Enemy : GameObject
     {
-        public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2,new Vector2(1000,600));
+        public abstract bool Attacking
+        {
+            get;
+        }
+
+        public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
@@ -31,10 +37,214 @@ namespace RogueTower
         {
             Position = new Vector2(x, y);
         }
+
+        public virtual void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            HandleDamage(damageIn);
+        }
     }
 
     class MoaiMan : Enemy
     {
+        public abstract class Action
+        {
+            public MoaiMan MoaiMan;
+
+            public virtual float Friction => 1 - (1 - 0.85f) * MoaiMan.GroundFriction;
+            public virtual float Drag => 0.85f;
+
+            public Action(MoaiMan moaiMan)
+            {
+                MoaiMan = moaiMan;
+            }
+
+            public abstract void GetPose(PlayerState basePose);
+
+            public abstract void UpdateDelta(float delta);
+
+            public abstract void UpdateDiscrete();
+        }
+
+        class ActionIdle : Action
+        {
+            public ActionIdle(MoaiMan moaiMan) : base(moaiMan)
+            {
+
+            }
+
+            public override void GetPose(PlayerState basePose)
+            {
+                //NOOP
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                if (Math.Abs(MoaiMan.Velocity.X) >= 0.01)
+                    MoaiMan.CurrentAction = new ActionMove(MoaiMan);
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+        }
+
+        class ActionMove : Action
+        {
+            public float WalkFrame;
+            public bool Walking;
+
+            public ActionMove(MoaiMan moaiMan) : base(moaiMan)
+            {
+            }
+
+            public override void GetPose(PlayerState basePose)
+            {
+                basePose.Body = BodyState.Walk((int)WalkFrame);
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                if (Walking)
+                {
+                    var facingMod = MoaiMan.Facing == HorizontalFacing.Left ? -1 : 1;
+                    WalkFrame += facingMod * MoaiMan.Velocity.X * delta * 0.125f / (float)Math.Sqrt(MoaiMan.GroundFriction);
+                }
+                if (Math.Abs(MoaiMan.Velocity.X) < 0.01)
+                    MoaiMan.CurrentAction = new ActionIdle(MoaiMan);
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+        }
+
+        class ActionAttack : Action
+        {
+            public enum SwingAction
+            {
+                UpSwing,
+                DownSwing,
+            }
+
+            public SwingAction SlashAction;
+            public float SlashUpTime;
+            public float SlashDownTime;
+            public bool Parried;
+
+            public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
+            public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
+
+            public override float Friction => Parried ? 1 : base.Friction;
+            public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+
+            public ActionAttack(MoaiMan moaiMan, float upTime, float downTime) : base(moaiMan)
+            {
+                SlashUpTime = upTime;
+                SlashDownTime = downTime;
+            }
+
+            public override void GetPose(PlayerState basePose)
+            {
+                basePose.Body = !MoaiMan.InAir ? BodyState.Stand : BodyState.Walk(1);
+
+                switch (SlashAction)
+                {
+                    default:
+                    case (SwingAction.UpSwing):
+                        basePose.LeftArm = ArmState.Angular(9);
+                        basePose.RightArm = ArmState.Angular(11);
+                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(-90 - 45));
+                        break;
+                    case (SwingAction.DownSwing):
+                        basePose.Body = BodyState.Crouch(1);
+                        basePose.LeftArm = ArmState.Angular(5);
+                        basePose.RightArm = ArmState.Angular(3);
+                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(45 + 22));
+                        break;
+                }
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (SlashAction)
+                {
+                    case (SwingAction.UpSwing):
+                        SlashUpTime -= delta;
+                        if (SlashUpTime < 0)
+                            Swing();
+                        break;
+                    case (SwingAction.DownSwing):
+                        SlashDownTime -= delta;
+                        if (SlashDownTime < 0)
+                            MoaiMan.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+
+            public virtual void Swing()
+            {
+                Vector2 Position = MoaiMan.Position;
+                HorizontalFacing Facing = MoaiMan.Facing;
+                Vector2 FacingVector = GetFacingVector(Facing);
+                Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
+                Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
+                RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
+                if (true)
+                {
+                    Vector2 parrySize = new Vector2(22, 22);
+                    bool success = MoaiMan.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                    if (success)
+                        Parried = true;
+                }
+                if(!Parried)
+                    MoaiMan.SwingWeapon(weaponMask, 10);
+                var effect = new SlashEffect(MoaiMan.World, () => MoaiMan.Position, 0.7f, 0, MoaiMan.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+                if (Parried)
+                    effect.Frame = effect.FrameEnd / 2;
+                SlashAction = SwingAction.DownSwing;
+            }
+        }
+
+        class ActionHit : Action
+        {
+            int Time;
+
+            public override float Drag => 1;
+
+            public ActionHit(MoaiMan moaiMan, int time) : base(moaiMan)
+            {
+                Time = time;
+            }
+
+            public override void GetPose(PlayerState basePose)
+            {
+                basePose.Head = HeadState.Down;
+                basePose.Body = BodyState.Hit;
+                basePose.RightArm = ArmState.Angular(3);
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                //NOOP
+            }
+
+            public override void UpdateDiscrete()
+            {
+                Time--;
+                if (Time <= 0)
+                {
+                    MoaiMan.ResetState();
+                }
+            }
+        }
+
         public IBox Box;
         public override Vector2 Position
         {
@@ -51,6 +261,8 @@ namespace RogueTower
         public Vector2 Velocity;
         private Vector2 VelocityLeftover;
 
+        public Action CurrentAction;
+
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
         public float SpeedLimit = 2;
@@ -61,12 +273,19 @@ namespace RogueTower
         public float GroundFriction = 1.0f;
         public float AppliedFriction;
 
+        public override bool Attacking => CurrentAction is ActionAttack;
+
+        public float Lifetime;
+        public int Invincibility = 0;
+        public int AttackCooldown = 0;
+
         public HorizontalFacing Facing;
 
         public Player Target;
 
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
+            CurrentAction = new ActionIdle(this);
             CanDamage = true;
         }
 
@@ -74,6 +293,14 @@ namespace RogueTower
         {
             Box = World.Create(x, y, 12, 14);
             Box.Data = this;
+        }
+
+        public void ResetState()
+        {
+            if (OnGround)
+            {
+                CurrentAction = new ActionIdle(this);
+            }
         }
 
         private Vector2 CalculateMovement(float delta)
@@ -96,20 +323,133 @@ namespace RogueTower
             });
         }
 
+        private void Walk(float dx)
+        {
+            float adjustedSpeedLimit = SpeedLimit / AppliedFriction;
+            float baseAcceleraton = 0.25f;
+            if (OnGround)
+                baseAcceleraton *= GroundFriction;
+            float acceleration = 0.25f / AppliedFriction;
+
+            if (dx < 0 && Velocity.X > -adjustedSpeedLimit)
+                Velocity.X = Math.Max(Velocity.X - acceleration, -adjustedSpeedLimit);
+            if (dx > 0 && Velocity.X < adjustedSpeedLimit)
+                Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
+            if (CurrentAction is ActionMove move)
+                move.Walking = dx != 0;
+        }
+
+        private void WalkConstrained(float dx) //Same as walk but don't jump off cliffs
+        {
+            var floor = World.FindTiles(Box.Bounds.Offset(new Vector2(Math.Sign(dx) * 16,1)));
+            if (!floor.Any())
+                return;
+            Walk(dx);
+        }
+
+        public bool Parry(RectangleF hitmask)
+        {
+            //new RectangleDebug(World, hitmask, Color.Orange, 20);
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is Player player && player.Attacking)
+                {
+                    PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
+                    World.Hitstop = 15;
+                    Invincibility = 10;
+                    if (OnGround)
+                    {
+                        Velocity += GetFacingVector(Facing) * -2;
+                    }
+                    else
+                    {
+                        Velocity.Y = 0;
+                    }
+                    new ParryEffect(World, Vector2.Lerp(Box.Bounds.Center, Position, 0.5f), 0, 10);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
+        {
+            //new RectangleDebug(World, hitmask, Color.Lime, 20);
+            var affectedHitboxes = World.FindBoxes(hitmask).ToList();
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is Player player)
+                {
+                    player.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
+                }
+                if (Box.Data is Tile tile)
+                {
+                    tile.HandleTileDamage(damageIn);
+                }
+            }
+
+        }
+
         private void UpdateAI()
         {
             var viewSize = new Vector2(200, 50);
-            RectangleF viewArea = new RectangleF(Position - viewSize/2, viewSize);
+            RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
 
             if (viewArea.Contains(World.Player.Position))
                 Target = World.Player;
 
-            if(Target != null) //Engaged
+            if (Target != null) //Engaged
             {
-                if (Target.Position.X < Position.X)
+                float dx = Target.Position.X - Position.X;
+                if (dx < 0)
                     Facing = HorizontalFacing.Left;
-                else if (Target.Position.X > Position.X)
+                else if (dx > 0)
                     Facing = HorizontalFacing.Right;
+
+                if (CurrentAction is ActionAttack)
+                {
+
+                }
+                else if (CurrentAction is ActionHit)
+                {
+
+                }
+                else
+                {
+                    float preferredDistanceMin = 20;
+                    float preferredDistanceMax = 30;
+                    if (Target.Invincibility > 0)
+                    {
+                        preferredDistanceMin = 30;
+                        preferredDistanceMax = 40;
+                    }
+                    if(Target.InAir)
+                    {
+                        preferredDistanceMin = 40;
+                        preferredDistanceMax = 50;
+                    }
+                    if (CurrentAction is ActionMove move)
+                        move.Walking = false;
+                    if (Math.Abs(dx) > preferredDistanceMax)
+                    {
+                        WalkConstrained(dx);
+                    }
+                    if (Math.Abs(dx) < preferredDistanceMin)
+                    {
+                        WalkConstrained(-dx);
+                    }
+                    var attackSize = new Vector2(40, 30);
+                    var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
+                    if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone))
+                    {
+                        Velocity.X += Math.Sign(dx) * 2;
+                        CurrentAction = new ActionAttack(this, 3, 12);
+                        AttackCooldown = 30;
+                    }
+                }
+                AttackCooldown--;
             }
             else //Idle
             {
@@ -119,6 +459,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            CurrentAction.UpdateDelta(delta);
+
             var movement = CalculateMovement(delta);
 
             bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
@@ -166,6 +508,8 @@ namespace RogueTower
                     OnWall = false;
                 }
             }
+
+            Lifetime += delta;
         }
 
         private void UpdateGroundFriction()
@@ -188,11 +532,11 @@ namespace RogueTower
             {
                 UpdateGroundFriction();
                 Velocity.Y = 0;
-                AppliedFriction = 1 - (1 - 0.85f) * GroundFriction;
+                AppliedFriction = CurrentAction.Friction;
             }
             else //Drag
             {
-                AppliedFriction = 0.85f;
+                AppliedFriction = CurrentAction.Drag;
             }
 
             if (OnWall)
@@ -210,15 +554,42 @@ namespace RogueTower
 
             Velocity.X *= AppliedFriction;
 
+            CurrentAction.UpdateDiscrete();
+
+            HandleDamage();
+
             UpdateAI();
 
             if (Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
         }
 
+        private void HandleDamage()
+        {
+            if (!(CurrentAction is ActionHit))
+                Invincibility--;
+        }
+
+        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            if (CurrentAction is ActionAttack slash && slash.IsUpSwing)
+            {
+                //Parry
+                slash.Swing();
+                return;
+            }
+            if (Invincibility > 0)
+                return;
+            Velocity = velocity;
+            Invincibility = 1;
+            CurrentAction = new ActionHit(this, hurttime);
+            PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            HandleDamage(damageIn);
+        }
+
         public override void ShowDamage(double damage)
         {
-            new DamagePopup(World, Position, damage.ToString(), 30);
+            new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
         }
     }
 
@@ -235,7 +606,9 @@ namespace RogueTower
         public Vector2 Offset => OffsetUnit * Distance;
         public Vector2 LastOffset;
 
-        public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world,position)
+        public override bool Attacking => true;
+
+        public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world, position)
         {
             Angle = angle;
             Speed = speed;
@@ -247,7 +620,7 @@ namespace RogueTower
         public override void Create(float x, float y)
         {
             base.Create(x, y);
-            Box = World.Create(x-8, y-8, 16, 16);
+            Box = World.Create(x - 8, y - 8, 16, 16);
             Box.AddTags(CollisionTag.NoCollision);
             Box.Data = this;
         }
@@ -294,7 +667,7 @@ namespace RogueTower
 
         public override void ShowDamage(double damage)
         {
-            new DamagePopup(World, Position + Offset, damage.ToString(), 30);
+            new DamagePopup(World, Position + Offset + new Vector2(0,-16), damage.ToString(), 30);
         }
     }
 }

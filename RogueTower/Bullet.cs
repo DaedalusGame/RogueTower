@@ -107,7 +107,7 @@ namespace RogueTower
             {
                 if (enemy.CanDamage)
                     bounced = false;
-                enemy.HandleDamage(knifeDamage);
+                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, knifeDamage);
             }
             if (bounced)
             {
