@@ -355,6 +355,14 @@ namespace RogueTower
         {
             WorldTransform = CreateViewMatrix();
 
+            IEnumerable<ScreenShake> screenShakes = World.Effects.OfType<ScreenShake>();
+            if (screenShakes.Any())
+            {
+                ScreenShake screenShake = screenShakes.WithMax(effect => effect.Offset.LengthSquared());
+                if (screenShake != null)
+                    WorldTransform *= Matrix.CreateTranslation(screenShake.Offset.X, screenShake.Offset.Y, 0);
+            }
+
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
 
             SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: WorldTransform, effect: Shader);
@@ -412,6 +420,7 @@ namespace RogueTower
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
+            var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
@@ -421,6 +430,10 @@ namespace RogueTower
                 if (bullet is SpellOrange spellOrange)
                 {
                     DrawSprite(magicOrange, Frame, bullet.Position - magicOrange.Middle, SpriteEffects.None, 0);
+                }
+                if (bullet is Explosion explosion)
+                {
+                    DrawSprite(spriteExplosion, AnimationFrame(spriteExplosion,explosion.Frame,explosion.FrameEnd), explosion.Position - spriteExplosion.Middle, SpriteEffects.None, 0);
                 }
             }
 

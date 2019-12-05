@@ -29,6 +29,16 @@ namespace RogueTower
     
     static class Util
     {
+        public static T WithMin<T,V>(this IEnumerable<T> enumerable, Func<T,V> selector) where V : IComparable
+        {
+            return enumerable.Aggregate((i1, i2) => selector(i1).CompareTo(selector(i2)) < 0 ? i1 : i2);
+        }
+
+        public static T WithMax<T, V>(this IEnumerable<T> enumerable, Func<T, V> selector) where V : IComparable
+        {
+            return enumerable.Aggregate((i1, i2) => selector(i1).CompareTo(selector(i2)) > 0 ? i1 : i2);
+        }
+
         public static DijkstraTile[,] Dijkstra(Point start, int width, int height, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
         {
             var dijkstraMap = new DijkstraTile[width, height];

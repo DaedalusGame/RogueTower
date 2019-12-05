@@ -578,7 +578,7 @@ namespace RogueTower
             new Knife(Player.World, Player.Position + facing * 5)
             {
                 Velocity = facing * 8,
-                LifeTime = 20,
+                FrameEnd = 20,
                 Shooter = Player
             };
             PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);

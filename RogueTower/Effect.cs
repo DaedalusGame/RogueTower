@@ -35,6 +35,47 @@ namespace RogueTower
         }
     }
 
+    class ScreenShake : VisualEffect
+    {
+        public Vector2 Offset;
+        public float FrameEnd;
+
+        public ScreenShake(GameWorld world, float time) : base(world)
+        {
+            FrameEnd = time;
+        }
+    }
+
+    class ScreenShakeRandom : ScreenShake
+    {
+        Random Random = new Random();
+        float Amount;
+
+        public ScreenShakeRandom(GameWorld world, float amount, float time) : base(world, time)
+        {
+            Amount = amount;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+
+            double amount = Amount * (1 - FrameEnd / Frame);
+            double shakeAngle = Random.NextDouble() * Math.PI * 2;
+            int x = (int)Math.Round(Math.Cos(shakeAngle) * amount);
+            int y = (int)Math.Round(Math.Sin(shakeAngle) * amount);
+            Offset = new Vector2(x, y);
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
+
     class SlashEffect : Particle
     {
         public Func<Vector2> Anchor;

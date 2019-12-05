@@ -283,7 +283,7 @@ namespace RogueTower
                 new SpellOrange(MoaiMan.World, firePosition)
                 {
                     Velocity = homing * 3,
-                    LifeTime = 70,
+                    FrameEnd = 70,
                     Shooter = MoaiMan
                 };
             }
@@ -530,12 +530,13 @@ namespace RogueTower
                     }
                     var attackSize = new Vector2(40, 30);
                     var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
-                    if ((Math.Abs(dx) >= 50 || Target.InAir) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
+                    bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 25 && Math.Sign(Target.Velocity.X) >= -Math.Sign(dx);
+                    if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
                     {
                         CurrentAction = new ActionRanged(this, 24, 12);
                         RangedCooldown = 80;
                     }
-                    if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone))
+                    if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
                         Velocity.X += Math.Sign(dx) * 2;
                         CurrentAction = new ActionAttack(this, 3, 12);

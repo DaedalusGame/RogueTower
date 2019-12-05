@@ -26,13 +26,17 @@ namespace RogueTower
                 Box.Teleport(pos.X, pos.Y);
             }
         }
+        public Vector2 BulletSize;
         public Vector2 Velocity;
-        public float LifeTime;
+        public float Frame, FrameEnd;
         public GameObject Shooter;
+
+        public override RectangleF ActivityZone => World.Bounds;
 
         protected Bullet(GameWorld world, Vector2 position) : base(world)
         {
             Create(position.X, position.Y);
+            BulletSize = new Vector2(8, 8);
         }
 
         public override void Destroy()
@@ -43,19 +47,19 @@ namespace RogueTower
 
         public void Create(float x, float y)
         {
-            Box = World.Create(x-4, y-4, 8, 8);
+            Box = World.Create(x - BulletSize.X / 2, y - BulletSize.Y / 2, BulletSize.X, BulletSize.Y);
             Box.Data = this;
             Box.AddTags(CollisionTag.NoCollision);
         }
 
         protected override void UpdateDelta(float delta)
         {
-            LifeTime -= delta;
+            Frame += delta;
             var move = Box.Move(Box.X + Velocity.X * delta, Box.Y + Velocity.Y * delta, collision =>
             {
                 return GetCollision(collision);
             });
-            foreach(var hit in move.Hits)
+            foreach (var hit in move.Hits)
                 OnCollision(hit);
         }
 
@@ -68,7 +72,7 @@ namespace RogueTower
 
         protected override void UpdateDiscrete()
         {
-            if (LifeTime <= 0)
+            if (Frame >= FrameEnd)
                 Destroy();
         }
 
@@ -80,8 +84,6 @@ namespace RogueTower
 
     class SpellOrange : Bullet
     {
-        public override RectangleF ActivityZone => World.Bounds;
-
         public SpellOrange(GameWorld world, Vector2 position) : base(world, position)
         {
         }
@@ -90,9 +92,55 @@ namespace RogueTower
         {
             if (Destroyed || hit.Box.Data == Shooter)
                 return;
+            bool explode = false;
             if (hit.Box.Data is Player player)
             {
-                player.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 100);
+                explode = true;
+            }
+            if(hit.Box.Data is Tile tile)
+            {
+                explode = true;
+            }
+            if (explode)
+            {
+                new ScreenShakeRandom(World, 5, 10);
+                new Explosion(World, Position)
+                {
+                    Shooter = this.Shooter,
+                    FrameEnd = 20,
+                };
+                Destroy();
+            }
+        }
+    }
+
+    class Explosion : Bullet
+    {
+        public Explosion(GameWorld world, Vector2 position) : base(world, position)
+        {
+            BulletSize = new Vector2(32, 32);
+            HandleDamage();
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+            HandleDamage();
+        }
+
+        private void HandleDamage()
+        {
+            foreach (var box in World.FindBoxes(Box.Bounds))
+            {
+                if (box.Data is Player player)
+                {
+                    player.Hit(new Vector2(Math.Sign(player.Position.X - Position.X), -2), 20, 50, 100);
+                }
             }
         }
     }
@@ -100,8 +148,6 @@ namespace RogueTower
     class Knife : Bullet
     {
         double knifeDamage = 15.0;
-
-        public override RectangleF ActivityZone => World.Bounds;
 
         public Knife(GameWorld world, Vector2 position) : base(world, position)
         {

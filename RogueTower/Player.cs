@@ -428,6 +428,8 @@ namespace RogueTower
             if (Invincibility > 0)
                 return;
             Velocity = velocity;
+            OnWall = false;
+            OnGround = false;
             Invincibility = invincibility;
             CurrentAction = new ActionHit(this, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
