@@ -78,6 +78,25 @@ namespace RogueTower
         }
     }
 
+    class SpellOrange : Bullet
+    {
+        public override RectangleF ActivityZone => World.Bounds;
+
+        public SpellOrange(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || hit.Box.Data == Shooter)
+                return;
+            if (hit.Box.Data is Player player)
+            {
+                player.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 100);
+            }
+        }
+    }
+
     class Knife : Bullet
     {
         double knifeDamage = 15.0;

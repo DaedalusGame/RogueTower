@@ -212,6 +212,83 @@ namespace RogueTower
             }
         }
 
+        class ActionRanged : Action
+        {
+            public enum SwingAction
+            {
+                UpSwing,
+                DownSwing,
+            }
+
+            public SwingAction SlashAction;
+            public float SlashUpTime;
+            public float SlashDownTime;
+
+            public ActionRanged(MoaiMan moaiMan, float upTime, float downTime) : base(moaiMan)
+            {
+                SlashUpTime = upTime;
+                SlashDownTime = downTime;
+            }
+
+            public override void GetPose(PlayerState basePose)
+            {
+                basePose.Body = !MoaiMan.InAir ? BodyState.Stand : BodyState.Walk(1);
+
+                switch (SlashAction)
+                {
+                    default:
+                    case (SwingAction.UpSwing):
+                        basePose.LeftArm = ArmState.Angular(9);
+                        basePose.RightArm = ArmState.Angular(11);
+                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(-90 - 45));
+                        break;
+                    case (SwingAction.DownSwing):
+                        basePose.Body = BodyState.Crouch(1);
+                        basePose.LeftArm = ArmState.Angular(0);
+                        basePose.RightArm = ArmState.Angular(0);
+                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(0));
+                        break;
+                }
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (SlashAction)
+                {
+                    case (SwingAction.UpSwing):
+                        SlashUpTime -= delta;
+                        if (SlashUpTime < 0)
+                            Fire();
+                        break;
+                    case (SwingAction.DownSwing):
+                        SlashDownTime -= delta;
+                        if (SlashDownTime < 0)
+                            MoaiMan.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+
+            public void Fire()
+            {
+                SlashAction = SwingAction.DownSwing;
+                var facing = GetFacingVector(MoaiMan.Facing);
+                var firePosition = MoaiMan.Position + facing * 10;
+                var homing = MoaiMan.Target.Position - firePosition;
+                homing.Normalize();
+                new SpellOrange(MoaiMan.World, firePosition)
+                {
+                    Velocity = homing * 3,
+                    LifeTime = 70,
+                    Shooter = MoaiMan
+                };
+            }
+        }
+
         class ActionHit : Action
         {
             int Time;
@@ -265,7 +342,8 @@ namespace RogueTower
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
-        public float SpeedLimit = 2;
+        public float Acceleration = 0.25f;
+        public float SpeedLimit = 3.0f;
         public bool OnGround;
         public bool InAir => !OnGround;
         public bool OnWall;
@@ -278,6 +356,7 @@ namespace RogueTower
         public float Lifetime;
         public int Invincibility = 0;
         public int AttackCooldown = 0;
+        public int RangedCooldown = 0;
 
         public HorizontalFacing Facing;
 
@@ -325,23 +404,28 @@ namespace RogueTower
 
         private void Walk(float dx)
         {
-            float adjustedSpeedLimit = SpeedLimit / AppliedFriction;
-            float baseAcceleraton = 0.25f;
+            float adjustedSpeedLimit = SpeedLimit;
+            float baseAcceleraton = Acceleration;
             if (OnGround)
                 baseAcceleraton *= GroundFriction;
-            float acceleration = 0.25f / AppliedFriction;
+            float acceleration = baseAcceleraton;
 
             if (dx < 0 && Velocity.X > -adjustedSpeedLimit)
                 Velocity.X = Math.Max(Velocity.X - acceleration, -adjustedSpeedLimit);
             if (dx > 0 && Velocity.X < adjustedSpeedLimit)
                 Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                AppliedFriction = 1;
             if (CurrentAction is ActionMove move)
                 move.Walking = dx != 0;
         }
 
         private void WalkConstrained(float dx) //Same as walk but don't jump off cliffs
         {
-            var floor = World.FindTiles(Box.Bounds.Offset(new Vector2(Math.Sign(dx) * 16,1)));
+            float offset = Math.Sign(dx);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                offset *= Math.Max(1,Math.Abs(Velocity.X));
+            var floor = World.FindTiles(Box.Bounds.Offset(new Vector2(16 * offset,1)));
             if (!floor.Any())
                 return;
             Walk(dx);
@@ -410,11 +494,15 @@ namespace RogueTower
 
                 if (CurrentAction is ActionAttack)
                 {
-
+                    RangedCooldown--;
                 }
                 else if (CurrentAction is ActionHit)
                 {
 
+                }
+                else if (CurrentAction is ActionRanged)
+                {
+                    AttackCooldown--;
                 }
                 else
                 {
@@ -442,6 +530,11 @@ namespace RogueTower
                     }
                     var attackSize = new Vector2(40, 30);
                     var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
+                    if ((Math.Abs(dx) >= 50 || Target.InAir) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
+                    {
+                        CurrentAction = new ActionRanged(this, 24, 12);
+                        RangedCooldown = 80;
+                    }
                     if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone))
                     {
                         Velocity.X += Math.Sign(dx) * 2;
@@ -449,7 +542,9 @@ namespace RogueTower
                         AttackCooldown = 30;
                     }
                 }
+
                 AttackCooldown--;
+                RangedCooldown--;
             }
             else //Idle
             {
@@ -459,6 +554,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            Lifetime += delta;
+
             CurrentAction.UpdateDelta(delta);
 
             var movement = CalculateMovement(delta);
@@ -509,7 +606,12 @@ namespace RogueTower
                 }
             }
 
-            Lifetime += delta;
+            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
+            var found = World.Find(panicBox);
+            if (found.Any(x => x != Box && !x.HasTag(CollisionTag.NoCollision) && x.Bounds.Intersects(Box.Bounds)))
+            {
+                Box.Teleport(move.Origin.X, move.Origin.Y);
+            }
         }
 
         private void UpdateGroundFriction()
@@ -552,13 +654,12 @@ namespace RogueTower
                 }
             }
 
-            Velocity.X *= AppliedFriction;
-
-            CurrentAction.UpdateDiscrete();
-
             HandleDamage();
 
             UpdateAI();
+            CurrentAction.UpdateDiscrete();
+
+            Velocity.X *= AppliedFriction;
 
             if (Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
@@ -581,6 +682,7 @@ namespace RogueTower
             if (Invincibility > 0)
                 return;
             Velocity = velocity;
+            OnGround = false;
             Invincibility = 1;
             CurrentAction = new ActionHit(this, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);

@@ -103,6 +103,7 @@ namespace RogueTower
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
+        public float Acceleration = 0.25f;
         public float SpeedLimit = 2;
         public bool OnGround;
         public bool InAir => !OnGround;
@@ -347,14 +348,14 @@ namespace RogueTower
                 }
             }
 
-            Velocity.X *= AppliedFriction;
-
             HandleDamage();
 
             CurrentAction.UpdateDiscreet();
 
             CurrentAction.OnInput();
             Controls.Reset();
+
+            Velocity.X *= AppliedFriction;
 
             if (CurrentAction.HasGravity && Velocity.Y < GravityLimit)
                 Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity

@@ -410,19 +410,22 @@ namespace RogueTower
 
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
+            var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
+            var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
                 {
                     DrawSpriteExt(knife, 0, bullet.Position + knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
                 }
+                if (bullet is SpellOrange spellOrange)
+                {
+                    DrawSprite(magicOrange, Frame, bullet.Position - magicOrange.Middle, SpriteEffects.None, 0);
+                }
             }
 
             foreach (VisualEffect effect in World.Effects)
             {
-                var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
-
-
                 if (effect is SlashEffect slashEffect)
                 {
                     var slashAngle = slashEffect.Angle;
@@ -465,7 +468,7 @@ namespace RogueTower
             SpriteBatch.End();
 
             SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
-            DrawText($"Tiles Ascended: {HeightTraversed}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+            DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
             SpriteBatch.End();
         }
 

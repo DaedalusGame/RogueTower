@@ -44,23 +44,24 @@ namespace RogueTower
 
         protected void HandleExtraJump()
         {
-            if (/*Player.ExtraJumps > 0 &&*/ HandleJumpInput())
+            if (Player.ExtraJumps > 0 && HandleJumpInput())
                 Player.ExtraJumps--;
         }
 
         protected bool HandleMoveInput()
         {
-            float adjustedSpeedLimit = Player.SpeedLimit / Player.AppliedFriction;
-            float baseAcceleraton = 0.25f;
+            float adjustedSpeedLimit = Player.SpeedLimit;
+            float baseAcceleraton = Player.Acceleration;
             if (Player.OnGround)
                 baseAcceleraton *= Player.GroundFriction;
-            float acceleration = 0.25f / Player.AppliedFriction;
+            float acceleration = baseAcceleraton;
 
             if (Player.Controls.MoveLeft && Player.Velocity.X > -adjustedSpeedLimit)
                 Player.Velocity.X = Math.Max(Player.Velocity.X - acceleration, -adjustedSpeedLimit);
             if (Player.Controls.MoveRight && Player.Velocity.X < adjustedSpeedLimit)
                 Player.Velocity.X = Math.Min(Player.Velocity.X + acceleration, adjustedSpeedLimit);
-
+            if ((Player.Controls.MoveLeft && Player.Velocity.X < 0) || (Player.Controls.MoveRight && Player.Velocity.X > 0))
+                Player.AppliedFriction = 1;
             return Player.Controls.MoveLeft || Player.Controls.MoveRight;
         }
 
