@@ -361,7 +361,9 @@ namespace RogueTower
 
             Rectangle drawZone = GetDrawZone();
 
-            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.LightSkyBlue);
+            Color bg1 = new Color(32, 19, 48);
+            Color bg2 = new Color(126, 158, 153);
+            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.Lerp(bg1, bg2, World.Player.Position.Y / World.Height));
 
             DrawMapBackground(World.Map);
             DepthShear = new Shear(double.NegativeInfinity, 0.75);
