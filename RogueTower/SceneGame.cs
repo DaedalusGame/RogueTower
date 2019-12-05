@@ -357,13 +357,21 @@ namespace RogueTower
 
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
 
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: WorldTransform, effect: Shader);
+            Color bg1 = new Color(32, 19, 48);
+            Color bg2 = new Color(126, 158, 153);
+            Shader.CurrentTechnique = Shader.Techniques["Gradient"];
+            Shader.Parameters["gradient_topleft"].SetValue(bg1.ToVector4());
+            Shader.Parameters["gradient_topright"].SetValue(bg1.ToVector4());
+            Shader.Parameters["gradient_bottomleft"].SetValue(bg2.ToVector4());
+            Shader.Parameters["gradient_bottomright"].SetValue(bg2.ToVector4());
+            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform);
+            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.White);
+            SpriteBatch.End();
+
             StartNormalBatch();
 
             Rectangle drawZone = GetDrawZone();
-
-            Color bg1 = new Color(32, 19, 48);
-            Color bg2 = new Color(126, 158, 153);
-            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.Lerp(bg1, bg2, World.Player.Position.Y / World.Height));
 
             DrawMapBackground(World.Map);
             DepthShear = new Shear(double.NegativeInfinity, 0.75);
