@@ -43,22 +43,24 @@ namespace RogueTower
         public bool ClimbDown;
 
         KeyboardState LastState;
+        GamePadState LastGPState;
 
         public void Update(SceneGame game)
         {
-            if(game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space))
+            if(game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X)))
                 Attack = true;
 
-            MoveLeft = game.KeyState.IsKeyDown(Keys.A);
-            MoveRight = game.KeyState.IsKeyDown(Keys.D);
+            MoveLeft = game.KeyState.IsKeyDown(Keys.A) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickLeft) || game.PadState.IsButtonDown(Buttons.DPadLeft));
+            MoveRight = game.KeyState.IsKeyDown(Keys.D) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickRight) || game.PadState.IsButtonDown(Buttons.DPadRight));
 
-            if(game.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift))
+            if((game.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift)) || (game.PadState.IsButtonDown(Buttons.A) && LastGPState.IsButtonUp(Buttons.A)))
                 Jump = true;
-            JumpHeld = game.KeyState.IsKeyDown(Keys.LeftShift);
-            ClimbUp = game.KeyState.IsKeyDown(Keys.W);
-            ClimbDown = DownAttack = game.KeyState.IsKeyDown(Keys.S);
+            JumpHeld = game.KeyState.IsKeyDown(Keys.LeftShift) || game.PadState.IsButtonDown(Buttons.A);
+            ClimbUp = game.KeyState.IsKeyDown(Keys.W) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickUp) || game.PadState.IsButtonDown(Buttons.DPadUp));
+            ClimbDown = DownAttack = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
 
             LastState = game.KeyState;
+            LastGPState = game.PadState;
         }
 
         public void Reset()

@@ -45,6 +45,9 @@ namespace RogueTower
         public KeyboardState LastKeyState;
         public KeyboardState KeyState;
 
+        public GamePadState GamePadState;
+        public GamePadState LastGamePadState;
+
         const int FontSpritesAmount = 64;
         SpriteReference[] FontSprites = new SpriteReference[FontSpritesAmount];
 
@@ -181,6 +184,8 @@ namespace RogueTower
             AudioMgr.Update();
             MouseState = Mouse.GetState();
             KeyState = Keyboard.GetState();
+            GamePadState = GamePad.GetState(PlayerIndex.One);
+            
 
             Scene.Update(gameTime);
 
