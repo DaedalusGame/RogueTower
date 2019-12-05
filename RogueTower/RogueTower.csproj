@@ -41,7 +41,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Input.cs" />
     <Compile Include="TileBG.cs" />
     <Compile Include="Action.cs" />
     <Compile Include="Bullet.cs" />
