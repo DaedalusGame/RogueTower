@@ -220,12 +220,14 @@ namespace RogueTower
                 DownSwing,
             }
 
+            public Player Target;
             public SwingAction SlashAction;
             public float SlashUpTime;
             public float SlashDownTime;
 
-            public ActionRanged(MoaiMan moaiMan, float upTime, float downTime) : base(moaiMan)
+            public ActionRanged(MoaiMan moaiMan, Player target, float upTime, float downTime) : base(moaiMan)
             {
+                Target = target;
                 SlashUpTime = upTime;
                 SlashDownTime = downTime;
             }
@@ -278,7 +280,7 @@ namespace RogueTower
                 SlashAction = SwingAction.DownSwing;
                 var facing = GetFacingVector(MoaiMan.Facing);
                 var firePosition = MoaiMan.Position + facing * 10;
-                var homing = MoaiMan.Target.Position - firePosition;
+                var homing = Target.Position - firePosition;
                 homing.Normalize();
                 new SpellOrange(MoaiMan.World, firePosition)
                 {
@@ -361,6 +363,7 @@ namespace RogueTower
         public HorizontalFacing Facing;
 
         public Player Target;
+        public int TargetTime;
 
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -482,15 +485,21 @@ namespace RogueTower
             RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
 
             if (viewArea.Contains(World.Player.Position))
+            {
                 Target = World.Player;
+                TargetTime = 200;
+            }
+            else
+            {
+                TargetTime--;
+                if (TargetTime <= 0)
+                    Target = null;
+            }
 
             if (Target != null) //Engaged
             {
                 float dx = Target.Position.X - Position.X;
-                if (dx < 0)
-                    Facing = HorizontalFacing.Left;
-                else if (dx > 0)
-                    Facing = HorizontalFacing.Right;
+                float dy = Target.Position.Y - Position.Y;
 
                 if (CurrentAction is ActionAttack)
                 {
@@ -506,6 +515,11 @@ namespace RogueTower
                 }
                 else
                 {
+                    if (dx < 0)
+                        Facing = HorizontalFacing.Left;
+                    else if (dx > 0)
+                        Facing = HorizontalFacing.Right;
+
                     float preferredDistanceMin = 20;
                     float preferredDistanceMax = 30;
                     if (Target.Invincibility > 0)
@@ -530,10 +544,10 @@ namespace RogueTower
                     }
                     var attackSize = new Vector2(40, 30);
                     var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
-                    bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 25 && Math.Sign(Target.Velocity.X) >= -Math.Sign(dx);
+                    bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
                     {
-                        CurrentAction = new ActionRanged(this, 24, 12);
+                        CurrentAction = new ActionRanged(this, Target, 24, 12);
                         RangedCooldown = 80;
                     }
                     if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
