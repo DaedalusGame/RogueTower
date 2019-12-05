@@ -32,6 +32,9 @@ namespace RogueTower
         public KeyboardState KeyState => Game.KeyState;
         public KeyboardState LastKeyState => Game.LastKeyState;
 
+        public GamePadState PadState => Game.GamePadState;
+        public GamePadState LastPadState => Game.LastGamePadState;
+
         public int GetNoiseValue(int x, int y)
         {
             return Game.GetNoiseValue(x, y);
