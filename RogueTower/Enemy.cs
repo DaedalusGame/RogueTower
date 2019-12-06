@@ -375,6 +375,7 @@ namespace RogueTower
         {
             Box = World.Create(x, y, 12, 14);
             Box.Data = this;
+            Box.AddTags(CollisionTag.Character);
         }
 
         public void ResetState()
@@ -399,8 +400,8 @@ namespace RogueTower
         {
             return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
             {
-                if (collision.Hit.Box.HasTag(CollisionTag.NoCollision))
-                    return null;
+                if (IgnoresCollision(collision.Hit.Box))
+                    return new CrossResponse(collision);
                 return new SlideAdvancedResponse(collision);
             });
         }
@@ -580,7 +581,7 @@ namespace RogueTower
 
             IMovement move = Move(movement);
 
-            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !c.Box.HasTag(CollisionTag.NoCollision));
+            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
 
             if (move.Hits.Any() && !hits.Any())
             {
@@ -623,10 +624,15 @@ namespace RogueTower
 
             RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
             var found = World.Find(panicBox);
-            if (found.Any(x => x != Box && !x.HasTag(CollisionTag.NoCollision) && x.Bounds.Intersects(Box.Bounds)))
+            if (found.Any(x => x != Box && !IgnoresCollision(x) && x.Bounds.Intersects(Box.Bounds)))
             {
                 Box.Teleport(move.Origin.X, move.Origin.Y);
             }
+        }
+
+        private bool IgnoresCollision(IBox box)
+        {
+            return box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
         }
 
         private void UpdateGroundFriction()

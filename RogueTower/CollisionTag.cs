@@ -10,5 +10,6 @@ namespace RogueTower
     {
         Wall,
         NoCollision,
+        Character,
     }
 }
