@@ -14,6 +14,7 @@ namespace RogueTower
     {
         public Map Map;
         public Player Player;
+        public Queue<GameObject> ObjectQueue = new Queue<GameObject>();
         public List<GameObject> Objects = new List<GameObject>();
         public IEnumerable<Bullet> Bullets => Objects.OfType<Bullet>();
         public IEnumerable<VisualEffect> Effects => Objects.OfType<VisualEffect>();
@@ -26,6 +27,11 @@ namespace RogueTower
         public GameWorld(int width, int height, float cellSize = 32) : base(width * 16, height * 16, cellSize)
         {
             Map = new Map(this, width, height);
+        }
+
+        public void Add(GameObject obj)
+        {
+            ObjectQueue.Enqueue(obj);
         }
 
         public IEnumerable<IBox> FindBoxes(float x, float y, float w, float h)
@@ -63,6 +69,11 @@ namespace RogueTower
             }
 
             Objects.RemoveAll(x => x.Destroyed);
+            while (ObjectQueue.Count > 0)
+            {
+                var added = ObjectQueue.Dequeue();
+                Objects.Add(added);
+            }
 
             Hitstop -= 1;
         }

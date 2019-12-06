@@ -548,7 +548,7 @@ namespace RogueTower
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
                     {
                         CurrentAction = new ActionRanged(this, Target, 24, 12);
-                        RangedCooldown = 80;
+                        RangedCooldown = 60 + Random.Next(40);
                     }
                     if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
@@ -702,6 +702,7 @@ namespace RogueTower
             CurrentAction = new ActionHit(this, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
+            World.Hitstop = 6;
         }
 
         public override void ShowDamage(double damage)

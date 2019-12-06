@@ -18,6 +18,7 @@ namespace RogueTower
             get;
             private set;
         }
+        public Random Random = new Random();
 
         public abstract RectangleF ActivityZone
         {
@@ -28,7 +29,7 @@ namespace RogueTower
         public GameObject(GameWorld world)
         {
             World = world;
-            World.Objects.Add(this);
+            World.Add(this);
         }
 
         public virtual void Destroy()

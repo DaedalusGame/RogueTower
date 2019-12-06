@@ -436,6 +436,7 @@ namespace RogueTower
             CurrentAction = new ActionHit(this, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
+            World.Hitstop = 6;
         }
 
         public override void ShowDamage(double damage)

@@ -130,7 +130,8 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
-            HandleDamage();
+            if(Frame < FrameEnd / 2)
+                HandleDamage();
         }
 
         private void HandleDamage()
