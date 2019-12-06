@@ -41,7 +41,7 @@ namespace RogueTower
 
         public IEnumerable<IBox> FindBoxes(RectangleF area)
         {
-            return Find(area).Where(box => box.Bounds.Intersects(area));
+            return Find(area).Where(box => box.Bounds.Intersects(area)).ToList();
         }
 
         public IEnumerable<Tile> FindTiles(float x, float y, float w, float h)
