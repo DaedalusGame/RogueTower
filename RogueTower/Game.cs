@@ -197,14 +197,14 @@ namespace RogueTower
             if(gameState == GameState.Game)
             {
                 Scene.Update(gameTime);
-                if (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start))
+                if (KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter) || (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start)))
                 {
                     gameState = GameState.Paused;
                 }
             }
             else if (gameState == GameState.Paused)
             {
-                if (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start))
+                if (KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter) || (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start)))
                 {
                     gameState = GameState.Game;
                 }
