@@ -48,7 +48,6 @@ namespace RogueTower
 
     class ScreenShakeRandom : ScreenShake
     {
-        Random Random = new Random();
         float Amount;
 
         public ScreenShakeRandom(GameWorld world, float amount, float time) : base(world, time)

@@ -299,6 +299,8 @@ namespace RogueTower
 
         public int HeightTraversed;
 
+        public GameState gameState = GameState.Game;
+
         private Matrix CreateViewMatrix()
         {
             return Matrix.Identity
@@ -306,6 +308,12 @@ namespace RogueTower
                 * Matrix.CreateTranslation(new Vector3(-CameraSize / 2, 0)) //These two lines center the character on (0,0)
                 * Matrix.CreateScale(ViewScale, ViewScale, 1) //Scale it up by 2
                 * Matrix.CreateTranslation(Viewport.Width / 2, Viewport.Height / 2, 0); //Translate the character to the middle of the viewport
+        }
+
+        public enum GameState
+        {
+            Game,
+            Paused
         }
 
         public SceneGame(Game game) : base(game)
@@ -335,9 +343,27 @@ namespace RogueTower
 
         public override void Update(GameTime gameTime)
         {
-            if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab))
-                GameSpeedToggle = !GameSpeedToggle;
-            World.Update(GameSpeedToggle ? 0.1f : 1.0f);
+
+            //Pause Menu Updates
+            if (gameState == GameState.Game)
+            {
+                if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab))
+                    GameSpeedToggle = !GameSpeedToggle;
+                World.Update(GameSpeedToggle ? 0.1f : 1.0f);
+                if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
+                {
+                    gameState = GameState.Paused;
+                }
+            }
+            else if (gameState == GameState.Paused)
+            {
+                if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
+                {
+                    gameState = GameState.Game;
+                }
+            }
+            HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
+
             UpdateCamera();
         }
 
@@ -363,8 +389,7 @@ namespace RogueTower
                     WorldTransform *= Matrix.CreateTranslation(screenShake.Offset.X, screenShake.Offset.Y, 0);
             }
 
-            HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
-
+            //Background Gradient
             SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: WorldTransform, effect: Shader);
             Color bg1 = new Color(32, 19, 48);
             Color bg2 = new Color(126, 158, 153);
@@ -480,9 +505,20 @@ namespace RogueTower
 
             SpriteBatch.End();
 
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
-            DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
-            SpriteBatch.End();
+            //Pause Screen
+            if (gameState != GameState.Paused)
+            {
+                SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
+                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                SpriteBatch.End();
+            }
+            else
+            {
+                SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
+                SpriteBatch.Draw(Pixel, new Rectangle(GraphicsDevice.Viewport.X, GraphicsDevice.Viewport.Y, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), new Color(0, 0, 0, 128));
+                DrawText(Game.ConvertToPixelText("PAUSED"), new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2), Alignment.Center, new TextParameters().SetColor(Color.White, Color.Black));
+                SpriteBatch.End();
+            }
         }
 
         private void DrawMapBackground(Map map)

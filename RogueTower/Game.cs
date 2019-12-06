@@ -48,8 +48,6 @@ namespace RogueTower
         public GamePadState GamePadState;
         public GamePadState LastGamePadState;
 
-        public GameState gameState = GameState.Game;
-
         const int FontSpritesAmount = 64;
         SpriteReference[] FontSprites = new SpriteReference[FontSpritesAmount];
 
@@ -63,11 +61,6 @@ namespace RogueTower
             Content.RootDirectory = "Content";
         }
 
-        public enum GameState
-        {
-            Game,
-            Paused
-        }
         public int GetNoiseValue(int x, int y)
         {
             int xa = Util.PositiveMod(x, 16);
@@ -193,31 +186,15 @@ namespace RogueTower
             KeyState = Keyboard.GetState();
             GamePadState = GamePad.GetState(PlayerIndex.One);
 
-            //Pause Menu Poopy
-            if(gameState == GameState.Game)
-            {
-                Scene.Update(gameTime);
-                if (KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter) || (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start)))
-                {
-                    gameState = GameState.Paused;
-                }
-            }
-            else if (gameState == GameState.Paused)
-            {
-                if (KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter) || (GamePadState.IsButtonDown(Buttons.Start) && LastGamePadState.IsButtonUp(Buttons.Start)))
-                {
-                    gameState = GameState.Game;
-                }
-            }
-
             IsMouseVisible = Scene.ShowCursor;
+
+            Scene.Update(gameTime);
 
             LastMouseState = MouseState;
             LastKeyState = KeyState;
             LastGamePadState = GamePadState;
 
             GFPS.Update(gameTime);
-
             base.Update(gameTime);
         }
         public static Sound PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
@@ -241,18 +218,9 @@ namespace RogueTower
             Frame++;
 
             Scene.Draw(gameTime);
-            if (gameState == GameState.Paused)
-            {
-                SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
-                SpriteBatch.Draw(Pixel, new Rectangle(GraphicsDevice.Viewport.X, GraphicsDevice.Viewport.Y, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), new Color(0,0,0,128));
-                DrawText("PAUSED", new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height/2), Alignment.Center, new TextParameters().SetColor(Color.White, Color.Black));
-                SpriteBatch.End();
-            }
 
             FPS.Update(gameTime);
-
-
-            SpriteBatch.Begin(blendState:BlendState.NonPremultiplied);
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
             DrawText($"FPS: {FPS.AverageFramesPerSecond.ToString("f1")}\nGFPS: {GFPS.AverageFramesPerSecond.ToString("f1")}", new Vector2(0, 0), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
             SpriteBatch.End();
 
