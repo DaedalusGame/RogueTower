@@ -419,43 +419,6 @@ namespace RogueTower
                 Invincibility--;
         }
 
-        public void Slash()
-        {
-            CurrentAction = new ActionSlash(this, CurrentAction is ActionSlash ? 2 : 0, 4, 8, 2);
-            Velocity.Y *= 0.3f;
-        }
-
-        public void Stab()
-        {
-            CurrentAction = new ActionStab(this, 4, 10);
-            Velocity.Y *= 0.3f;
-        }
-
-        public void StabDown()
-        {
-            CurrentAction = new ActionDownStab(this, 4, 10);
-            Velocity.Y *= 0.3f;
-        }
-
-        public void SlashKnife()
-        {
-            CurrentAction = new ActionKnifeThrow(this, CurrentAction is ActionSlash ? 2 : 0, 4, 8, 2);
-            Velocity.Y *= 0.3f;
-        }
-
-        public void SlashUp()
-        {
-            CurrentAction = new ActionSlashUp(this, CurrentAction is ActionSlash ? 2 : 0, 4, 8, 2);
-            Velocity.Y *= 0.3f;
-        }
-
-        public void SlashDown()
-        {
-            CurrentAction = new ActionPlunge(this, 5, 8);
-            Velocity.X = 0;
-            Velocity.Y = 0;
-        }
-
         public float GetJumpVelocity(float height)
         {
             return (float)Math.Sqrt(2 * Gravity * height);

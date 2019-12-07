@@ -26,6 +26,43 @@ namespace RogueTower
         public abstract WeaponState GetWeaponState(float angle);
 
         public abstract void HandleAttack(Player player);
+
+        public void Slash(Player player, float slashStartTime = 2, float slashUpTime = 4, float slashDownTime = 8, float slashFinishTime = 2)
+        {
+            player.CurrentAction = new ActionSlash(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime);
+            player.Velocity.Y *= 0.3f;
+        }
+
+        public void Stab(Player player, float upTime = 4, float downTime = 10)
+        {
+            player.CurrentAction = new ActionStab(player, upTime, downTime);
+            player.Velocity.Y *= 0.3f;
+        }
+
+        public void StabDown(Player player, float upTime = 4, float downTime = 10)
+        {
+            player.CurrentAction = new ActionDownStab(player, upTime, downTime);
+            player.Velocity.Y *= 0.3f;
+        }
+
+        public void SlashKnife(Player player, float slashStartTime = 2, float slashUpTime = 4, float slashDownTime = 8, float slashFinishTime = 2)
+        {
+            player.CurrentAction = new ActionKnifeThrow(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime);
+            player.Velocity.Y *= 0.3f;
+        }
+
+        public void SlashUp(Player player, float slashStartTime = 2, float slashUpTime = 4, float slashDownTime = 8, float slashFinishTime = 2)
+        {
+            player.CurrentAction = new ActionSlashUp(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime);
+            player.Velocity.Y *= 0.3f;
+        }
+
+        public void SlashDown(Player player, float plungeStartTime = 5, float plungeFinishTime = 8)
+        {
+            player.CurrentAction = new ActionPlunge(player, plungeStartTime, plungeFinishTime);
+            player.Velocity.X = 0;
+            player.Velocity.Y = 0;
+        }
     }
 
     class WeaponSword : Weapon
@@ -44,18 +81,18 @@ namespace RogueTower
         {
             if (player.Controls.DownAttack && player.InAir)
             {
-                player.SlashDown();
+                SlashDown(player);
             }
             else if (player.Controls.DownAttack)
             {
-                player.SlashKnife();
+                SlashKnife(player);
             }
             else if (player.Controls.Attack)
             {
                 if(player.CurrentAction.GetType() == typeof(ActionSlash))
-                    player.SlashUp();
+                    SlashUp(player);
                 else
-                    player.Slash();
+                    Slash(player);
             }
             
         }
@@ -77,11 +114,11 @@ namespace RogueTower
         {
             if (player.Controls.Attack)
             {
-                player.Stab();
+                Stab(player);
             }
             if(player.Controls.DownAttack)
             {
-                player.StabDown();
+                StabDown(player);
             }
         }
     }
@@ -102,7 +139,7 @@ namespace RogueTower
         {
             if (player.Controls.Attack)
             {
-                player.SlashDown();
+                SlashDown(player);
             }
         }
     }

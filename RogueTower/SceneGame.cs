@@ -347,7 +347,7 @@ namespace RogueTower
             //Pause Menu Updates
             if (gameState == GameState.Game)
             {
-                if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab))
+                if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab) || (PadState.IsButtonDown(Buttons.RightStick) && LastPadState.IsButtonUp(Buttons.RightStick)))
                     GameSpeedToggle = !GameSpeedToggle;
                 World.Update(GameSpeedToggle ? 0.1f : 1.0f);
                 if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
