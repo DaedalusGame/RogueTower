@@ -230,6 +230,7 @@ namespace RogueTower
                 Target = target;
                 SlashUpTime = upTime;
                 SlashDownTime = downTime;
+                PlaySFX(sfx_wand_charge, 1.0f, 0.1f, 0.4f);
             }
 
             public override void GetPose(PlayerState basePose)
@@ -288,6 +289,7 @@ namespace RogueTower
                     FrameEnd = 70,
                     Shooter = MoaiMan
                 };
+                PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
             }
         }
 
@@ -706,7 +708,7 @@ namespace RogueTower
             OnGround = false;
             Invincibility = 1;
             CurrentAction = new ActionHit(this, hurttime);
-            PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            PlaySFX(sfx_player_hurt, 1.0f, 0.2f, 0.7f);
             HandleDamage(damageIn);
             World.Hitstop = 6;
         }

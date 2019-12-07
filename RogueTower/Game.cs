@@ -22,8 +22,9 @@ namespace RogueTower
         public Effect Shader;
 
         public static Sound bgm_title_theme;
-        public static Sound sfx_knife_throw;
+        public static Sound sfx_explosion1;
         public static Sound sfx_impact_blunt;
+        public static Sound sfx_knife_throw;
         public static Sound sfx_player_hurt;
         public static Sound sfx_player_jump;
         public static Sound sfx_player_land;
@@ -31,6 +32,8 @@ namespace RogueTower
         public static Sound sfx_sword_bink;
         public static Sound sfx_tile_break;
         public static Sound sfx_tile_icebreak;
+        public static Sound sfx_wand_charge;
+        public static Sound sfx_wand_orange_cast;
 
         public Scene Scene;
 
@@ -114,8 +117,9 @@ namespace RogueTower
             AudioMgr.Init("content");
             bgm_title_theme =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
 
-            sfx_knife_throw = AudioMgr.LoadSound("sounds/sfx/knife_throw.wav");
+            sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
             sfx_impact_blunt = AudioMgr.LoadSound("sounds/sfx/impact_blunt.wav");
+            sfx_knife_throw = AudioMgr.LoadSound("sounds/sfx/knife_throw.wav");
             sfx_player_hurt = AudioMgr.LoadSound("sounds/sfx/player_hurt.wav");
             sfx_player_jump = AudioMgr.LoadSound("sounds/sfx/jump_sfx.wav");
             sfx_player_land = AudioMgr.LoadSound("sounds/sfx/player_land.wav");
@@ -123,6 +127,8 @@ namespace RogueTower
             sfx_sword_swing = AudioMgr.LoadSound("sounds/sfx/sword_swing.wav");
             sfx_tile_break = AudioMgr.LoadSound("sounds/sfx/tilebreak_default.wav");
             sfx_tile_icebreak = AudioMgr.LoadSound("sounds/sfx/icetile_swordbreak.wav");
+            sfx_wand_charge = AudioMgr.LoadSound("sounds/sfx/wand_charge.wav");
+            sfx_wand_orange_cast = AudioMgr.LoadSound("sounds/sfx/wand_orange_cast.wav");
 
             var musicChannel = bgm_title_theme.Play();
             musicChannel.Looping = true;

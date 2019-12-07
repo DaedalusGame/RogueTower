@@ -119,6 +119,7 @@ namespace RogueTower
         public Explosion(GameWorld world, Vector2 position) : base(world, position)
         {
             BulletSize = new Vector2(32, 32);
+            PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
             HandleDamage();
         }
 

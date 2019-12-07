@@ -22,6 +22,9 @@
 #begin sounds/bgm/generic_theme.ogg
 /copy:sounds/bgm/generic_theme.ogg
 
+#begin sounds/sfx/fx_explosion1.wav
+/copy:sounds/sfx/fx_explosion1.wav
+
 #begin sounds/sfx/icetile_swordbreak.wav
 /copy:sounds/sfx/icetile_swordbreak.wav
 
@@ -45,4 +48,10 @@
 
 #begin sounds/sfx/tilebreak_default.wav
 /copy:sounds/sfx/tilebreak_default.wav
+
+#begin sounds/sfx/wand_charge.wav
+/copy:sounds/sfx/wand_charge.wav
+
+#begin sounds/sfx/wand_orange_cast.wav
+/copy:sounds/sfx/wand_orange_cast.wav
 

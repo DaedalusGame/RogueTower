@@ -36,7 +36,7 @@ namespace RogueTower
             if (Player.Controls.Jump)
             {
                 Player.Velocity.Y -= Player.GetJumpVelocity(60);
-                PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
+                PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
                 return true;
             }
             return false;
@@ -306,7 +306,7 @@ namespace RogueTower
                 Player.Velocity = GetFacingVector(Player.Facing) * -Player.GetJumpVelocity(30) * 0.5f + new Vector2(0, -Player.GetJumpVelocity(30));
                 //Player.DisableAirControl = true;
                 Player.Facing = Player.Facing.Mirror();
-                PlaySFX(sfx_player_jump, 0.7f, 0.1f, 0.5f);
+                PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
             }
             if (Player.OnGround && ((Player.Controls.MoveLeft && Player.Facing == HorizontalFacing.Right) || (Player.Controls.MoveRight && Player.Facing == HorizontalFacing.Left)))
             {
