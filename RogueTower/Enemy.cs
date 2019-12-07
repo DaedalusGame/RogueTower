@@ -205,7 +205,7 @@ namespace RogueTower
                 }
                 if(!Parried)
                     MoaiMan.SwingWeapon(weaponMask, 10);
-                var effect = new SlashEffect(MoaiMan.World, () => MoaiMan.Position, 0.7f, 0, MoaiMan.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+                var effect = new SlashEffectRound(MoaiMan.World, () => MoaiMan.Position, 0.7f, 0, MoaiMan.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
                 if (Parried)
                     effect.Frame = effect.FrameEnd / 2;
                 SlashAction = SwingAction.DownSwing;

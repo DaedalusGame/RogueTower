@@ -24,6 +24,8 @@ namespace RogueTower
         }
 
         public abstract WeaponState GetWeaponState(float angle);
+
+        public abstract void HandleAttack(Player player);
     }
 
     class WeaponSword : Weapon
@@ -36,6 +38,26 @@ namespace RogueTower
         public override WeaponState GetWeaponState(float angle)
         {
             return WeaponState.Sword(angle);
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.DownAttack && player.InAir)
+            {
+                player.SlashDown();
+            }
+            else if (player.Controls.DownAttack)
+            {
+                player.SlashKnife();
+            }
+            else if (player.Controls.Attack)
+            {
+                if(player.CurrentAction.GetType() == typeof(ActionSlash))
+                    player.SlashUp();
+                else
+                    player.Slash();
+            }
+            
         }
     }
 
@@ -50,6 +72,18 @@ namespace RogueTower
         {
             return WeaponState.Knife(angle);
         }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                player.Stab();
+            }
+            if(player.Controls.DownAttack)
+            {
+                player.StabDown();
+            }
+        }
     }
 
     class WeaponLance : Weapon
@@ -62,6 +96,14 @@ namespace RogueTower
         public override WeaponState GetWeaponState(float angle)
         {
             return WeaponState.Lance(angle);
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                player.SlashDown();
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace RogueTower
 
         abstract public void UpdateDelta(float delta);
 
-        abstract public void UpdateDiscreet();
+        abstract public void UpdateDiscrete();
 
         protected bool HandleJumpInput()
         {
@@ -67,15 +67,7 @@ namespace RogueTower
 
         protected void HandleSlashInput()
         {
-            if (Player.Controls.Attack)
-            {
-                if (Player.Controls.DownAttack && Player.InAir)
-                    Player.SlashDown();
-                else if (Player.Controls.DownAttack)
-                    Player.SlashKnife();
-                else
-                    Player.Slash();
-            }
+            Player.Weapon.HandleAttack(Player);
         }
 
         abstract public void GetPose(PlayerState basePose);
@@ -108,7 +100,7 @@ namespace RogueTower
                 Player.CurrentAction = new ActionMove(Player);
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             //NOOP
         }
@@ -156,7 +148,7 @@ namespace RogueTower
                 Player.CurrentAction = new ActionIdle(Player);
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             //NOOP
         }
@@ -211,7 +203,7 @@ namespace RogueTower
                 Player.CurrentAction = new ActionIdle(Player);
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             if (Player.OnWall)
             {
@@ -271,7 +263,7 @@ namespace RogueTower
             //NOOP
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             Time--;
             if (Time <= 0)
@@ -329,7 +321,7 @@ namespace RogueTower
             ClimbFrame += Player.Velocity.Y * delta * 0.5f;
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             var climbTiles = Player.World.FindTiles(Player.Box.Bounds.Offset(GetFacingVector(Player.Facing))).Where(tile => tile.CanClimb(Player.Facing.Mirror()));
             if (!climbTiles.Any())
@@ -403,14 +395,9 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            if (Player.Controls.Attack && IsDownSwing)
+            if (IsDownSwing)
             {
-                if (Player.Controls.DownAttack && Player.InAir)
-                    Player.SlashDown();
-                else if (Player.Controls.DownAttack)
-                    Player.SlashKnife();
-                else
-                    Player.SlashUp();
+                HandleSlashInput();
             }
             if (Parried)
                 HandleExtraJump();
@@ -466,13 +453,13 @@ namespace RogueTower
 
         public virtual void SwingVisual(bool parry)
         {
-            var effect = new SlashEffect(Player.World, () => Player.Position, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            var effect = new SlashEffectRound(Player.World, () => Player.Position, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             //NOOP
         }
@@ -523,7 +510,143 @@ namespace RogueTower
 
         public override void SwingVisual(bool parry)
         {
-            var effect = new SlashEffect(Player.World, () => Player.Position, Player.Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
+            var effect = new SlashEffectRound(Player.World, () => Player.Position, Player.Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
+            if (parry)
+                effect.Frame = effect.FrameEnd / 2;
+            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+        }
+    }
+
+    class ActionStab : Action
+    {
+        public enum SwingAction
+        {
+            UpSwing,
+            DownSwing,
+        }
+
+        public SwingAction SlashAction;
+        public float SlashUpTime;
+        public float SlashDownTime;
+        public bool Parried;
+
+        public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
+        public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
+
+        public override float Friction => Parried ? 1 : base.Friction;
+        public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+
+        public ActionStab(Player player, float upTime, float downTime) : base(player)
+        {
+            SlashUpTime = upTime;
+            SlashDownTime = downTime;
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.Body = !Player.InAir ? BodyState.Stand : BodyState.Walk(1);
+
+            switch (SlashAction)
+            {
+                default:
+                case (SwingAction.UpSwing):
+                    basePose.RightArm = ArmState.Angular(8);
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 + 22.5f));
+                    break;
+                case (SwingAction.DownSwing):
+                    basePose.Body = BodyState.Crouch(1);
+                    basePose.RightArm = ArmState.Angular(0);
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    break;
+            }
+        }
+
+        public override void OnInput()
+        {
+
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            switch (SlashAction)
+            {
+                case (SwingAction.UpSwing):
+                    SlashUpTime -= delta;
+                    if (SlashUpTime < 0)
+                        Swing();
+                    break;
+                case (SwingAction.DownSwing):
+                    SlashDownTime -= delta;
+                    if (SlashDownTime < 0)
+                        Player.ResetState();
+                    break;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+
+        public virtual void Swing()
+        {
+            Vector2 Position = Player.Position;
+            HorizontalFacing Facing = Player.Facing;
+            Vector2 FacingVector = GetFacingVector(Facing);
+            Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
+            Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
+            RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
+            if (Player.Weapon.CanParry)
+            {
+                Vector2 parrySize = new Vector2(22, 22);
+                bool success = Player.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                if (success)
+                    Parried = true;
+            }
+            if (!Parried)
+                Player.SwingWeapon(weaponMask, 10);
+            SwingVisual(Parried);
+            SlashAction = SwingAction.DownSwing;
+        }
+
+        public virtual void SwingVisual(bool parry)
+        {
+            Vector2 FacingVector = GetFacingVector(Player.Facing);
+            var effect = new SlashEffectStraight(Player.World, () => Player.Position + FacingVector * 6, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            if (parry)
+                effect.Frame = effect.FrameEnd / 2;
+            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+        }
+    }
+
+    class ActionDownStab : ActionStab
+    {
+        public ActionDownStab(Player player, float upTime, float downTime) : base(player, upTime, downTime)
+        {
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (SlashAction)
+            {
+                default:
+                case (SwingAction.UpSwing):
+                    basePose.Body = BodyState.Crouch(2);
+                    basePose.RightArm = ArmState.Angular(6);
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    break;
+                case (SwingAction.DownSwing):
+                    basePose.Body = BodyState.Crouch(1);
+                    basePose.RightArm = ArmState.Angular(1);
+                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    break;
+            }
+        }
+
+        public override void SwingVisual(bool parry)
+        {
+            Vector2 FacingVector = GetFacingVector(Player.Facing);
+            var effect = new SlashEffectStraight(Player.World, () => Player.Position + new Vector2(0,2) + FacingVector * 6, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -604,7 +727,7 @@ namespace RogueTower
         {
         }
 
-        public override void UpdateDiscreet()
+        public override void UpdateDiscrete()
         {
             if (PlungeStartTime <= 0)
                 Player.Velocity.Y = 5;

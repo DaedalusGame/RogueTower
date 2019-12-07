@@ -444,6 +444,7 @@ namespace RogueTower
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
+            var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             foreach (Bullet bullet in World.Bullets)
@@ -464,14 +465,21 @@ namespace RogueTower
 
             foreach (VisualEffect effect in World.Effects)
             {
-                if (effect is SlashEffect slashEffect)
+                if (effect is SlashEffectStraight slashEffectStraight)
                 {
-                    var slashAngle = slashEffect.Angle;
-                    if (slashEffect.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                    var slashAngle = slashEffectStraight.Angle;
+                    if (slashEffectStraight.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
                         slashAngle = -slashAngle;
-                    if (slashEffect.Size > 0.2)
-                        SpriteBatch.Draw(slash.Texture, slashEffect.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, slashEffect.Size - 0.2f, slashEffect.Mirror, 0);
-                    SpriteBatch.Draw(slash.Texture, slashEffect.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffect.Frame / slashEffect.FrameEnd))), Color.White, slashAngle, slash.Middle, slashEffect.Size, slashEffect.Mirror, 0);
+                    SpriteBatch.Draw(stab.Texture, slashEffectStraight.Position + new Vector2(8, 8) - new Vector2(8, 8), stab.GetFrameRect(Math.Min(stab.SubImageCount - 1, (int)(stab.SubImageCount * slashEffectStraight.Frame / slashEffectStraight.FrameEnd))), Color.White, slashAngle, stab.Middle, slashEffectStraight.Size, slashEffectStraight.Mirror, 0);
+                }
+                else if (effect is SlashEffectRound slashEffectRound)
+                {
+                    var slashAngle = slashEffectRound.Angle;
+                    if (slashEffectRound.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                        slashAngle = -slashAngle;
+                    if (slashEffectRound.Size > 0.2)
+                        SpriteBatch.Draw(slash.Texture, slashEffectRound.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffectRound.Frame / slashEffectRound.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, slashEffectRound.Size - 0.2f, slashEffectRound.Mirror, 0);
+                    SpriteBatch.Draw(slash.Texture, slashEffectRound.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffectRound.Frame / slashEffectRound.FrameEnd))), Color.White, slashAngle, slash.Middle, slashEffectRound.Size, slashEffectRound.Mirror, 0);
                 }
                 if (effect is KnifeBounced knifeBounced)
                 {

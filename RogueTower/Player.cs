@@ -31,12 +31,17 @@ namespace RogueTower
 
     class InputQueue
     {
+        Player Player;
+
         public bool MoveLeft;
         public bool MoveRight;
         public bool Jump;
         public bool JumpHeld;
 
         public bool Attack;
+        public bool ForwardAttack;
+        public bool BackAttack;
+        public bool UpAttack;
         public bool DownAttack;
 
         public bool ClimbUp;
@@ -45,19 +50,41 @@ namespace RogueTower
         KeyboardState LastState;
         GamePadState LastGPState;
 
+        public InputQueue(Player player)
+        {
+            Player = player;
+        }
+
         public void Update(SceneGame game)
         {
-            if(game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X)))
-                Attack = true;
+            bool left = game.KeyState.IsKeyDown(Keys.A) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickLeft) || game.PadState.IsButtonDown(Buttons.DPadLeft));
+            bool right = game.KeyState.IsKeyDown(Keys.D) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickRight) || game.PadState.IsButtonDown(Buttons.DPadRight));
+            bool up = game.KeyState.IsKeyDown(Keys.W) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickUp) || game.PadState.IsButtonDown(Buttons.DPadUp));
+            bool down = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
+            bool attack = game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X));
+            bool forward = (Player.Facing == HorizontalFacing.Left && left) || (Player.Facing == HorizontalFacing.Right && right);
+            bool back = (Player.Facing == HorizontalFacing.Left && right) || (Player.Facing == HorizontalFacing.Right && left);
 
-            MoveLeft = game.KeyState.IsKeyDown(Keys.A) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickLeft) || game.PadState.IsButtonDown(Buttons.DPadLeft));
-            MoveRight = game.KeyState.IsKeyDown(Keys.D) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickRight) || game.PadState.IsButtonDown(Buttons.DPadRight));
+            MoveLeft = left;
+            MoveRight = right;
 
             if((game.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift)) || (game.PadState.IsButtonDown(Buttons.A) && LastGPState.IsButtonUp(Buttons.A)))
                 Jump = true;
             JumpHeld = game.KeyState.IsKeyDown(Keys.LeftShift) || game.PadState.IsButtonDown(Buttons.A);
-            ClimbUp = game.KeyState.IsKeyDown(Keys.W) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickUp) || game.PadState.IsButtonDown(Buttons.DPadUp));
-            ClimbDown = DownAttack = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
+            
+            ClimbUp = up;
+            ClimbDown = down;
+
+            if (attack)
+                Attack = true;
+            if (attack && up)
+                UpAttack = true;
+            if (attack && down)
+                DownAttack = true;
+            if (forward && attack)
+                ForwardAttack = true;
+            if (back && attack)
+                BackAttack = true;
 
             LastState = game.KeyState;
             LastGPState = game.PadState;
@@ -65,14 +92,16 @@ namespace RogueTower
 
         public void Reset()
         {
-           
             MoveLeft = false;
             MoveRight = false;
             Jump = false;
             JumpHeld = false;
 
             Attack = false;
+            ForwardAttack = false;
+            BackAttack = false;
             DownAttack = false;
+            UpAttack = false;
 
             ClimbUp = false;
             ClimbDown = false;
@@ -81,7 +110,7 @@ namespace RogueTower
 
     class Player : GameObject
     {
-        public InputQueue Controls = new InputQueue();
+        public InputQueue Controls;
 
         public override RectangleF ActivityZone => World.Bounds;
 
@@ -101,7 +130,7 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        public Weapon Weapon = new WeaponSword(15, 14, new Vector2(14 / 2, 14 * 2));
+        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
@@ -133,6 +162,7 @@ namespace RogueTower
 
         public Player(GameWorld world, Vector2 position) : base(world)
         {
+            Controls = new InputQueue(this);
             CurrentAction = new ActionIdle(this);
             Create(position.X, position.Y);
         }
@@ -352,7 +382,7 @@ namespace RogueTower
 
             HandleDamage();
 
-            CurrentAction.UpdateDiscreet();
+            CurrentAction.UpdateDiscrete();
 
             CurrentAction.OnInput();
             Controls.Reset();
@@ -392,6 +422,18 @@ namespace RogueTower
         public void Slash()
         {
             CurrentAction = new ActionSlash(this, CurrentAction is ActionSlash ? 2 : 0, 4, 8, 2);
+            Velocity.Y *= 0.3f;
+        }
+
+        public void Stab()
+        {
+            CurrentAction = new ActionStab(this, 4, 10);
+            Velocity.Y *= 0.3f;
+        }
+
+        public void StabDown()
+        {
+            CurrentAction = new ActionDownStab(this, 4, 10);
             Velocity.Y *= 0.3f;
         }
 

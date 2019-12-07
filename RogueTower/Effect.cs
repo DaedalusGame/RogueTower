@@ -75,7 +75,7 @@ namespace RogueTower
         }
     }
 
-    class SlashEffect : Particle
+    class SlashEffectRound : Particle
     {
         public Func<Vector2> Anchor;
         public float Angle;
@@ -95,7 +95,7 @@ namespace RogueTower
             }
         }
 
-        public SlashEffect(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, Vector2.Zero)
+        public SlashEffectRound(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, Vector2.Zero)
         {
             Anchor = anchor;
             Angle = angle;
@@ -110,6 +110,13 @@ namespace RogueTower
             {
                 Destroy();
             }
+        }
+    }
+
+    class SlashEffectStraight : SlashEffectRound
+    {
+        public SlashEffectStraight(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, anchor, size, angle, mirror, time)
+        {
         }
     }
 
