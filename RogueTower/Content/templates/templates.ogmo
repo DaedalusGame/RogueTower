@@ -1,0 +1,185 @@
+{
+  "name": "Roguetower Templates",
+  "levelPaths": ["."],
+  "backgroundColor": "#282c34ff",
+  "gridColor": "#3c4049cc",
+  "anglesRadians": true,
+  "directoryDepth": 5,
+  "levelDefaultSize": {"x": 320, "y": 240},
+  "levelMinSize": {"x": 128, "y": 128},
+  "levelMaxSize": {"x": 128, "y": 128},
+  "levelValues": [
+    {
+      "name": "ConnectionUp",
+      "definition": "String",
+      "defaults": "none",
+      "maxLength": 0,
+      "trimWhitespace": true
+    },
+    {
+      "name": "ConnectionDown",
+      "definition": "String",
+      "defaults": "none",
+      "maxLength": 0,
+      "trimWhitespace": true
+    },
+    {
+      "name": "ConnectionLeft",
+      "definition": "String",
+      "defaults": "none",
+      "maxLength": 0,
+      "trimWhitespace": true
+    },
+    {
+      "name": "ConnectionRight",
+      "definition": "String",
+      "defaults": "none",
+      "maxLength": 0,
+      "trimWhitespace": true
+    }
+  ],
+  "defaultExportMode": ".json",
+  "entityTags": [],
+  "layers": [
+    {
+      "definition": "tile",
+      "name": "Foreground",
+      "gridSize": {"x": 16, "y": 16},
+      "exportID": "73948374",
+      "exportMode": 0,
+      "arrayMode": 0,
+      "defaultTileset": "Foreground"
+    },
+    {
+      "definition": "tile",
+      "name": "Background",
+      "gridSize": {"x": 16, "y": 16},
+      "exportID": "73951650",
+      "exportMode": 0,
+      "arrayMode": 0,
+      "defaultTileset": "Background"
+    },
+    {
+      "definition": "entity",
+      "name": "Entities",
+      "gridSize": {"x": 8, "y": 8},
+      "exportID": "73950925",
+      "requiredTags": [],
+      "excludedTags": []
+    }
+  ],
+  "entities": [
+    {
+      "exportID": "74118024",
+      "name": "ball_and_chain",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 8, "y": 24},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": true,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "texture": "C:\\Users\\Bord\\source\\repos\\RogueTower\\RogueTower\\Content\\editor_ball_and_chain.png",
+      "values": [
+        {
+          "name": "Speed",
+          "definition": "Float",
+          "defaults": 0,
+          "bounded": false,
+          "min": 0,
+          "max": 100
+        },
+        {
+          "name": "Distance",
+          "definition": "Float",
+          "defaults": 0,
+          "bounded": true,
+          "min": 0,
+          "max": 9999
+        },
+        {"name": "Swings", "definition": "Boolean", "defaults": false}
+      ]
+    },
+    {
+      "exportID": "74197208",
+      "name": "moaiman",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 8, "y": 16},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": true,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "texture": "C:\\Users\\Bord\\source\\repos\\RogueTower\\RogueTower\\Content\\editor_moaiman.png",
+      "values": []
+    }
+  ],
+  "tilesets": [
+    {
+      "label": "Foreground",
+      "path": "tileset.png",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAEXUlEQVR4nO2ZO4sUQRSF51fIIooIvhEEER+giLAgK5gIbmKyYGCigSBGG2wkipmh+ANWjDVeMyMxM/DHtHvGOcO1qO7pnu6ZLuX74NJdVf3aPqdu3Z6dfPvxs3LsvHxVxXYai8b7xjL3f/Ph09Jxf+dZNRkAPZdD12yKeOwQ9+7N/pevlcIvxO002owr+owvc3/1L2O21ADVIfG9tG2nplS77m/IHbtKbVuRzohFM6bE8a7iR0PpHRwcHFRR4C7tKHAUNn3GVHyfs06ts+RS1KIUVtJ4NEDdzKvLRkMYIM1s0QQx0mf0eevUOsvQa/K6x1MDtJn5OQMo/E66tGNWqkv17qsz4KgMvSave7zOALnUvAoDiGiCRTVAUeKLEtf0ruOpAXIvv8kAe3t7lcLvpGs7VvdNz2uDeBlbl8aNlLamdx3va4B0re4azlIWv2kZ8v2dJYowQWlretfxvgboe//cuu/r2qSxz9cp5iugtDW963hfAwz1fL7+bFZP29rGfZ8fn3Fc9Sf/1+8ATem3zgBD3N9iepZPZsKn4UwQTTWm9lNKW9NX/TtAKugQ9w8F5UIDTGaZwOeNp/yMsdf0JrHajKcGWFSFN9UAyzy/xZz9rNsq/NxFFIFjr+l9s4EN0FX8IZ8/GmJSkwXclxaLY2o/paQ1fdF3dJvv7K4G6Duey0oWeBLEr8t4Y+s/+u8AY8cQv0PkjJqL3LFj6z95vHul6hP33n/uFS93tqq3z7fX/iJ0T9173fctjiEMcO3F62rjyq1paH//+695W6Fj1KcxH6ttNMDHd7vzWNXfGu+BAWbkRN1+eG6+9X6TAbqKH8dsAG9XmQ18/XjPVd3rnyGKngr/4OqJ6und83+Zos4AXcT3OSwBBRAF375+cr5/58JGdf/y8Wmfj7l1duMvk8QlIBXfwsclQn1RfAxQAHMDHAq9efHoH9EP29oqA1h0xY3TR+b90QBxGUjFj31RfGqAQrDYMsDWpWNTcW2CRzdPzfc1ZvF3bp+eZgj1Lys+NUAhaIZLTG0dFlthE7hf4rtPGSEVuq341ACFoCLPouZEVp+EVluz31lCW41Z3Jz4sZ2KjwEKQQZ4snlmLnRM82pr62xg8dWv41UzuAboKr4zAzXAyHgme+23uP4KcCbQuPsU2pc56sSPszwnfloEUgOMRFzzlQkkqtquCyz49GvgsFB0JrAp0q+AtuKzBBRCrPy9/mvfRrAJlO79paAxfyLWiZ8LisACiSldArsAtAHSGa9+1wzOAKnwTUtCegw1wMjENd4z3G3XALEmsCFcA+gauZmdip3+w0jH6FxqgJHxV4CFzRWEamsJsDlcH8gcvk76NRD3c30+jyUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABWzW+zl7UMf5EXBwAAAABJRU5ErkJggg==",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileSeparationX": 0,
+      "tileSeparationY": 0
+    },
+    {
+      "label": "Background",
+      "path": "tileset_back.png",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAACtklEQVR4nO3avW7UQBAAYL9DSroTFYIqpKGg4Uc0IFHD+79GwNYN2owc3zl2mDV8nzRyLuuLzOzYO14xvP/6436Kbz/vT69vp+NjMTse35+Ju4/fN41fE8Nv43VFvHj5ajHacweGYZyEMd68+zQlKD7neGw8JnIuxvO3jF+KmNC2IMbPj50/d251/suNExsxJrT9nGNufK8CWHvnx/dzMcbE5uvMkx/fqc5/ublH5KVHaPt5zwJYc+fHMSZ4rgjayBMf36vOf7nVa34e37kA1tz5UYS5CObu9nZpaJ9o1fkvt3bNz+PPUQDX3PlxHP8NbRFc6gFMfrJ2zc/jvRRAPOqXrjcKJJax6tx3Ye2an6N9FD9lfGsBxM8x+UvLSDy54imhCIaHPUDVPsCWAphb96Ow2iKLY35VrM5/ubVrfv599RKQr+N8V8cm0YOf43yvgY2e9gGeUgBt9x9/bzhPfI54ErRFXZn7LvS2D9A+upd6irYAmq7+YgEM5yeBfYCz3vYBrom5fYDztu5VEQ2jJnDoax9g6c5fertIe/uzT4H4XW4WK3PfhV72AZ4ScwXaTvDQTH7u/jWBZz3sA6y583MsbfbkmDu3Ov/l/ryXb90HKPp+df4Ob+2a39t4df4Ob+s+QPV4df4Ob+s+QPV4df4OL6+xw5Xv0lUxNY56gP3k16qhg0leitwHPF9m/hN5jT2dTlPcvr2b4sPnL6UR1xHXlfuA6vwdXl5Tb25upjut12PuCf5utv5Bcz1A9SQvHfUAO8vv2UdYAvQAO8o9wNBBo7cUeoCdzaypXYd9gJ1t/v8AxePV+Tu83vb2145X5+/wetvbXztenb/D621vf+14df4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID+/QKdTQ/dnIvyFwAAAABJRU5ErkJggg==",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileSeparationX": 0,
+      "tileSeparationY": 0
+    }
+  ]
+}
