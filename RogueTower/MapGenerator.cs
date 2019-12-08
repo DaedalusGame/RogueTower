@@ -118,6 +118,11 @@ namespace RogueTower
                 case (RoomType.Horizontal):
                     Forbid(Direction.Left, connection => connection == "none");
                     Forbid(Direction.Right, connection => connection == "none");
+                    if(Generator.Random.NextDouble() > 0.5)
+                    {
+                        Forbid(Direction.Up, connection => connection != "none");
+                        Forbid(Direction.Down, connection => connection != "none");
+                    }
                     break;
                 case (RoomType.HubVertical):
                     Forbid(Direction.Up, connection => connection == "none");
@@ -129,9 +134,25 @@ namespace RogueTower
                 case (RoomType.HubDown):
                     Forbid(Direction.Down, connection => connection == "none");
                     break;
-                /*case (RoomType.Empty):
-                    Forbid(template => template.Connections > 0);
-                    break;*/
+                case (RoomType.RightUp):
+                    Forbid(Direction.Up, connection => connection == "none");
+                    Forbid(Direction.Right, connection => connection == "none");
+                    break;
+                case (RoomType.LeftUp):
+                    Forbid(Direction.Left, connection => connection == "none");
+                    Forbid(Direction.Up, connection => connection == "none");
+                    break;
+                case (RoomType.RightDown):
+                    Forbid(Direction.Down, connection => connection == "none");
+                    Forbid(Direction.Right, connection => connection == "none");
+                    break;
+                case (RoomType.LeftDown):
+                    Forbid(Direction.Left, connection => connection == "none");
+                    Forbid(Direction.Down, connection => connection == "none");
+                    break;
+                    /*case (RoomType.Empty):
+                        Forbid(template => template.Connections > 0);
+                        break;*/
             }
         }
 
@@ -165,24 +186,33 @@ namespace RogueTower
 
         public void Forbid(Direction direction, Func<string, bool> check)
         {
-            bool verboten = false;
-
-            foreach (var template in PossibleTemplates)
-            {
-                if (!template.Forbidden && check(template.Template.GetConnection(direction)))
-                {
-                    verboten = true;
-                    template.Forbidden = true;
-                }
-            }
-
-            //var entropies = Generator.DebugPrint((x) => (char)('1' + (int)x.Entropy));
-
-            if (verboten)
-                Propagate();
+            Forbid(temp => check(temp.GetConnection(direction)));
         }
 
         public void Forbid(Func<Template, bool> check)
+        {
+            Queue<_internal> calls = new Queue<_internal>();
+
+            calls.Enqueue(() => ForbidInternal(check));
+
+            while(calls.Count > 0)
+            {
+                var call = calls.Dequeue();
+                foreach(var subcall in call())
+                {
+                    calls.Enqueue(subcall);
+                }
+            }
+        }
+
+        delegate IEnumerable<_internal> _internal();
+
+        private IEnumerable<_internal> ForbidInternal(Direction direction, Func<string, bool> check)
+        {
+            return ForbidInternal(temp => check(temp.GetConnection(direction)));
+        }
+
+        private IEnumerable<_internal> ForbidInternal(Func<Template, bool> check)
         {
             bool verboten = false;
 
@@ -195,30 +225,29 @@ namespace RogueTower
                 }
             }
 
-            //var entropies = Generator.DebugPrint((x) => (char)('1' + (int)x.Entropy));
-
             if (verboten)
-                Propagate();
-        }
+            {
+                var left = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left).ToHashSet();
+                var right = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right).ToHashSet();
+                var up = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up).ToHashSet();
+                var down = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down).ToHashSet();
 
-        public void Propagate()
-        {
-            var left = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left).ToHashSet();
-            var right = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right).ToHashSet();
-            var up = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up).ToHashSet();
-            var down = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down).ToHashSet();
-
-            GetNeighbor(-1, 0).Forbid(Direction.Right, connection => !left.Contains(connection));
-            GetNeighbor(1, 0).Forbid(Direction.Left, connection => !right.Contains(connection));
-            GetNeighbor(0, -1).Forbid(Direction.Down, connection => !up.Contains(connection));
-            GetNeighbor(0, 1).Forbid(Direction.Up, connection => !down.Contains(connection));
+                yield return () => GetNeighbor(-1, 0).ForbidInternal(Direction.Right, connection => !left.Contains(connection));
+                yield return () => GetNeighbor(1, 0).ForbidInternal(Direction.Left, connection => !right.Contains(connection));
+                yield return () => GetNeighbor(0, -1).ForbidInternal(Direction.Down, connection => !up.Contains(connection));
+                yield return () => GetNeighbor(0, 1).ForbidInternal(Direction.Up, connection => !down.Contains(connection));
+            }
         }
 
         public void Collapse()
         {
-            var selected = PossibleTemplates.Where(x => !x.Forbidden).Shuffle().First();
-            //Console.WriteLine($"({X},{Y}) collapsed into {selected.Template.Name}");
-            Forbid(temp => temp != selected.Template);
+            var weightedList = new WeightedList<Template>();
+            foreach(var template in PossibleTemplates.Where(x => !x.Forbidden))
+            {
+                weightedList.Add(template.Template, (int)Math.Pow(2,5 - template.Template.Connections));
+            }
+            var selected = weightedList.GetWeighted(Generator.Random);
+            Forbid(temp => temp != selected);
         }
 
         public double GetEntropy()
@@ -253,7 +282,7 @@ namespace RogueTower
         public int Width, Height;
         public bool Finished;
 
-        Random Random;
+        public Random Random;
 
         public MapGenerator(int width, int height)
         {
@@ -355,38 +384,65 @@ namespace RogueTower
 
             var dijkstra = Util.Dijkstra(new Point(0, Height - 1), Width, Height, GetMainWeight, (pos) => GetRoom(pos.X, pos.Y).GetAdjacentNeighbors().Select(room => new Point(room.X, room.Y)));
 
+            Console.WriteLine("Generate Path");
             var path = dijkstra.FindPath(new Point(Random.Next(Width), 0)).ToList();
 
             var lastPos = new Point(0, Height - 1);
+            var lastHorizontal = 0;
+            var lastVertical = 0;
             GetRoom(lastPos.X, lastPos.Y).Type = RoomType.Entrance;
             foreach (var pos in path)
             {
+                var lastRoom = GetRoom(lastPos.X, lastPos.Y);
                 var dx = pos.X - lastPos.X;
                 var dy = pos.Y - lastPos.Y;
-                if (dy == 0)
-                    GetRoom(pos.X, pos.Y).Type = RoomType.Horizontal;
+                if(lastRoom.Type == RoomType.Entrance)
+                {
+                    //NOOP
+                }
+                else if (dx == 1)
+                {
+                    if (lastVertical > 0)
+                        lastRoom.Type = RoomType.RightUp;
+                    else if (lastVertical < 0)
+                        lastRoom.Type = RoomType.RightDown;
+                    else
+                        lastRoom.Type = RoomType.Horizontal;
+                }
+                else if(dx == -1)
+                {
+                    if (lastVertical > 0)
+                        lastRoom.Type = RoomType.LeftUp;
+                    else if (lastVertical < 0)
+                        lastRoom.Type = RoomType.LeftDown;
+                    else
+                        lastRoom.Type = RoomType.Horizontal;
+                }
                 else if (dy == -1)
                 {
-                    var lastRoom = GetRoom(lastPos.X, lastPos.Y);
-                    if (lastRoom.Type == RoomType.Horizontal)
-                        lastRoom.Type = RoomType.HubUp;
-                    else if (lastRoom.Type == RoomType.HubDown)
+                    if (lastHorizontal > 0)
+                        lastRoom.Type = RoomType.LeftUp;
+                    else if (lastHorizontal < 0)
+                        lastRoom.Type = RoomType.RightUp;
+                    else
                         lastRoom.Type = RoomType.HubVertical;
-                    GetRoom(pos.X, pos.Y).Type = RoomType.HubDown;
                 }
                 else if (dy == 1)
                 {
-                    var lastRoom = GetRoom(lastPos.X, lastPos.Y);
-                    if (lastRoom.Type == RoomType.Horizontal)
-                        lastRoom.Type = RoomType.HubDown;
-                    else if (lastRoom.Type == RoomType.HubUp)
+                    if (lastHorizontal > 0)
+                        lastRoom.Type = RoomType.LeftDown;
+                    else if (lastHorizontal < 0)
+                        lastRoom.Type = RoomType.RightDown;
+                    else
                         lastRoom.Type = RoomType.HubVertical;
-                    GetRoom(pos.X, pos.Y).Type = RoomType.HubUp;
                 }
+                lastHorizontal = dx;
+                lastVertical = dy;
                 lastPos = pos;
             }
             GetRoom(lastPos.X, lastPos.Y).Type = RoomType.Exit;
 
+            Console.WriteLine("Generate Wave");
             for (int x = 0; x < Width; x++)
             {
                 for (int y = 0; y < Height; y++)
@@ -395,6 +451,7 @@ namespace RogueTower
                 }
             }
 
+            Console.WriteLine("Set Constraints");
             for (int x = 0; x < Width; x++)
             {
                 for (int y = 0; y < Height; y++)
@@ -459,9 +516,13 @@ namespace RogueTower
                         case (RoomType.HubVertical):
                             BuildShaft(map, origin + x * 8, y * 8);
                             break;
+                        case (RoomType.LeftDown):
+                        case (RoomType.RightDown):
                         case (RoomType.HubDown):
                             BuildHubDown(map, origin + x * 8, y * 8);
                             break;
+                        case (RoomType.LeftUp):
+                        case (RoomType.RightUp):
                         case (RoomType.HubUp):
                             BuildHubUp(map, origin + x * 8, y * 8);
                             break;
@@ -488,6 +549,12 @@ namespace RogueTower
                         case (2):
                             map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
                             break;
+                        case (3):
+                            map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
+                            break;
+                        case (4):
+                            map.Tiles[px + x, py + y] = new Spike(map, px + x, py + y);
+                            break;
                         case (10):
                             map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Left);
                             break;
@@ -508,7 +575,10 @@ namespace RogueTower
                     if (y == 0 || y == 8 - 1)
                         map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
                     else
+                    {
                         map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
+                        map.Background[px + x, py + y] = TileBG.Empty;
+                    }
                 }
             }
         }
@@ -522,7 +592,10 @@ namespace RogueTower
                     if (x == 0 || x == 8 - 1)
                         map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
                     else
+                    {
                         map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
+                        map.Background[px + x, py + y] = TileBG.Empty;
+                    }
                 }
             }
 
@@ -538,7 +611,10 @@ namespace RogueTower
                     if ((y == 0 && (x == 0 || x == 8 - 1)) || y == 8 - 1)
                         map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
                     else
+                    {
                         map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
+                        map.Background[px + x, py + y] = TileBG.Empty;
+                    }
                 }
             }
 
@@ -554,7 +630,10 @@ namespace RogueTower
                     if ((y == 8 - 1 && (x == 0 || x == 8 - 1)) || y == 0)
                         map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
                     else
+                    {
                         map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
+                        map.Background[px + x, py + y] = TileBG.Empty;
+                    }
                 }
             }
 
@@ -659,13 +738,21 @@ namespace RogueTower
                 default:
                     return ' ';
                 case (RoomType.Horizontal):
-                    return '-';
+                    return '─';
                 case (RoomType.HubUp):
-                    return 'V';
+                    return '┴';
                 case (RoomType.HubDown):
-                    return 'T';
+                    return '┬';
                 case (RoomType.HubVertical):
-                    return '|';
+                    return '│';
+                case (RoomType.LeftUp):
+                    return '┘';
+                case (RoomType.RightUp):
+                    return '└';
+                case (RoomType.LeftDown):
+                    return '┐';
+                case (RoomType.RightDown):
+                    return '┌';
                 case (RoomType.Blocked):
                     return 'X';
                 case (RoomType.Exit):
