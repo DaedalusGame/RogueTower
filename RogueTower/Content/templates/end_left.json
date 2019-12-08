@@ -4,7 +4,7 @@
   "offsetX": 0,
   "offsetY": 0,
   "values": {
-    "ConnectionUp": "none",
+    "ConnectionUp": "exit",
     "ConnectionDown": "none",
     "ConnectionLeft": "none",
     "ConnectionRight": "full"

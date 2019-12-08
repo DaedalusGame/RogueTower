@@ -318,6 +318,8 @@ namespace RogueTower
 
         public SceneGame(Game game) : base(game)
         {
+            Template.LoadAll();
+
             World = new GameWorld(100, 800);
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));

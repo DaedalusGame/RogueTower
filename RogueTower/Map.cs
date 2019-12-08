@@ -32,9 +32,14 @@ namespace RogueTower
             Tiles = new Tile[Width, Height];
             Background = new TileBG[Width, Height];
 
-            MapGenerator generator = new MapGenerator(10, Height / 8);
+            MapGenerator generator;
 
-            generator.Generate();
+            do
+            {
+                generator = new MapGenerator(10, Height / 8);
+                generator.Generate();
+            }
+            while (!generator.Finished);
 
             Random random = new Random();
             /*for (int y = 0; y < Height; y++)
