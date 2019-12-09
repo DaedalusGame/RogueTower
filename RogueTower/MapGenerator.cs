@@ -42,6 +42,13 @@ namespace RogueTower
 
     class RoomTile
     {
+        static HashSet<string> SolidEdges = new HashSet<string>() {
+            "none",
+            "towerleft",
+            "towerright",
+            "outside",
+        };
+
         public MapGenerator Generator;
         public int X, Y;
         public RoomType Type;
@@ -117,39 +124,39 @@ namespace RogueTower
                     Forbid(Direction.Left, connection => connection != "entrance");
                     break;
                 case (RoomType.Horizontal):
-                    Forbid(Direction.Left, connection => connection == "none");
-                    Forbid(Direction.Right, connection => connection == "none");
-                    if(Generator.Random.NextDouble() > 0.5)
+                    Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
+                    /*if(Generator.Random.NextDouble() > 0.5)
                     {
                         Forbid(Direction.Up, connection => connection != "none");
                         Forbid(Direction.Down, connection => connection != "none");
-                    }
+                    }*/
                     break;
                 case (RoomType.HubVertical):
-                    Forbid(Direction.Up, connection => connection == "none");
-                    Forbid(Direction.Down, connection => connection == "none");
+                    Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.HubUp):
-                    Forbid(Direction.Up, connection => connection == "none");
+                    Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.HubDown):
-                    Forbid(Direction.Down, connection => connection == "none");
+                    Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.RightUp):
-                    Forbid(Direction.Up, connection => connection == "none");
-                    Forbid(Direction.Right, connection => connection == "none");
+                    Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.LeftUp):
-                    Forbid(Direction.Left, connection => connection == "none");
-                    Forbid(Direction.Up, connection => connection == "none");
+                    Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.RightDown):
-                    Forbid(Direction.Down, connection => connection == "none");
-                    Forbid(Direction.Right, connection => connection == "none");
+                    Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
                     break;
                 case (RoomType.LeftDown):
-                    Forbid(Direction.Left, connection => connection == "none");
-                    Forbid(Direction.Down, connection => connection == "none");
+                    Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
+                    Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
                     break;
                     /*case (RoomType.Empty):
                         Forbid(template => template.Connections > 0);
