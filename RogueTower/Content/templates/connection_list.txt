@@ -19,3 +19,4 @@ Connection Types:
 - icetunnel [Straight horizontal tunnel through the entire tower, with ice covering the floor]
 - stairleft [Stair ascends left (\)]
 - stairright [Stair ascends right (/)]
+- pit [Single tile pit]
