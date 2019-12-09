@@ -1,0 +1,12 @@
+Connection Types:
+- none [No connection between things]
+- full [Wide Empty Space]
+- ladderleft [Ladder on Left Side of Chunk]
+- laddercenter [Ladder in Center of Chunk]
+- ladderright [Ladder on Right Side of Chunk]
+- entrance [the bottom left most section of the tower]
+- exit [Topmost section of the tower]
+- pitleft [Pit begins on left]
+- pitright [Pit begins on right]
+- pittop [Like the "full" connection, but without floor.]
+- pitspike [Spike floor]
