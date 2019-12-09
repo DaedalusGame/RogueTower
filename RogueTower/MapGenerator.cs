@@ -55,8 +55,8 @@ namespace RogueTower
         public string ConnectLeft => string.Join(", ", GetNeighbor(-1, 0).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left).Distinct());
         public string ConnectRight => string.Join(", ", GetNeighbor(1, 0).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right).Distinct());
 
-        public IEnumerable<string> EdgeLeft => X >= Generator.Width ? new[] { "none" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left);
-        public IEnumerable<string> EdgeRight => X < 0 ? (Y == Generator.Height - 1 ? new[] { "none", "entrance" } : new[] { "none" }) : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right);
+        public IEnumerable<string> EdgeLeft => X >= Generator.Width ? new[] { "outside" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left);
+        public IEnumerable<string> EdgeRight => X < 0 ? (Y == Generator.Height - 1 ? new[] { "entrance" } : new[] { "outside" }) : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right);
         public IEnumerable<string> EdgeUp => Y >= Generator.Height ? new[] { "none" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up);
         public IEnumerable<string> EdgeDown => Y < 0 ? new[] { "none", "exit" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down);
 
@@ -465,6 +465,8 @@ namespace RogueTower
             var topology = DebugPrint((x) => GetChar(x.Type));
             var entropies = DebugPrint((x) => (char)('1' + (int)x.Entropy));
 
+            Console.WriteLine(topology);
+
             if (EnumerateTiles().Any(x => x.Entropy < 0))
             {
 
@@ -484,7 +486,7 @@ namespace RogueTower
             {
                 for (int x = 0; x < map.Width; x++)
                 {
-                    var rand = Random.NextDouble();
+                    /*var rand = Random.NextDouble();
                     var rand2 = Random.NextDouble();
                     if ((x > 10 && x <= map.Width - 10) || (x > 8 && x <= map.Width - 8 && rand2 <= 0.7))
                     {
@@ -501,7 +503,7 @@ namespace RogueTower
                     }
                     else if (x > 8 && x <= map.Width - 8 && rand <= 0.3)
                         map.Tiles[x, y] = new WallIce(map, x, y);
-                    else if (y >= map.Height - 1)
+                    else */if (y >= map.Height - 1)
                         map.Tiles[x, y] = new Grass(map, x, y);
                     else
                         map.Tiles[x, y] = new EmptySpace(map, x, y);
@@ -591,7 +593,12 @@ namespace RogueTower
 
         private TileBG GetBackground(int id)
         {
-            switch(id)
+            WeightedList<TileBG> RandomBricks = new WeightedList<TileBG>();
+            RandomBricks.Add(TileBG.Brick, 80);
+            RandomBricks.Add(TileBG.BrickMiss1, 30);
+            RandomBricks.Add(TileBG.BrickMiss2, 15);
+
+            switch (id)
             {
                 default:
                     return TileBG.Empty;
@@ -609,6 +616,8 @@ namespace RogueTower
                     return TileBG.BrickMiss2;
                 case (6):
                     return TileBG.BrickOpening;
+                case (7):
+                    return RandomBricks.GetWeighted(Random);
                 case (8):
                     return TileBG.RailLeft;
                 case (9):
