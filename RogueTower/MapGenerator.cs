@@ -46,6 +46,7 @@ namespace RogueTower
         public int X, Y;
         public RoomType Type;
         public double Weight;
+        public Template SelectedTemplate => PossibleTemplates.Count(x => !x.Forbidden) == 1 ? PossibleTemplates.First(x => !x.Forbidden).Template : null;
         public List<PossibleTemplate> PossibleTemplates = new List<PossibleTemplate>();
         public double Entropy => GetEntropy();
 
@@ -244,7 +245,7 @@ namespace RogueTower
             var weightedList = new WeightedList<Template>();
             foreach(var template in PossibleTemplates.Where(x => !x.Forbidden))
             {
-                weightedList.Add(template.Template, (int)Math.Pow(2,5 - template.Template.Connections));
+                weightedList.Add(template.Template, template.Template.Weight);
             }
             var selected = weightedList.GetWeighted(Generator.Random);
             Forbid(temp => temp != selected);
@@ -314,7 +315,8 @@ namespace RogueTower
                 IEnumerable<RoomTile> nonZeroEntropy = tiles.Where(x => x.Entropy > 0).Shuffle();
                 if (!nonZeroEntropy.Any())
                     break;
-                var tile = nonZeroEntropy.WithMin(x => x.Entropy);
+                //var tile = nonZeroEntropy.WithMin(x => x.Entropy);
+                var tile = nonZeroEntropy.First();
                 //var entropies = DebugPrint((x) => (char)('1' + (int)x.Entropy));
 
                 tile.Collapse();
@@ -469,6 +471,11 @@ namespace RogueTower
             }
 
             Finished = WaveformCollapse();
+
+            var stats = EnumerateTiles().GroupBy(x => x.SelectedTemplate);
+            var statsString = string.Join("\n", stats.Select(x => $"{x.Key}: {x.Count()}").OrderBy(x => x));
+
+            Console.WriteLine($"Statistics:\n\n{statsString}");
         }
 
         public void Build(Map map)

@@ -22,6 +22,7 @@ namespace RogueTower
         public static List<Template> Templates = new List<Template>();
 
         public string Name;
+        public int Weight;
 
         public string Up;
         public string Down;
@@ -87,8 +88,9 @@ namespace RogueTower
             Down = values["ConnectionDown"].ToObject<string>();
             Left = values["ConnectionLeft"].ToObject<string>();
             Right = values["ConnectionRight"].ToObject<string>();
+            Weight = int.Parse(values["Weight"].ToObject<string>());
 
-            foreach(var layer in root["layers"])
+            foreach (var layer in root["layers"])
             {
                 var name = layer["name"].ToObject<string>();
                 if(name == "Foreground")
@@ -122,6 +124,11 @@ namespace RogueTower
             }
 
             reader.Close();
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

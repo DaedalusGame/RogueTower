@@ -7,7 +7,8 @@
     "ConnectionUp": "none",
     "ConnectionDown": "laddercenter",
     "ConnectionLeft": "full",
-    "ConnectionRight": "none"
+    "ConnectionRight": "none",
+    "Weight": "100"
   },
   "layers": [
     {

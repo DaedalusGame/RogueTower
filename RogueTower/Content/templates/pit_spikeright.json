@@ -7,7 +7,8 @@
     "ConnectionUp": "pitright",
     "ConnectionDown": "none",
     "ConnectionLeft": "pitspike",
-    "ConnectionRight": "none"
+    "ConnectionRight": "none",
+    "Weight": "100"
   },
   "layers": [
     {
