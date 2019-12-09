@@ -44,7 +44,7 @@ namespace RogueTower
 
         protected void HandleExtraJump()
         {
-            if (/*Player.ExtraJumps > 0 &&*/ HandleJumpInput())
+            if (Player.ExtraJumps > 0 && HandleJumpInput())
                 Player.ExtraJumps--;
         }
 
