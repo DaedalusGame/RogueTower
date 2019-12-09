@@ -11,3 +11,8 @@ Connection Types:
 - pittop [Like the "full" connection, but without floor.]
 - pittopmiddle [Created and connects to a lower central pit, similar to the above in function.]
 - pitspike [Spike floor]
+- outside [Left and rightmost edge of the tower]
+- oladderleft [Like ladder left but right side is outside]
+- oladderright [Like ladder right but left side is outside]
+- towerleft [Left is inside, right is outside]
+- towerright [Right is inside, left is outside]
