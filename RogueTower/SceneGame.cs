@@ -283,7 +283,7 @@ namespace RogueTower
 
     class SceneGame : Scene
     {
-        const int ViewScale = 2;
+        const float ViewScale = 2f;
 
         GameWorld World;
         public Map Map => World.Map;
@@ -550,10 +550,11 @@ namespace RogueTower
             Rectangle drawZone = GetDrawZone();
             int drawX = (int)(Camera.X / 16);
             int drawY = (int)(Camera.Y / 16);
+            int drawRadius = 30;
 
-            for (int x = MathHelper.Clamp(drawX - 20, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + 20, 0, map.Width - 1); x++)
+            for (int x = MathHelper.Clamp(drawX - drawRadius, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + drawRadius, 0, map.Width - 1); x++)
             {
-                for (int y = MathHelper.Clamp(drawY - 20, 0, map.Height - 1); y <= MathHelper.Clamp(drawY + 20, 0, map.Height - 1); y++)
+                for (int y = MathHelper.Clamp(drawY - drawRadius, 0, map.Height - 1); y <= MathHelper.Clamp(drawY + drawRadius, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 
@@ -586,10 +587,11 @@ namespace RogueTower
             Rectangle drawZone = GetDrawZone();
             int drawX = (int)(Camera.X / 16);
             int drawY = (int)(Camera.Y / 16);
+            int drawRadius = 30;
 
-            for (int x = MathHelper.Clamp(drawX - 20, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + 20, 0, map.Width - 1); x++)
+            for (int x = MathHelper.Clamp(drawX - drawRadius, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + drawRadius, 0, map.Width - 1); x++)
             {
-                for (int y = MathHelper.Clamp(drawY - 20, 0,map.Height-1); y <= MathHelper.Clamp(drawY + 20, 0, map.Height - 1); y++)
+                for (int y = MathHelper.Clamp(drawY - drawRadius, 0,map.Height-1); y <= MathHelper.Clamp(drawY + drawRadius, 0, map.Height - 1); y++)
                 {
                     Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
 
