@@ -16,3 +16,6 @@ Connection Types:
 - oladderright [Like ladder right but left side is outside]
 - towerleft [Left is inside, right is outside]
 - towerright [Right is inside, left is outside]
+- icetunnel [Straight horizontal tunnel through the entire tower, with ice covering the floor]
+- stairleft [Stair ascends left (\)]
+- stairright [Stair ascends right (/)]
