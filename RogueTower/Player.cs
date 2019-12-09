@@ -130,7 +130,8 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
+        //public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
+        public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -95,6 +96,35 @@ namespace RogueTower
                     Slash(player);
             }
             
+        }
+    }
+
+    class WeaponKatana : Weapon
+    {
+        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        {
+            CanParry = true;
+        }
+        public override WeaponState GetWeaponState(float angle)
+        {
+            return WeaponState.Katana(angle);
+        }
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.DownAttack && player.OnGround)
+            {
+                player.Velocity.X = MathHelper.Clamp(GetFacingVector(player.Facing).X * 12, -12, 12);
+                Slash(player);
+            }
+            else if (player.Controls.Attack)
+            {
+                if (player.CurrentAction.GetType() == typeof(ActionSlashUp))
+                    Slash(player);
+                else
+                {
+                    SlashUp(player);
+                }
+            }
         }
     }
 
