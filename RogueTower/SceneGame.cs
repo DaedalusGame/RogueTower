@@ -535,7 +535,23 @@ namespace RogueTower
         {
             Random random = new Random();
 
-            //var backWall = SpriteLoader.Instance.AddSprite("content/bg-defaultwall");
+            var brick = SpriteLoader.Instance.AddSprite("content/bg_brick");
+            var brick_miss1 = SpriteLoader.Instance.AddSprite("content/bg_brick_miss1");
+            var brick_miss2 = SpriteLoader.Instance.AddSprite("content/bg_brick_miss2");
+            var brick_opening = SpriteLoader.Instance.AddSprite("content/bg_brick_opening");
+            var brick_platform = SpriteLoader.Instance.AddSprite("content/bg_brick_platform");
+            var statue = SpriteLoader.Instance.AddSprite("content/bg_statue");
+            var pillar = SpriteLoader.Instance.AddSprite("content/bg_pillar");
+            var pillar_detail = SpriteLoader.Instance.AddSprite("content/bg_pillar_detail");
+            var pillar_top = SpriteLoader.Instance.AddSprite("content/bg_pillar_top");
+            var rail_left = SpriteLoader.Instance.AddSprite("content/bg_rail_left");
+            var rail_middle = SpriteLoader.Instance.AddSprite("content/bg_rail_middle");
+            var rail_right = SpriteLoader.Instance.AddSprite("content/bg_rail_right");
+            var tile4 = SpriteLoader.Instance.AddSprite("content/bg_tile4");
+            var tile_detail = SpriteLoader.Instance.AddSprite("content/bg_tile_detail");
+            var window = SpriteLoader.Instance.AddSprite("content/bg_window");
+            var window_big_left = SpriteLoader.Instance.AddSprite("content/bg_window_big_left");
+            var window_big_right = SpriteLoader.Instance.AddSprite("content/bg_window_big_right");
 
             int ChosenBG;
             WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
@@ -563,11 +579,65 @@ namespace RogueTower
 
                     TileBG tile = map.Background[x, y];
 
-                    if(tile == TileBG.Wall)
+                    switch (tile)
+                    {
+                        case (TileBG.Brick):
+                            SpriteBatch.Draw(brick.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.BrickMiss1):
+                            SpriteBatch.Draw(brick_miss1.Texture, new Vector2(x * 16, y * 16), brick_miss1.GetFrameRect(GetNoiseValue(x, y)), Color.White);
+                            break;
+                        case (TileBG.BrickMiss2):
+                            SpriteBatch.Draw(brick_miss2.Texture, new Vector2(x * 16, y * 16), brick_miss2.GetFrameRect(GetNoiseValue(x, y)), Color.White);
+                            break;
+                        case (TileBG.BrickPlatform):
+                            SpriteBatch.Draw(brick_platform.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.BrickOpening):
+                            SpriteBatch.Draw(brick_opening.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.RailLeft):
+                            SpriteBatch.Draw(rail_left.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.RailMiddle):
+                            SpriteBatch.Draw(rail_middle.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.RailRight):
+                            SpriteBatch.Draw(rail_right.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.Tile4):
+                            SpriteBatch.Draw(tile4.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.TileDetail):
+                            SpriteBatch.Draw(tile_detail.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.Pillar):
+                            SpriteBatch.Draw(pillar.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.PillarDetail):
+                            SpriteBatch.Draw(pillar_detail.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.PillarTop):
+                            SpriteBatch.Draw(pillar_top.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.Window):
+                            SpriteBatch.Draw(window.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.WindowBigLeft):
+                            SpriteBatch.Draw(window_big_left.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.WindowBigRight):
+                            SpriteBatch.Draw(window_big_right.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.Statue):
+                            SpriteBatch.Draw(statue.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                    }
+                    /*if(tile == TileBG.Brick)
                     {
                         ChosenBG = GetNoiseValue(x, y);
                         SpriteBatch.Draw(TextureList.GetWeighted(ChosenBG).Texture, new Vector2(x * 16, y * 16), Color.White);
-                    }
+                    }*/
                 }
             }
         }
@@ -577,6 +647,7 @@ namespace RogueTower
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
             var wallTop = SpriteLoader.Instance.AddSprite("content/wall_top");
             var wallBottom = SpriteLoader.Instance.AddSprite("content/wall_bottom");
+            var wallBottomTop = SpriteLoader.Instance.AddSprite("content/wall_bottom_top");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
             var grass = SpriteLoader.Instance.AddSprite("content/grass-top");
@@ -617,9 +688,24 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
-                    else if (tile is Wall)
+                    else if (tile is Wall wallTile)
                     {
-                        SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
+                        switch(wallTile.Facing)
+                        {
+                            case (Wall.WallFacing.Normal):
+                                SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                break;
+                            case (Wall.WallFacing.Bottom):
+                                SpriteBatch.Draw(wallBottom.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                break;
+                            case (Wall.WallFacing.Top):
+                                SpriteBatch.Draw(wallTop.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                break;
+                            case (Wall.WallFacing.BottomTop):
+                                SpriteBatch.Draw(wallBottomTop.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                break;
+                        }
+                        
                     }
                     else if (tile is Grass)
                         SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);

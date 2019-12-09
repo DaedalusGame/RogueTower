@@ -481,7 +481,7 @@ namespace RogueTower
                     var rand2 = Random.NextDouble();
                     if ((x > 10 && x <= map.Width - 10) || (x > 8 && x <= map.Width - 8 && rand2 <= 0.7))
                     {
-                        map.Background[x, y] = TileBG.Wall;
+                        map.Background[x, y] = TileBG.Brick;
                     }
 
                     if (x > 10 && x <= map.Width - 10)
@@ -545,9 +545,13 @@ namespace RogueTower
                             map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
                             break;
                         case (0):
+                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Normal);
+                            break;
                         case (1):
+                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Top);
+                            break;
                         case (2):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
+                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Bottom);
                             break;
                         case (3):
                             map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
@@ -555,14 +559,69 @@ namespace RogueTower
                         case (4):
                             map.Tiles[px + x, py + y] = new Spike(map, px + x, py + y);
                             break;
+                        case (6):
+                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.BottomTop);
+                            break;
+                        case (8):
+                            map.Tiles[px + x, py + y] = new Grass(map, px + x, py + y);
+                            break;
+                        case (9):
+                            map.Tiles[px + x, py + y] = new WallIce(map, px + x, py + y);
+                            break;
                         case (10):
                             map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Left);
                             break;
                         case (11):
                             map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Right);
                             break;
+                        
                     }
+
+                    map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
                 }
+            }
+        }
+
+        private TileBG GetBackground(int id)
+        {
+            switch(id)
+            {
+                default:
+                    return TileBG.Empty;
+                case (0):
+                    return TileBG.Brick;
+                case (1):
+                    return TileBG.Tile4;
+                case (2):
+                    return TileBG.TileDetail;
+                case (3):
+                    return TileBG.Statue;
+                case (4):
+                    return TileBG.BrickMiss1;
+                case (5):
+                    return TileBG.BrickMiss2;
+                case (6):
+                    return TileBG.BrickOpening;
+                case (8):
+                    return TileBG.RailLeft;
+                case (9):
+                    return TileBG.RailMiddle;
+                case (10):
+                    return TileBG.RailRight;
+                case (11):
+                    return TileBG.PillarTop;
+                case (12):
+                    return TileBG.BrickPlatform;
+                case (16):
+                    return TileBG.Window;
+                case (17):
+                    return TileBG.WindowBigLeft;
+                case (18):
+                    return TileBG.WindowBigRight;
+                case (19):
+                    return TileBG.PillarDetail;
+                case (27):
+                    return TileBG.Pillar;
             }
         }
 

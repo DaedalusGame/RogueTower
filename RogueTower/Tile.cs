@@ -98,11 +98,26 @@ namespace RogueTower
 
     class Wall : Tile
     {
+        public enum WallFacing
+        {
+            Normal,
+            Top,
+            Bottom,
+            BottomTop,
+        }
+
+        public WallFacing Facing;
+
         public Wall(Map map, int x, int y, double health) : base(map, x, y, false, health)
         {
         }
 
-        public Wall(Map map, int x, int y) : this(map, x, y, 100)
+        public Wall(Map map, int x, int y, WallFacing facing) : this(map, x, y, 100)
+        {
+            Facing = facing;
+        }
+
+        public Wall(Map map, int x, int y) : this(map, x, y, WallFacing.Normal)
         {
         }
     }

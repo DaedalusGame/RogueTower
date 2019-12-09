@@ -105,6 +105,20 @@ namespace RogueTower
                         i++;
                     }
                 }
+                if (name == "Background")
+                {
+                    int width = layer["gridCellsX"].ToObject<int>();
+                    int height = layer["gridCellsY"].ToObject<int>();
+                    Background = new int[width, height];
+                    int i = 0;
+                    foreach (var tile in layer["data"])
+                    {
+                        int x = i % width;
+                        int y = i / width;
+                        Background[x, y] = tile.ToObject<int>();
+                        i++;
+                    }
+                }
             }
 
             reader.Close();

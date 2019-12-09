@@ -63,7 +63,7 @@ namespace RogueTower
 
             generator.Build(this);
 
-            for (int i = 0; i < 40; i++)
+            /*for (int i = 0; i < 40; i++)
             {
                 int spikewidth = random.Next(4) + 1;
                 int spikex = 8 + random.Next(Width - spikewidth - 16);
@@ -75,7 +75,7 @@ namespace RogueTower
                         Tiles[spikex + x, spikey - y] = new EmptySpace(this, spikex + x, spikey - y);
                     Tiles[spikex + x, spikey] = new Spike(this, spikex + x, spikey);
                 }
-            }
+            }*/
 
             /*for (int i = 0; i < 20; i++)
             {
@@ -99,6 +99,7 @@ namespace RogueTower
 
                 float angle = random.NextFloat() * MathHelper.TwoPi;
                 float speed = 0.025f + random.NextFloat() * 0.05f;
+                speed = 0.05f;
                 int length = random.Next(60) + 40;
                 bool swings = false;
 

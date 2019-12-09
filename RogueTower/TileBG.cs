@@ -9,6 +9,22 @@ namespace RogueTower
     enum TileBG
     {
         Empty,
-        Wall,
+        Brick,
+        BrickMiss1,
+        BrickMiss2,
+        BrickOpening,
+        BrickPlatform,
+        Tile4,
+        TileDetail,
+        Statue,
+        RailLeft,
+        RailMiddle,
+        RailRight,
+        Pillar,
+        PillarDetail,
+        PillarTop,
+        Window,
+        WindowBigLeft,
+        WindowBigRight,
     }
 }
