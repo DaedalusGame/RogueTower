@@ -674,6 +674,18 @@
     <None Include="Content\templates\ladder_upright.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\templates\outside_end_ladder_left.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\outside_end_ladder_right.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\outside_end_left.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\outside_end_right.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Content\templates\outside_entrance.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

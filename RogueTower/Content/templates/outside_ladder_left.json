@@ -8,7 +8,7 @@
     "ConnectionDown": "oladderleft",
     "ConnectionLeft": "none",
     "ConnectionRight": "outside",
-    "Weight": "100"
+    "Weight": "2"
   },
   "layers": [
     {
