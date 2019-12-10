@@ -152,6 +152,12 @@ namespace RogueTower
                 var ballandchain = new BallAndChain(world, new Vector2(px * 16 + ox, py * 16 + oy), rotation, speed, distance);
                 ballandchain.Swings = swings;
             }
+            if(type == "moaiman")
+            {
+                bool flipped = entity["flippedX"].ToObject<bool>();
+                var moaiman = new MoaiMan(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                moaiman.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
+            }
         }
 
         public override string ToString()

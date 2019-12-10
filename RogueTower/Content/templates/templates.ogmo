@@ -1,52 +1,24 @@
 {
   "name": "Roguetower Templates",
+  "ogmoVersion": "3.2.0",
   "levelPaths": ["."],
   "backgroundColor": "#282c34ff",
   "gridColor": "#3c4049cc",
   "anglesRadians": true,
   "directoryDepth": 5,
+  "layerGridDefaultSize": {"x": 8, "y": 8},
   "levelDefaultSize": {"x": 320, "y": 240},
   "levelMinSize": {"x": 128, "y": 128},
   "levelMaxSize": {"x": 128, "y": 128},
   "levelValues": [
-    {
-      "name": "ConnectionUp",
-      "definition": "String",
-      "defaults": "none",
-      "maxLength": 0,
-      "trimWhitespace": true
-    },
-    {
-      "name": "ConnectionDown",
-      "definition": "String",
-      "defaults": "none",
-      "maxLength": 0,
-      "trimWhitespace": true
-    },
-    {
-      "name": "ConnectionLeft",
-      "definition": "String",
-      "defaults": "none",
-      "maxLength": 0,
-      "trimWhitespace": true
-    },
-    {
-      "name": "ConnectionRight",
-      "definition": "String",
-      "defaults": "none",
-      "maxLength": 0,
-      "trimWhitespace": true
-    },
-    {
-      "name": "Weight",
-      "definition": "Integer",
-      "defaults": 100,
-      "bounded": true,
-      "min": 0,
-      "max": 999999
-    }
+    {"name": "ConnectionUp", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
+    {"name": "ConnectionDown", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
+    {"name": "ConnectionLeft", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
+    {"name": "ConnectionRight", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
+    {"name": "Weight", "definition": "Integer", "defaults": 100, "bounded": true, "min": 0, "max": 999999}
   ],
   "defaultExportMode": ".json",
+  "compactExport": false,
   "entityTags": [],
   "layers": [
     {
@@ -111,26 +83,13 @@
       "nodeDisplay": 0,
       "nodeGhost": true,
       "tags": [],
-      "texture": "C:\\Users\\Bord\\source\\repos\\RogueTower\\RogueTower\\Content\\editor_ball_and_chain.png",
       "values": [
-        {
-          "name": "Speed",
-          "definition": "Float",
-          "defaults": 0,
-          "bounded": false,
-          "min": 0,
-          "max": 100
-        },
-        {
-          "name": "Distance",
-          "definition": "Float",
-          "defaults": 0,
-          "bounded": true,
-          "min": 0,
-          "max": 9999
-        },
+        {"name": "Speed", "definition": "Float", "defaults": 0, "bounded": false, "min": 0, "max": 100},
+        {"name": "Distance", "definition": "Float", "defaults": 0, "bounded": true, "min": 0, "max": 9999},
         {"name": "Swings", "definition": "Boolean", "defaults": false}
-      ]
+      ],
+      "texture": "../editor_ball_and_chain.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAAtUlEQVR4nO1TQQ6AIAzzaXyD3/AOXsPP0B5KxtwA8WZsshjQ1naM4zBQL5RSqvVuCSCnlGoIoRX3gSFZknRBdOhME2KMXUk3bm5+xPWyiMyND7nWAhTp+jGzTkGAAq0f2FwRIOEWQ+amNc+62wcp4DVPkzsBa3AYxbJ+OwV9hDqS7pM7UKMptETNWZiR3TGWUbSb6R3wkHOuqKVb6MXBc/vvEKCLxwIAsqO2yB/Bqwb+x/jjCU6gFsA2E7OqDgAAAABJRU5ErkJggg=="
     },
     {
       "exportID": "74197208",
@@ -166,28 +125,13 @@
       "nodeDisplay": 0,
       "nodeGhost": true,
       "tags": [],
-      "texture": "C:\\Users\\Bord\\source\\repos\\RogueTower\\RogueTower\\Content\\editor_moaiman.png",
-      "values": []
+      "values": [],
+      "texture": "../editor_moaiman.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAYCAYAAADzoH0MAAAAfElEQVR4nGNgGAW0A1na2v9LY2P/19bWgjGIT7ZmGCbZAHRMtCtACmHORsdkeQFmINGugNmGbgDMEIoMICowsRkA8xJRLkAPB7wBiR7XyLaiByYsEFG8gy2qoLZgFSclWv9jwSQBqmom2RBcBhBtCLoGkgzApZj+BhAlDgDaE++GiIxV1AAAAABJRU5ErkJggg=="
     }
   ],
   "tilesets": [
-    {
-      "label": "Foreground",
-      "path": "..\\tileset.png",
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAFQElEQVR4nO2aPYslRRSG+1fIIIoIu36xIMjiB7iIsCArbLKwk5gMGGyigSAbbTCRKGaG4g9YMdZ4zIzEzMAf0zvnOm9z5lDVt7urursYngcOt6uqb1d1v6dOnep7u7/++beXnT39rvflaMfaS21J/z/88ttie3j2dd9VwMYls2uOmT/Xvrvm85xi3fM//uzN9EBUjjal3aykfUn/Vr/kxqMD9Jd4UaeWo1NaOXcPY+fWeH5L2rs4I47NmBbb54rvHcpEvLi46L3Ac8r+YXph4xij+FGYvZ5flwpRx0JYS+3eAXLen5sNNRwgzizvBN5ywu/9/EbXoNKcYIv26ABTZn7KAcy8wFPLflblQr3qUuKX3v+Yo09p78ZmSWlOsEV7zgFSoXkNB4hOcCwHiH2X3n9pNLiWA7Syps9tjw6QemBjDnB+ft6bSdC5ZZ/dj41XDiJh/BJS4/kc6z/V3rW2ps9tL3WAuFbPNc1SPdyxZUj9K0rUuP9S6+auOa21lzpAaf+pdV/X1UP2dXHtLu2/K6W1NX1ue6kD1Bqfrn8V2iXOtWN9PzXGpf0XO0CLa/rc9lQSOBaCc9db2r/E0CyX8NEUCbyopf0XO0Bra/ra7wHiA63Rv67VhZmfcoDuKhLkxjB7H1/K3mv6mFhT2qMDjM2g1IwqHb/EvHq3P8k07rGQP/X+ix1g7zW9NBrIAeaKX3P83iG6TBRQXUwWS++/2AFaWtOX7GNLrMb4U7PSZeiD+LmIV3r/xQ6w95q+t9V4D5ESKmU5JyqxYgf48tndvsQ+//n3Int69qD/8ZvTKr/Lz8H6tL5V9qE8JpVbj21TajjAB99+35/cvXcwO37+939D2czOsTpr07n26R3g15+eDbbWvfo+vANE8Y/lKmuNbxdSop4+fmv41PGYA8wV37fJAfS5ZjTQ9X2fqZ9q/dqsJSBm/2uNcXO86FH4R++/1n/12dvXnCLnAHPE13daWALGfqtPiV91C9YCXvDTD18fjj9956R/+N6rhzqdc+/Nk2tO4peAKL6E90uE1XnxW3KAlPjeAXLbwK3HXZ3BAS6Fvn/n5f9Fvyzbp0UAiW720e2XhnrvAH4ZiOL7Oi9+KzmAd4CU+LLcm8S1xroZEtsc4MG7rxzElRN88fGt4djaJP7ZJ7cPEcLql4rfSg5g4sctnA/5fjuYOm+tsW6GzXAT0z5lEttMTqB6E191FhGi0FPFbyUH8DM79+rXO4FMUWPrcVfHkjyJmhLZ6kxoK9vsV5SwT2uTuCnxfTmK34oDmPD+l7zUbsAvB/GN3tbjro45wJP7bwxC+zBvZftUNJD4Vm/nW86gHGCu+IoMe+cA8Z3+nK1glVexe6OZrLVf4moXoEhg7aozs2Nzjpz4fpanxI9J4F45gF7nxvf6OfHVfmPeB/g13yKBiWpl5QUS/LAbuEwUFQnkFHEXMFX8VpaA+N4/9U4/FxluxC7AZ/5a/+1YjiAnsHCvnYK1aYuYEz9lLSaBqd/44zZw7D3B1uOujg/pJrASQDlAnPFWr5xBESAKP7YkxHP2zgGm/B8gFRluTATwa7xmuMrKAXxOIIdQDmDXSM3sKHb8wcjOse/unQNM/T9A6mfdG+EA2gVI2FRCaGVbAuQcyg/MOXSduBvwx6k6fW/vJaD0/wBbjxsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObzAlALWxpYqwkVAAAAAElFTkSuQmCC",
-      "tileWidth": 16,
-      "tileHeight": 16,
-      "tileSeparationX": 0,
-      "tileSeparationY": 0
-    },
-    {
-      "label": "Background",
-      "path": "..\\tileset_back.png",
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAEPElEQVR4nO2aPY/UMBCG8x+2pFtRIaiOayho+BANSNTw///GcYl2TmZwEievncni55FG2b1JNo7ntWfs3PDx+6+nyX78frq+fZiOc5b12/UZe/z8U/KX2PDM2C6zV6/fLFp67nhttecPun5QGYMw2rsPX6YOsu/e5vwWyJyN5yv+NbOApoIYv8+dv3Tu3ueP9ssCGH/YbLxB+t1bzl9LAFtHvl3vxWiB9e30wU87Vnn+aL8sgNwUuTaFpt9rCmDLyLejdUROBKnNBV59/mi/LIDNOcv7Kwtgy8i3TvAiyI12P91b8J+7YNHWnl+9XvXLAlBzUgsBlIx8O47PkIpgrQZwwR/WArj2/Or1ql8WgJqTziIAm+qX2msCsWm0RABrz69er/plAag5KZ2K9/hVAdhnC/5SGrGRY7NESQDXnl+9XvXLApBzUoV9AEUAubxvwkpFZke//Kudk4/2ywJQc1J0CvDtsFF52yT667Odn7tHrZx8tF8WgJqTogWQVv/2e8PMdGwzQdqp0et41S8LQM1JLQRQUlOkAkgLsjUBDLeZIL2uZk5mH0AUQImlArBglqzJh6Qwe1nFtF+ntzYNNSfVFMCS8udmAl/cDTOzgP3NF4utc/bpBaDmpFoC2GO5AKQBToPvq/+5OqDBOv3cAjjDPsCWke8t1/H+PcDSJtEB6/RzC+BlXa7uA0Rfv8H+mS0W7rlmcgCiqZ3zovxbzUa/+jvR8ZOJXsfW9G+1kncHaxYdP5naOe9o/1y+LzWl/rjl+PsmYN0q2VQ4Jm22kejz+1ql//KPIvo6/77xy6rhBEFeMl8HqAJQa5J2kTkIn2Ov1+tkD+8fJ/v09VuoWTusXbk6IPd2MQ2U/1xaA5TUJNHxk/F58HK5TCPtrMfcPoAigPD38dHkaoDoIC8dczWAIoDw9/HR+Jx2DynAB1gRgLoPER0/mUxOO7W1rAH27EO0i8xBBOxdS+ZzsroKUPch2kXmIFq/D2/tr1kDdL8PsGcdHO2vVQOwD7BzHXwGP/sAAmfb29/qVwXAPkDA+/yllzNb768KILr/wzkqZ6dBnmtLek7p7yMAkdY5ey3oc+T+jWvu/ghAYCm/KTl7b+A9Pk/n9gEQgIDl0tKixs5byvktOjZ3rxr7ALXbeXeMHbKnmjUh5HJ9i3aO5Pbuc2kgVyfUSk3/HcpSxufkIzo0rQtIARVQBeDzc8225aAGOBkR++JpPYAAgjki93t8LYAAAonqyLQWQACBHJX7PVYLsAoIJuq9eLpTyAwQSGQnIoATgAA6BwFAKAigcxBA5yCAzkEAnYMAOgcBdA4C6BwE0DkIoHMQQOcggM5BAJ2DADoHAXQOAugcBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADR/AERQxETjeoYiAAAAABJRU5ErkJggg==",
-      "tileWidth": 16,
-      "tileHeight": 16,
-      "tileSeparationX": 0,
-      "tileSeparationY": 0
-    }
+    {"label": "Foreground", "path": "../tileset.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAFQElEQVR4nO2aPYslRRSG+1fIIIoIu36xIMjiB7iIsCArbLKwk5gMGGyigSAbbTCRKGaG4g9YMdZ4zIzEzMAf0zvnOm9z5lDVt7urursYngcOt6uqb1d1v6dOnep7u7/++beXnT39rvflaMfaS21J/z/88ttie3j2dd9VwMYls2uOmT/Xvrvm85xi3fM//uzN9EBUjjal3aykfUn/Vr/kxqMD9Jd4UaeWo1NaOXcPY+fWeH5L2rs4I47NmBbb54rvHcpEvLi46L3Ac8r+YXph4xij+FGYvZ5flwpRx0JYS+3eAXLen5sNNRwgzizvBN5ywu/9/EbXoNKcYIv26ABTZn7KAcy8wFPLflblQr3qUuKX3v+Yo09p78ZmSWlOsEV7zgFSoXkNB4hOcCwHiH2X3n9pNLiWA7Syps9tjw6QemBjDnB+ft6bSdC5ZZ/dj41XDiJh/BJS4/kc6z/V3rW2ps9tL3WAuFbPNc1SPdyxZUj9K0rUuP9S6+auOa21lzpAaf+pdV/X1UP2dXHtLu2/K6W1NX1ue6kD1Bqfrn8V2iXOtWN9PzXGpf0XO0CLa/rc9lQSOBaCc9db2r/E0CyX8NEUCbyopf0XO0Bra/ra7wHiA63Rv67VhZmfcoDuKhLkxjB7H1/K3mv6mFhT2qMDjM2g1IwqHb/EvHq3P8k07rGQP/X+ix1g7zW9NBrIAeaKX3P83iG6TBRQXUwWS++/2AFaWtOX7GNLrMb4U7PSZeiD+LmIV3r/xQ6w95q+t9V4D5ESKmU5JyqxYgf48tndvsQ+//n3Int69qD/8ZvTKr/Lz8H6tL5V9qE8JpVbj21TajjAB99+35/cvXcwO37+939D2czOsTpr07n26R3g15+eDbbWvfo+vANE8Y/lKmuNbxdSop4+fmv41PGYA8wV37fJAfS5ZjTQ9X2fqZ9q/dqsJSBm/2uNcXO86FH4R++/1n/12dvXnCLnAHPE13daWALGfqtPiV91C9YCXvDTD18fjj9956R/+N6rhzqdc+/Nk2tO4peAKL6E90uE1XnxW3KAlPjeAXLbwK3HXZ3BAS6Fvn/n5f9Fvyzbp0UAiW720e2XhnrvAH4ZiOL7Oi9+KzmAd4CU+LLcm8S1xroZEtsc4MG7rxzElRN88fGt4djaJP7ZJ7cPEcLql4rfSg5g4sctnA/5fjuYOm+tsW6GzXAT0z5lEttMTqB6E191FhGi0FPFbyUH8DM79+rXO4FMUWPrcVfHkjyJmhLZ6kxoK9vsV5SwT2uTuCnxfTmK34oDmPD+l7zUbsAvB/GN3tbjro45wJP7bwxC+zBvZftUNJD4Vm/nW86gHGCu+IoMe+cA8Z3+nK1glVexe6OZrLVf4moXoEhg7aozs2Nzjpz4fpanxI9J4F45gF7nxvf6OfHVfmPeB/g13yKBiWpl5QUS/LAbuEwUFQnkFHEXMFX8VpaA+N4/9U4/FxluxC7AZ/5a/+1YjiAnsHCvnYK1aYuYEz9lLSaBqd/44zZw7D3B1uOujg/pJrASQDlAnPFWr5xBESAKP7YkxHP2zgGm/B8gFRluTATwa7xmuMrKAXxOIIdQDmDXSM3sKHb8wcjOse/unQNM/T9A6mfdG+EA2gVI2FRCaGVbAuQcyg/MOXSduBvwx6k6fW/vJaD0/wBbjxsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObzAlALWxpYqwkVAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
+    {"label": "Background", "path": "../tileset_back.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAEmklEQVR4nO2a227UQAyG8w69BIFUFURRKUKlEuICLjiIG5C4hvd/jbIJNfK6k0wSz2mZ75Os7K6T3Un8Z+xxdvjw/dfdZD9+351f3UzbOQv65fiA3X7+6fKvseHAOC6xRxcvF03vOx6b7PxP9PhhDMJor95/mS6QvLc255dAhmzc3+OPmQRUC2J8P7f/0r57z78V/8Xrd6uPv7z9ONn4ehgdYuMO+r21kD+VALbe+XK8FaME1o7TBl9fGM/5t+IXAYzbpeNHv9j42RCaImNTqH6fUgBb7nzZysmFRKBtLvDe82/N/+TF9Sb/sDnnWH9iAWy58+UkrAhCd7ud7iX4hzJg0WLn7z0+tf/6cF5i2q8/Pxq/NyflEMCaO1+2YyGnRRCrAUzwh1gAY+fvPT6Hf8zvuiaQnC95/2j83pzUigBkql8arwhEptE1Aoidv/f43DXB08s3Rzn/wfi9OUdPxXv8XgHIawn+UhoR5csssSaAsfP3Hp/b//j51fL43TkpQR/AI4BQ3hdhaZHJ1i7/cufk7P6ZPoDk+2eHOz9UEzTXB/AKQBeIU/H1t0l09Fr2D/1Gzpxc2m9zvq0JtDXVB9gjAF39y/fNVuT3M4G+aKVycim/XefbmsB+3lwfQE/dSzWFFoAuyGICkJlAH1cyJ9MHiAhgjWkBSDDXrMl1YSbBz52z145pr8XW+bE+QVN9gCXlzs0E8h1S3M3NAvKZLRZz5+TcApDfm1vnh8ama4Jm+gB7LHSCOsA6+Lb6n6sDUufk3AJwj6+FPsCWO99a6MTsc4ClJlHunJxbAO7xza0jvevQ4sdvsAezxcJvxmw4dVLnvFr+rSZ3v/d7asfPTWvrWI9/q615dhCz2vFzkzrnlfbP5fu15qk/7nP8aVN63eq1qXBUY5Y70eb3WKX/748i/nX+aWOXVUMDQV4yWwd4BeCtSfJFphA2x56fn0928/Z2sk9fv1U1GYeMK1QHhJ4u6kDZ12trgDU1Se34ubF58OzsbLrTWt2G+gAeASRY5582oRqgdpCXtqEawCMAb++/bLQyYHPaKaQAG2CPALx9iNrxcxPIaU1bzhpgTx8iX2QKUbp37TWbk72rAG8fIl9kCpH7eXhuf8oaoPs+wJ51cG1/qhqAPsDOdXALfvoADlrr7W/1ewVAH6DC8/ylhzNbf98rgNrXvzqlcrYO8txY9D5rvx8BOMmds2NBnyP0N66530cADpbymydn7w28xebpUB8AATiQXLq2qJH9lnJ+jgsb+q0UfYDU4zw5xguyp5oVIYRyfY5xjoR696E0EKoTUqWm/w7PUsbm5BIXVNcFpIAEeAVg83PKsYWgBmiMGn1xXQ8ggMqUyP0WWwsggIrUupC6FkAAFSmV+y1SC7AKqEyt5+K6U8gMUJGaFxEBNAAC6BwEAFVBAJ2DADoHAXQOAugcBNA5CKBzEEDnIIDOQQCdgwA6BwF0DgLoHATQOQigcxBA5yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqM0fmLGwUuJyAIoAAAAASUVORK5CYII=", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
   ]
 }
