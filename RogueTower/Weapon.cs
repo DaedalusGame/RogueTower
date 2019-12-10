@@ -64,6 +64,11 @@ namespace RogueTower
             player.Velocity.X = 0;
             player.Velocity.Y = 0;
         }
+
+        public void DashAttack(Player player, Action dashAttackAction, float dashStartTime = 2, float dashTime = 4, float dashEndTime = 2, float dashFactor = 12, bool phasing = false, bool reversed = false)
+        {
+            player.CurrentAction = new ActionDashAttack(player, dashStartTime, dashTime, dashEndTime, dashFactor, phasing, reversed, dashAttackAction);
+        }
     }
 
     class WeaponSword : Weapon
@@ -113,8 +118,7 @@ namespace RogueTower
         {
             if (player.Controls.DownAttack && player.OnGround)
             {
-                player.Velocity.X = MathHelper.Clamp(GetFacingVector(player.Facing).X * 8, -8, 8);
-                Slash(player);
+                DashAttack(player, new ActionSlashUp(player, 2, 4, 8, 2), dashFactor: 8);
             }
             else if (player.Controls.Attack)
             {
