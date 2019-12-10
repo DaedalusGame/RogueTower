@@ -101,19 +101,19 @@ namespace RogueTower
 
     class WeaponKatana : Weapon
     {
-        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 1f)
         {
             CanParry = true;
         }
         public override WeaponState GetWeaponState(float angle)
         {
-            return WeaponState.Katana(angle);
+            return WeaponState.Katana(angle * 45);
         }
         public override void HandleAttack(Player player)
         {
             if (player.Controls.DownAttack && player.OnGround)
             {
-                player.Velocity.X = MathHelper.Clamp(GetFacingVector(player.Facing).X * 12, -12, 12);
+                player.Velocity.X = MathHelper.Clamp(GetFacingVector(player.Facing).X * 8, -8, 8);
                 Slash(player);
             }
             else if (player.Controls.Attack)
