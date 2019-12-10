@@ -553,7 +553,7 @@ namespace RogueTower
                         CurrentAction = new ActionRanged(this, Target, 24, 12);
                         RangedCooldown = 60 + Random.Next(40);
                     }
-                    if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
+                    else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
                         Velocity.X += Math.Sign(dx) * 2;
                         CurrentAction = new ActionAttack(this, 3, 12);
