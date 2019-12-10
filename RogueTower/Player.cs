@@ -43,6 +43,7 @@ namespace RogueTower
         public bool BackAttack;
         public bool UpAttack;
         public bool DownAttack;
+        public bool AltAttack;
 
         public bool ClimbUp;
         public bool ClimbDown;
@@ -62,6 +63,7 @@ namespace RogueTower
             bool up = game.KeyState.IsKeyDown(Keys.W) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickUp) || game.PadState.IsButtonDown(Buttons.DPadUp));
             bool down = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
             bool attack = game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X));
+            bool altattack = game.KeyState.IsKeyDown(Keys.LeftAlt) && LastState.IsKeyUp(Keys.LeftAlt) || (game.PadState.IsButtonDown(Buttons.B) && LastGPState.IsButtonUp(Buttons.B));
             bool forward = (Player.Facing == HorizontalFacing.Left && left) || (Player.Facing == HorizontalFacing.Right && right);
             bool back = (Player.Facing == HorizontalFacing.Left && right) || (Player.Facing == HorizontalFacing.Right && left);
 
@@ -86,6 +88,7 @@ namespace RogueTower
             if (back && attack)
                 BackAttack = true;
 
+            AltAttack = altattack;
             LastState = game.KeyState;
             LastGPState = game.PadState;
         }
@@ -102,6 +105,7 @@ namespace RogueTower
             BackAttack = false;
             DownAttack = false;
             UpAttack = false;
+            AltAttack = false;
 
             ClimbUp = false;
             ClimbDown = false;
@@ -130,8 +134,8 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        //public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
-        public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
+        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
+        //public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;

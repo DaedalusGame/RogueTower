@@ -154,6 +154,10 @@ namespace RogueTower
             {
                 StabDown(player);
             }
+            if (player.Controls.AltAttack)
+            {
+                player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
+            }
         }
     }
 
