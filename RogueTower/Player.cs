@@ -88,7 +88,8 @@ namespace RogueTower
             if (back && attack)
                 BackAttack = true;
 
-            AltAttack = altattack;
+            if(altattack)
+                AltAttack = true;
             LastState = game.KeyState;
             LastGPState = game.PadState;
         }

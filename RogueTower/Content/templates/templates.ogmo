@@ -128,6 +128,44 @@
       "values": [],
       "texture": "../editor_moaiman.png",
       "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAYCAYAAADzoH0MAAAAfElEQVR4nGNgGAW0A1na2v9LY2P/19bWgjGIT7ZmGCbZAHRMtCtACmHORsdkeQFmINGugNmGbgDMEIoMICowsRkA8xJRLkAPB7wBiR7XyLaiByYsEFG8gy2qoLZgFSclWv9jwSQBqmom2RBcBhBtCLoGkgzApZj+BhAlDgDaE++GiIxV1AAAAABJRU5ErkJggg=="
+    },
+    {
+      "exportID": "00630934",
+      "name": "cannon",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 8, "y": 8},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": true,
+      "rotationDegrees": 8,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": [],
+      "texture": "../editor_cannon.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAgUlEQVR4nGNgGJQgoaztPwh3zlkNxjA+DBNlgG9CLtwAEBsZE2XAim0H/5+4cB1MoxuC1bnIGKQJXQzZEBQDQIrRMbILYK6AeQvDAJgiZAyyDWYYNm8Q5QJYACLHBFYD0BXiijqcLsAWiDBDYC5Cj06iohHdRSSnA4oTEkUG0BUAAG8AR0thuCWiAAAAAElFTkSuQmCC"
     }
   ],
   "tilesets": [
