@@ -596,6 +596,9 @@ namespace RogueTower
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
                 }
             }
+
+            foreach (var entity in template.Entities)
+                template.PrintEntity(entity, map.World, px, py);
         }
 
         private TileBG GetBackground(int id)

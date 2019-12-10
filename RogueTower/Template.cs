@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ namespace RogueTower
         public int[,] Background;
 
         public int Connections => GetConnections();
+        public List<JObject> Entities = new List<JObject>();
 
         public string GetConnection(Direction dir)
         {
@@ -121,9 +123,35 @@ namespace RogueTower
                         i++;
                     }
                 }
+                if (name == "Entities")
+                {
+                    foreach (var entity in layer["entities"])
+                    {
+                        Entities.Add((JObject)entity);
+                    }
+                }
             }
 
             reader.Close();
+        }
+
+        public void PrintEntity(JObject entity, GameWorld world, int px, int py)
+        {
+            string type = entity["name"].ToObject<string>();
+            float ox = entity["x"].ToObject<float>();
+            float oy = entity["y"].ToObject<float>();
+            var values = entity["values"];
+
+            if (type == "ball_and_chain") //TODO: make a dictionary of (name -> generator delegate)
+            {
+                float rotation = entity["rotation"].ToObject<float>();
+                float speed = values["Speed"].ToObject<float>();
+                float distance = values["Distance"].ToObject<float>();
+                bool swings = values["Swings"].ToObject<bool>();
+
+                var ballandchain = new BallAndChain(world, new Vector2(px * 16 + ox, py * 16 + oy), rotation, speed, distance);
+                ballandchain.Swings = swings;
+            }
         }
 
         public override string ToString()
