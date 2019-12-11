@@ -520,7 +520,7 @@ namespace RogueTower
             if (gameState != GameState.Paused)
             {
                 SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
-                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
             }
             else

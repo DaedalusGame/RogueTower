@@ -585,10 +585,35 @@ namespace RogueTower
 
             var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
 
-            if (move.Hits.Any() && !hits.Any())
+            /*if (move.Hits.Any() && !hits.Any())
             {
                 IsMovingHorizontally = false;
                 IsMovingVertically = false;
+            }*/
+
+            var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+            foreach(var nearby in nearbies)
+            {
+                if(nearby.Data is Enemy enemy)
+                {
+                    float dx = enemy.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
+                if (nearby.Data is Player player)
+                {
+                    float dx = player.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
             }
 
             if (IsMovingVertically)
@@ -625,8 +650,8 @@ namespace RogueTower
             }
 
             RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-            var found = World.Find(panicBox);
-            if (found.Any(x => x != Box && !IgnoresCollision(x) && x.Bounds.Intersects(Box.Bounds)))
+            var found = World.FindBoxes(panicBox);
+            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
             {
                 Box.Teleport(move.Origin.X, move.Origin.Y);
             }

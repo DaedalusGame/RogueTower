@@ -48,7 +48,7 @@ namespace RogueTower
                 Player.ExtraJumps--;
         }
 
-        protected bool HandleMoveInput()
+        protected void HandleMoveInput()
         {
             float adjustedSpeedLimit = Player.SpeedLimit;
             float baseAcceleraton = Player.Acceleration;
@@ -62,7 +62,6 @@ namespace RogueTower
                 Player.Velocity.X = Math.Min(Player.Velocity.X + acceleration, adjustedSpeedLimit);
             if ((Player.Controls.MoveLeft && Player.Velocity.X < 0) || (Player.Controls.MoveRight && Player.Velocity.X > 0))
                 Player.AppliedFriction = 1;
-            return Player.Controls.MoveLeft || Player.Controls.MoveRight;
         }
 
         protected void HandleSlashInput()
@@ -109,7 +108,8 @@ namespace RogueTower
     class ActionMove : Action
     {
         public float WalkFrame;
-        public bool Walking;
+        public bool WalkingLeft;
+        public bool WalkingRight;
 
         public ActionMove(Player player) : base(player)
         {
@@ -118,7 +118,9 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            Walking = HandleMoveInput();
+            HandleMoveInput();
+            WalkingLeft = Player.Controls.MoveLeft;
+            WalkingRight = Player.Controls.MoveRight;
             HandleJumpInput();
             HandleSlashInput();
         }
@@ -130,13 +132,13 @@ namespace RogueTower
 
         public override void UpdateDelta(float delta)
         {
-            if (Walking)
+            if (WalkingLeft || WalkingRight)
             {
-                if (Player.Velocity.X > 0)
+                if (Player.Velocity.X > 0 && WalkingRight)
                 {
                     Player.Facing = HorizontalFacing.Right;
                 }
-                else if (Player.Velocity.X < 0)
+                else if (Player.Velocity.X < 0 && WalkingLeft)
                 {
                     Player.Facing = HorizontalFacing.Left;
                 }
@@ -163,7 +165,8 @@ namespace RogueTower
         }
 
         public State CurrentState;
-        public bool Control;
+        public bool JumpingLeft;
+        public bool JumpingRight;
         public bool AllowAirControl;
         public bool AllowJumpControl;
 
@@ -177,20 +180,22 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            Control = HandleMoveInput();
+            HandleMoveInput();
             if (AllowJumpControl && !Player.Controls.JumpHeld && Player.Velocity.Y < 0)
                 Player.Velocity.Y *= 0.7f;
+            JumpingLeft = Player.Controls.MoveLeft;
+            JumpingRight = Player.Controls.MoveRight;
             HandleExtraJump();
             HandleSlashInput();
         }
 
         public override void UpdateDelta(float delta)
         {
-            if (Control)
+            if (JumpingLeft || JumpingRight)
             {
-                if (Player.Velocity.X > 0)
+                if (Player.Velocity.X > 0 && JumpingRight)
                     Player.Facing = HorizontalFacing.Right;
-                else if (Player.Velocity.X < 0)
+                else if (Player.Velocity.X < 0 && JumpingLeft)
                     Player.Facing = HorizontalFacing.Left;
             }
 

@@ -135,8 +135,8 @@ namespace RogueTower
         public Vector2 Velocity;
 
         private Vector2 VelocityLeftover;
-        public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
-        //public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
+        //public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
+        public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
 
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
@@ -176,6 +176,7 @@ namespace RogueTower
         public void Create(float x, float y)
         {
             Box = World.Create(x, y, 12, 14);
+            Box.AddTags(CollisionTag.Character);
             Box.Data = this;
         }
 
@@ -267,12 +268,37 @@ namespace RogueTower
 
             IMovement move = Move(movement);
 
-            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !c.Box.HasTag(CollisionTag.NoCollision));
+            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
 
-            if (move.Hits.Any() && !hits.Any())
+            /*if (move.Hits.Any() && !hits.Any())
             {
                 IsMovingHorizontally = false;
                 IsMovingVertically = false;
+            }*/
+
+            var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+            foreach (var nearby in nearbies)
+            {
+                if (nearby.Data is Enemy enemy)
+                {
+                    float dx = enemy.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
+                if (nearby.Data is Player player)
+                {
+                    float dx = player.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
             }
 
             if (IsMovingVertically)
@@ -309,8 +335,8 @@ namespace RogueTower
             }
 
             RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-            var found = World.Find(panicBox);
-            if (found.Any(x => x != Box && !x.HasTag(CollisionTag.NoCollision) && x.Bounds.Intersects(Box.Bounds)))
+            var found = World.FindBoxes(panicBox);
+            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
             {
                 Box.Teleport(move.Origin.X, move.Origin.Y);
             }
@@ -348,10 +374,15 @@ namespace RogueTower
         {
             return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
             {
-                if (collision.Hit.Box.HasTag(CollisionTag.NoCollision))
-                    return null;
+                if (IgnoresCollision(collision.Hit.Box))
+                    return new CrossResponse(collision);
                 return new SlideAdvancedResponse(collision);
             });
+        }
+
+        private bool IgnoresCollision(IBox box)
+        {
+            return box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
         }
 
         protected override void UpdateDiscrete()
@@ -364,6 +395,10 @@ namespace RogueTower
             else if (OnGround) //Friction
             {
                 UpdateGroundFriction();
+                if(Velocity.Y < 0)
+                {
+
+                }
                 Velocity.Y = 0;
                 AppliedFriction = CurrentAction.Friction;
                 ExtraJumps = 0;
