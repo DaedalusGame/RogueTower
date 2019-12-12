@@ -18,12 +18,22 @@ namespace RogueTower
         Right,
     }
 
+    enum TravelDirection
+    {
+        Any,
+        Up,
+        Left,
+        Down,
+        Right,
+    }
+
     class Template
     {
         public static List<Template> Templates = new List<Template>();
 
         public string Name;
         public int Weight;
+        public TravelDirection TravelDirection;
 
         public string Up;
         public string Down;
@@ -91,6 +101,7 @@ namespace RogueTower
             Left = values["ConnectionLeft"].ToObject<string>();
             Right = values["ConnectionRight"].ToObject<string>();
             Weight = int.Parse(values["Weight"].ToObject<string>());
+            TravelDirection = (TravelDirection)Enum.Parse(typeof(TravelDirection), values["Direction"].ToObject<string>());
 
             foreach (var layer in root["layers"])
             {
@@ -149,7 +160,7 @@ namespace RogueTower
                 float distance = values["Distance"].ToObject<float>();
                 bool swings = values["Swings"].ToObject<bool>();
 
-                var ballandchain = new BallAndChain(world, new Vector2(px * 16 + ox, py * 16 + oy), rotation, speed, distance);
+                var ballandchain = new BallAndChain(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation), speed, distance);
                 ballandchain.Swings = swings;
             }
             if(type == "moaiman")

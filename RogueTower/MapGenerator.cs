@@ -135,28 +135,35 @@ namespace RogueTower
                 case (RoomType.HubVertical):
                     Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.HubUp):
                     Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.HubDown):
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.RightUp):
                     Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.LeftUp):
                     Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.RightDown):
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.LeftDown):
                     Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                     /*case (RoomType.Empty):
                         Forbid(template => template.Connections > 0);
