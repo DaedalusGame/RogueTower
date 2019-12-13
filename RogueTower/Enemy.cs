@@ -46,6 +46,13 @@ namespace RogueTower
 
     class MoaiMan : Enemy
     {
+        enum IdleState
+        {
+            Wait,
+            MoveLeft,
+            MoveRight,
+        }
+
         public abstract class Action
         {
             public MoaiMan MoaiMan;
@@ -347,7 +354,7 @@ namespace RogueTower
         public float Gravity = 0.2f;
         public float GravityLimit = 10f;
         public float Acceleration = 0.25f;
-        public float SpeedLimit = 3.0f;
+        public float SpeedLimit => InCombat ? 3.0f : 1.0f;
         public bool OnGround;
         public bool InAir => !OnGround;
         public bool OnWall;
@@ -364,8 +371,13 @@ namespace RogueTower
 
         public HorizontalFacing Facing;
 
+        public bool InCombat => Target != null;
+
         public Player Target;
         public int TargetTime;
+
+        IdleState Idle;
+        int IdleTime;
 
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -566,7 +578,41 @@ namespace RogueTower
             }
             else //Idle
             {
+                IdleTime--;
 
+                switch(Idle)
+                {
+                    case (IdleState.Wait):
+                        break;
+                    case (IdleState.MoveLeft):
+                        Facing = HorizontalFacing.Left;
+                        WalkConstrained(-1);
+                        break;
+                    case (IdleState.MoveRight):
+                        Facing = HorizontalFacing.Right;
+                        WalkConstrained(1);
+                        break;
+                }
+
+                if(OnWall)
+                {
+                    if(Idle == IdleState.MoveLeft)
+                        Idle = IdleState.MoveRight;
+                    else if (Idle == IdleState.MoveRight)
+                        Idle = IdleState.MoveLeft;
+                    OnWall = false;
+                    IdleTime = 70;
+                }
+
+                if(IdleTime <= 0)
+                {
+                    WeightedList<IdleState> nextState = new WeightedList<IdleState>();
+                    nextState.Add(IdleState.Wait, 30);
+                    nextState.Add(IdleState.MoveLeft, 70);
+                    nextState.Add(IdleState.MoveRight, 70);
+                    IdleTime = Random.Next(50) + 20;
+                    Idle = nextState.GetWeighted(Random);
+                }
             }
         }
 
@@ -574,86 +620,89 @@ namespace RogueTower
         {
             Lifetime += delta;
 
-            CurrentAction.UpdateDelta(delta);
-
-            var movement = CalculateMovement(delta);
-
-            bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
-            bool IsMovingHorizontally = Math.Abs(movement.X) > 0.1;
-
-            IMovement move = Move(movement);
-
-            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
-
-            /*if (move.Hits.Any() && !hits.Any())
+            if (Active)
             {
-                IsMovingHorizontally = false;
-                IsMovingVertically = false;
-            }*/
+                CurrentAction.UpdateDelta(delta);
 
-            var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
-            foreach(var nearby in nearbies)
-            {
-                if(nearby.Data is Enemy enemy)
-                {
-                    float dx = enemy.Position.X - Position.X;
-                    if (Math.Abs(dx) < 1)
-                        dx = Random.NextFloat() - 0.5f;
-                    if (dx > 0 && Velocity.X > -1)
-                        Velocity.X = -1;
-                    else if (dx < 0 && Velocity.X < 1)
-                        Velocity.X = 1;
-                }
-                if (nearby.Data is Player player)
-                {
-                    float dx = player.Position.X - Position.X;
-                    if (Math.Abs(dx) < 1)
-                        dx = Random.NextFloat() - 0.5f;
-                    if (dx > 0 && Velocity.X > -1)
-                        Velocity.X = -1;
-                    else if (dx < 0 && Velocity.X < 1)
-                        Velocity.X = 1;
-                }
-            }
+                var movement = CalculateMovement(delta);
 
-            if (IsMovingVertically)
-            {
-                if (hits.Any((c) => c.Normal.Y < 0))
+                bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
+                bool IsMovingHorizontally = Math.Abs(movement.X) > 0.1;
+
+                IMovement move = Move(movement);
+
+                var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
+
+                /*if (move.Hits.Any() && !hits.Any())
                 {
-                    OnGround = true;
-                }
-                else
+                    IsMovingHorizontally = false;
+                    IsMovingVertically = false;
+                }*/
+
+                var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+                foreach (var nearby in nearbies)
                 {
-                    OnGround = false;
+                    if (nearby.Data is Enemy enemy)
+                    {
+                        float dx = enemy.Position.X - Position.X;
+                        if (Math.Abs(dx) < 1)
+                            dx = Random.NextFloat() - 0.5f;
+                        if (dx > 0 && Velocity.X > -1)
+                            Velocity.X = -1;
+                        else if (dx < 0 && Velocity.X < 1)
+                            Velocity.X = 1;
+                    }
+                    if (nearby.Data is Player player)
+                    {
+                        float dx = player.Position.X - Position.X;
+                        if (Math.Abs(dx) < 1)
+                            dx = Random.NextFloat() - 0.5f;
+                        if (dx > 0 && Velocity.X > -1)
+                            Velocity.X = -1;
+                        else if (dx < 0 && Velocity.X < 1)
+                            Velocity.X = 1;
+                    }
                 }
 
-                if (hits.Any((c) => c.Normal.Y > 0))
+                if (IsMovingVertically)
                 {
-                    OnCeiling = true;
-                }
-                else
-                {
-                    OnCeiling = false;
-                }
-            }
+                    if (hits.Any((c) => c.Normal.Y < 0))
+                    {
+                        OnGround = true;
+                    }
+                    else
+                    {
+                        OnGround = false;
+                    }
 
-            if (IsMovingHorizontally)
-            {
-                if (hits.Any((c) => c.Normal.X != 0))
-                {
-                    OnWall = true;
+                    if (hits.Any((c) => c.Normal.Y > 0))
+                    {
+                        OnCeiling = true;
+                    }
+                    else
+                    {
+                        OnCeiling = false;
+                    }
                 }
-                else
-                {
-                    OnWall = false;
-                }
-            }
 
-            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-            var found = World.FindBoxes(panicBox);
-            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
-            {
-                Box.Teleport(move.Origin.X, move.Origin.Y);
+                if (IsMovingHorizontally)
+                {
+                    if (hits.Any((c) => c.Normal.X != 0))
+                    {
+                        OnWall = true;
+                    }
+                    else
+                    {
+                        OnWall = false;
+                    }
+                }
+
+                RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
+                var found = World.FindBoxes(panicBox);
+                if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
+                {
+                    Box.Teleport(move.Origin.X, move.Origin.Y);
+                }
             }
         }
 
@@ -673,44 +722,47 @@ namespace RogueTower
 
         protected override void UpdateDiscrete()
         {
-            if (OnCeiling)
+            if (Active)
             {
-                Velocity.Y = 1;
-                AppliedFriction = 1;
-            }
-            else if (OnGround) //Friction
-            {
-                UpdateGroundFriction();
-                Velocity.Y = 0;
-                AppliedFriction = CurrentAction.Friction;
-            }
-            else //Drag
-            {
-                AppliedFriction = CurrentAction.Drag;
-            }
-
-            if (OnWall)
-            {
-                var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
-                if (wallTiles.Any())
+                if (OnCeiling)
                 {
-                    Velocity.X = 0;
+                    Velocity.Y = 1;
+                    AppliedFriction = 1;
                 }
-                else
+                else if (OnGround) //Friction
                 {
-                    OnWall = false;
+                    UpdateGroundFriction();
+                    Velocity.Y = 0;
+                    AppliedFriction = CurrentAction.Friction;
                 }
+                else //Drag
+                {
+                    AppliedFriction = CurrentAction.Drag;
+                }
+
+                if (OnWall)
+                {
+                    var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
+                    if (wallTiles.Any())
+                    {
+                        Velocity.X = 0;
+                    }
+                    else
+                    {
+                        OnWall = false;
+                    }
+                }
+
+                HandleDamage();
+
+                UpdateAI();
+                CurrentAction.UpdateDiscrete();
+
+                Velocity.X *= AppliedFriction;
+
+                if (Velocity.Y < GravityLimit)
+                    Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
             }
-
-            HandleDamage();
-
-            UpdateAI();
-            CurrentAction.UpdateDiscrete();
-
-            Velocity.X *= AppliedFriction;
-
-            if (Velocity.Y < GravityLimit)
-                Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
         }
 
         private void HandleDamage()
@@ -741,6 +793,305 @@ namespace RogueTower
         public override void ShowDamage(double damage)
         {
             new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
+        }
+    }
+
+    class Snake : Enemy
+    {
+        public class SnakeSegment
+        {
+            public Vector2 Offset => new Vector2((float)Math.Sin(Angle), (float)Math.Cos(Angle)) * Distance * ((float)(Index + 1) / Parent.Segments.Count);
+
+            public Snake Parent;
+            public int Index;
+
+            public float Angle => MathHelper.Lerp(StartAngle, EndAngle, Parent.MoveDelta);
+            public float Distance => MathHelper.Lerp(StartDistance, EndDistance, Parent.MoveDelta);
+
+            public float StartAngle, EndAngle;
+            public float StartDistance, EndDistance;
+
+            public SnakeSegment(Snake parent, int index)
+            {
+                Parent = parent;
+                Index = index;
+            }
+
+            public void MoveTowards(float angle, float distance, float speed)
+            {
+                EndAngle = Util.AngleLerp(EndAngle, angle, speed);
+                EndDistance = MathHelper.Lerp(EndDistance, distance, speed);
+            }
+
+            public void UpdateDiscrete()
+            {
+                StartAngle = EndAngle;
+                StartDistance = EndDistance;
+            }
+        }
+
+        public abstract class Action
+        {
+            public Snake Snake;
+
+            public virtual bool MouthOpen => false;
+
+            public Action(Snake snake)
+            {
+                Snake = snake;
+            }
+
+            public abstract void UpdateDelta(float delta);
+
+            public abstract void UpdateDiscrete();
+        }
+
+        public class ActionIdle : Action
+        {
+            public float Time;
+
+            public override bool MouthOpen => true;
+
+            public ActionIdle(Snake snake) : base(snake)
+            {
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                Time += delta;
+
+                
+            }
+
+            public override void UpdateDiscrete()
+            {
+                Vector2 facingVector = GetFacingVector(Snake.Facing);
+                Vector2 wantedPosition;
+                if (Snake.InCombat)
+                    wantedPosition = -10 * facingVector + new Vector2(0, -30) + new Vector2((float)Math.Sin(Time / 20f) * 20 * facingVector.X, (float)Math.Cos(Time / 20f) * 10);
+                else
+                    wantedPosition = -10 * facingVector + new Vector2(0, -15) + new Vector2((float)Math.Sin(Time / 20f) * 10 * facingVector.X, (float)Math.Cos(Time / 20f) * 5);
+                Snake.Move(wantedPosition, 0.2f);
+            }
+        }
+
+        public class ActionBite : Action
+        {
+            public enum BiteState
+            {
+                Start,
+                Bite,
+                End,
+            }
+
+            public override bool MouthOpen => State == BiteState.Bite;
+
+            public BiteState State;
+            public float StartTime;
+            public float BiteTime;
+            public float EndTime;
+            public Vector2 Target;
+
+            public ActionBite(Snake snake, float startTime, float biteTime, float endTime) : base(snake)
+            {
+                StartTime = startTime;
+                BiteTime = biteTime;
+                EndTime = endTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        StartTime -= delta;
+                        if (StartTime < 0)
+                            State = BiteState.Bite;
+                        break;
+                    case (BiteState.Bite):
+                        BiteTime -= delta;
+                        if (BiteTime < 0)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        EndTime -= delta;
+                        if (EndTime < 0)
+                            Snake.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        if (Snake.Target != null)
+                        {
+                            float dx = Snake.Target.Position.X - Snake.Position.X;
+                            if (Math.Sign(dx) == GetFacingVector(Snake.Facing).X)
+                            {
+                                Target = Snake.Target.Position - Snake.Position;
+                                Target = Math.Min(Target.Length(), 80) * Vector2.Normalize(Target);
+                            }
+                        }
+                        Snake.Move(Target, 0.1f);
+                        break;
+                    case (BiteState.Bite):
+                        Snake.Move(Target, 0.5f);
+                        Snake.Move(Target, 0.5f);
+                        Snake.Move(Target, 0.5f);
+                        var maskSize = new Vector2(16, 16);
+                        bool damaged = false;
+                        foreach (var box in Snake.World.FindBoxes(new RectangleF(Snake.Position + Snake.Head.Offset - maskSize/2, maskSize)))
+                        {
+                            if(box.Data is Player player)
+                            {
+                                player.Hit(new Vector2(GetFacingVector(Snake.Facing).X, -2), 20, 50, 20);
+                                damaged = true;
+                            }
+                        }
+                        if (damaged)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        Snake.Move(Target, 0.2f);
+                        break;
+                }
+            }
+        }
+
+        public IBox Box;
+        public List<SnakeSegment> Segments = new List<SnakeSegment>();
+        public SnakeSegment Head => Segments.Last();
+
+        public Action CurrentAction;
+
+        public float Lifetime;
+
+        public override bool Attacking => false;
+
+        public HorizontalFacing Facing;
+        public float MoveDelta;
+
+        public bool InCombat => Target != null;
+        public Player Target;
+        public int TargetTime;
+
+        public Snake(GameWorld world, Vector2 position) : base(world, position)
+        {
+            CurrentAction = new ActionIdle(this);
+            CanDamage = true;
+        }
+
+        public override void Create(float x, float y)
+        {
+            base.Create(x, y);
+            Box = World.Create(x - 8, y - 8, 16, 16);
+            Box.AddTags(CollisionTag.NoCollision);
+            Box.Data = this;
+
+            for(int i = 0; i < 15; i++)
+            {
+                Segments.Add(new SnakeSegment(this,i));
+            }
+        }
+
+        public void ResetState()
+        {
+            CurrentAction = new ActionIdle(this);
+        }
+
+        private void UpdateAI()
+        {
+            var viewSize = new Vector2(200, 100);
+            RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
+
+            if (viewArea.Contains(World.Player.Position))
+            {
+                Target = World.Player;
+                TargetTime = 200;
+            }
+            else
+            {
+                TargetTime--;
+                if (TargetTime <= 0)
+                    Target = null;
+            }
+
+            if (Target != null) //Engaged
+            {
+                float dx = Target.Position.X - Position.X;
+
+                if (CurrentAction is ActionIdle idle)
+                {
+                    if (dx < 0)
+                    {
+                        Facing = HorizontalFacing.Left;
+                    }
+                    else if (dx > 0)
+                    {
+                        Facing = HorizontalFacing.Right;
+                    }
+
+                    if (idle.Time > 180)
+                        CurrentAction = new ActionBite(this, 40, 20, 30);
+                }
+            }
+            else
+            {
+
+            }
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            MoveDelta = Math.Min(MoveDelta + delta, 1.0f);
+            Lifetime += delta;
+
+            /*Vector2 wantedPosition = Position + new Vector2(-10, -30) + new Vector2((float)Math.Sin(Lifetime / 20f) * 40, (float)Math.Cos(Lifetime / 30f) * 20);
+
+            wantedPosition = World.Player.Position;
+            var wantedOffset = wantedPosition - Position;
+            wantedOffset = Math.Min(wantedOffset.Length(), 80f) * Vector2.Normalize(wantedOffset);
+            Move(wantedOffset);*/
+
+            CurrentAction.UpdateDelta(delta);
+
+            Box.Teleport(Position.X + Head.Offset.X - Box.Width / 2, Position.Y + Head.Offset.Y - Box.Height / 2);
+        }
+
+        private void Move(Vector2 offset, float speed)
+        {
+            float lastAngle = (float)Math.Atan2(offset.X, offset.Y);
+            float lastDistance = offset.Length();
+            foreach (SnakeSegment segment in Segments)
+            {
+                float angle = segment.EndAngle;
+                float distance = segment.EndDistance;
+                segment.MoveTowards(lastAngle, lastDistance, speed);
+                lastAngle = angle;
+                lastDistance = distance;
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            MoveDelta = 0;
+
+            foreach (SnakeSegment segment in Segments)
+            {
+                segment.UpdateDiscrete();
+            }
+
+            CurrentAction.UpdateDiscrete();
+
+            UpdateAI();
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            new DamagePopup(World, Position + Head.Offset + new Vector2(0, -16), damage.ToString(), 30);
         }
     }
 

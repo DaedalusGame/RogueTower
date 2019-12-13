@@ -420,8 +420,11 @@ namespace RogueTower
 
             var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
             var chain = SpriteLoader.Instance.AddSprite("content/chain");
+            var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
+            var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
+            var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
 
-            foreach(GameObject obj in World.Objects)
+            foreach (GameObject obj in World.Objects)
             {
                 if(obj is BallAndChain ballAndChain)
                 {
@@ -441,6 +444,27 @@ namespace RogueTower
                     if (!drawZone.Contains(truePos))
                         continue;
                     DrawMoaiMan(moaiMan);
+                }
+                if(obj is Snake snake)
+                {
+                    int i = snake.Segments.Count;
+                    foreach (var segment in snake.Segments)
+                    {
+                        if (i <= 1)
+                        {
+                            SpriteReference sprite;
+                            if (snake.CurrentAction.MouthOpen)
+                                sprite = snakeHeadOpen;
+                            else
+                                sprite = snakeHeadClosed;
+                            DrawSprite(sprite, 0, snake.Position + segment.Offset - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                        }
+                        else
+                        {
+                            DrawSprite(snakeBody, 0, snake.Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 0);
+                        }
+                        i--;
+                    } 
                 }
             }
 

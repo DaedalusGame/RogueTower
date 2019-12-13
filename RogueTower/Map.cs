@@ -89,7 +89,7 @@ namespace RogueTower
             }*/
 
             List<Tile> walls = EnumerateTiles().Where(tile => tile is Wall && tile.GetAdjacentNeighbors().Any(x => x.Passable)).ToList();
-            for(int i = 0; i < 70; i++)
+            /*for(int i = 0; i < 70; i++)
             {
                 int select = random.Next(walls.Count);
                 Tile pickWall = walls[select];
@@ -116,9 +116,18 @@ namespace RogueTower
                     var ballAndChain = new BallAndChain(World, new Vector2(pickWall.X * 16 + 8,pickWall.Y * 16 + 8), angle + e * MathHelper.TwoPi / n, speed, length);
                     ballAndChain.Swings = swings;
                 }
+            }*/
+
+            for (int i = 0; i < 70; i++)
+            {
+                int select = random.Next(walls.Count);
+                Tile pickWall = walls[select];
+                walls.RemoveAt(select);
+
+                new Snake(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
             }
 
-            List<Tile> floors = EnumerateTiles().Where(tile => tile is EmptySpace && tile.GetNeighbor(0,1) is Wall).ToList();
+                List<Tile> floors = EnumerateTiles().Where(tile => tile is EmptySpace && tile.GetNeighbor(0,1) is Wall).ToList();
             for (int i = 0; i < 80; i++)
             {
                 int select = random.Next(floors.Count);

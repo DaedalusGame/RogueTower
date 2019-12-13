@@ -29,6 +29,18 @@ namespace RogueTower
     
     static class Util
     {
+        public static float GetAngleDistance(float a0, float a1)
+        {
+            var max = Math.PI * 2;
+            var da = (a1 - a0) % max;
+            return (float)(2 * da % max - da);
+        }
+
+        public static float AngleLerp(float a0, float a1, float t)
+        {
+            return a0 + GetAngleDistance(a0, a1) * t;
+        }
+
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable)
         {
             return new HashSet<T>(enumerable);
