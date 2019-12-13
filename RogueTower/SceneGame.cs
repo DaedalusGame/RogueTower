@@ -449,6 +449,9 @@ namespace RogueTower
                 }
                 if(obj is Snake snake)
                 {
+                    Vector2 truePos = Vector2.Transform(snake.Position, WorldTransform);
+                    if (!drawZone.Contains(truePos))
+                        continue;
                     int i = snake.Segments.Count;
                     foreach (var segment in snake.Segments)
                     {

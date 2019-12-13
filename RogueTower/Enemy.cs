@@ -849,11 +849,13 @@ namespace RogueTower
         public class ActionIdle : Action
         {
             public float Time;
+            public float Offset;
 
             public override bool MouthOpen => true;
 
             public ActionIdle(Snake snake) : base(snake)
             {
+                Offset = Snake.Random.Next(100);
             }
 
             public override void UpdateDelta(float delta)
@@ -865,12 +867,13 @@ namespace RogueTower
 
             public override void UpdateDiscrete()
             {
+                var frame = Time + Offset;
                 Vector2 facingVector = GetFacingVector(Snake.Facing);
                 Vector2 wantedPosition;
                 if (Snake.InCombat)
-                    wantedPosition = -10 * facingVector + new Vector2(0, -30) + new Vector2((float)Math.Sin(Time / 20f) * 20 * facingVector.X, (float)Math.Cos(Time / 20f) * 10);
+                    wantedPosition = -10 * facingVector + new Vector2(0, -30) + new Vector2((float)Math.Sin(frame / 20f) * 20 * facingVector.X, (float)Math.Cos(frame / 20f) * 10);
                 else
-                    wantedPosition = -10 * facingVector + new Vector2(0, -15) + new Vector2((float)Math.Sin(Time / 20f) * 10 * facingVector.X, (float)Math.Cos(Time / 20f) * 5);
+                    wantedPosition = -10 * facingVector + new Vector2(0, -15) + new Vector2((float)Math.Sin(frame / 20f) * 10 * facingVector.X, (float)Math.Cos(frame / 20f) * 5);
                 Snake.Move(wantedPosition, 0.2f);
             }
         }
