@@ -1095,6 +1095,124 @@ namespace RogueTower
         }
     }
 
+    abstract class Cannon : Enemy
+    {
+        public enum FireState
+        {
+            Idle,
+            Charge,
+            Fire,
+        }
+
+        public override bool Attacking => false;
+
+        public FireState State;
+        public float Angle = 0;
+        public float DelayTime;
+        public float IdleTime;
+        public float ChargeTime;
+        public float FireTime;
+
+        public Vector2 FacingVector => new Vector2((float)Math.Sin(Angle), (float)Math.Cos(Angle));
+        public Vector2 VarianceVector => new Vector2((float)Math.Sin(Angle + Math.PI / 2), (float)Math.Cos(Angle + Math.PI / 2));
+
+        public Cannon(GameWorld world, Vector2 position, float angle) : base(world, position)
+        {
+            Angle = angle;
+            Reset();
+        }
+
+        protected abstract void Reset();
+
+        protected abstract void ShootStart();
+
+        protected abstract void ShootTick();
+
+        protected abstract void ShootEnd();
+
+        protected override void UpdateDelta(float delta)
+        {
+            DelayTime -= delta;
+            if (DelayTime <= 0)
+            {
+                switch (State)
+                {
+                    case (FireState.Idle):
+                        IdleTime -= delta;
+                        if (IdleTime <= 0)
+                            State = FireState.Charge;
+                        break;
+                    case (FireState.Charge):
+                        ChargeTime -= delta;
+                        if (ChargeTime <= 0)
+                        {
+                            if (Active)
+                                ShootStart();
+                            State = FireState.Fire;
+                        }
+                        break;
+                    case (FireState.Fire):
+                        FireTime -= delta;
+                        if (FireTime <= 0)
+                        {
+                            if (Active)
+                                ShootEnd();
+                            Reset();
+                            State = FireState.Idle;
+                        }
+                        break;
+                }
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if(State == FireState.Fire && Active)
+            {
+                ShootTick();
+            }
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            //NOOP
+        }
+    }
+
+    class CannonFire : Cannon
+    {
+        public CannonFire(GameWorld world, Vector2 position, float angle) : base(world, position, angle)
+        {
+        }
+
+        protected override void Reset()
+        {
+            IdleTime = 50;
+            ChargeTime = 30;
+            FireTime = 60;
+        }
+
+        protected override void ShootStart()
+        {
+        }
+
+        protected override void ShootTick()
+        {
+            if((int)FireTime % 5 == 0)
+            new Fireball(World, Position + FacingVector * 8 + VarianceVector * (Random.NextFloat()-0.5f) * 12)
+            {
+                Velocity = FacingVector * (Random.NextFloat() * 0.5f + 0.5f),
+                FrameEnd = 80,
+                Shooter = this,
+            };
+        }
+
+        protected override void ShootEnd()
+        {
+
+        }
+    }
+
     class BallAndChain : Enemy
     {
         public IBox Box;

@@ -475,7 +475,10 @@ namespace RogueTower
             }
             if (Invincibility > 0)
                 return;
-            Velocity = velocity;
+            if(CurrentAction is ActionClimb)
+                Velocity = GetFacingVector(Facing) * -1 + new Vector2(0,1);
+            else 
+                Velocity = velocity;
             OnWall = false;
             OnGround = false;
             Invincibility = invincibility;

@@ -423,6 +423,8 @@ namespace RogueTower
             var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
             var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
             var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
+            var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
+            var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
 
             foreach (GameObject obj in World.Objects)
             {
@@ -466,6 +468,10 @@ namespace RogueTower
                         i--;
                     } 
                 }
+                if (obj is Cannon cannon)
+                {
+                    DrawSpriteExt(wallGun, 0, cannon.Position + wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
+                }
             }
 
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
@@ -474,11 +480,16 @@ namespace RogueTower
             var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
+            var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
                 {
                     DrawSpriteExt(knife, 0, bullet.Position + knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
+                }
+                if (bullet is Fireball)
+                {
+                    DrawSpriteExt(fireball, 0, bullet.Position + fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(bullet.Frame * 0.5) , SpriteEffects.None, 0);
                 }
                 if (bullet is SpellOrange spellOrange)
                 {

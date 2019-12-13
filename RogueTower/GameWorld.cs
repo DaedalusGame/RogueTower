@@ -19,6 +19,8 @@ namespace RogueTower
         public IEnumerable<Bullet> Bullets => Objects.OfType<Bullet>();
         public IEnumerable<VisualEffect> Effects => Objects.OfType<VisualEffect>();
 
+        public Random Random = new Random();
+
         public float Hitstop = 0;
 
         public int Width => Map.Width * 16;

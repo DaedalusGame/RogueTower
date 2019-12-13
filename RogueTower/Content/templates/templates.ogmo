@@ -169,9 +169,11 @@
       "nodeDisplay": 0,
       "nodeGhost": true,
       "tags": [],
-      "values": [],
+      "values": [
+        {"name": "Delay", "definition": "Float", "defaults": 0, "bounded": false, "min": 0, "max": 100}
+      ],
       "texture": "../editor_cannon.png",
-      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAbUlEQVR4nGNgGLTANyH3/4ptB8EYxCbLgBMXroMxiI1sIFkugBmGYUBCWdt/bLhzzmoUDNIIcw2KATBbkDG6ZhiGeQXFEJjTkDFMA7prYK5A8QY+FxBlAC7nEu0FigOR4mjEZwBVExJRmgYEAADzhkhncxwAwQAAAABJRU5ErkJggg=="
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcklEQVR4nGNgwAISytr+d85Z/X/FtoP/T1y4DqZBYtjUYgWjBiAMQMYEDfBNyP0Pw+iaYRhZDYYByM5FthXZNchqqG8AxV6AGYLuCnTbcWpG9gZMIYgPwjCDcTof2QCYBmRNMD5MHqcB6N5BNpAoTQMCAICoSGd5ILk8AAAAAElFTkSuQmCC"
     }
   ],
   "tilesets": [

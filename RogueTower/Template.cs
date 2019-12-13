@@ -169,6 +169,13 @@ namespace RogueTower
                 var moaiman = new MoaiMan(world, new Vector2(px * 16 + ox, py * 16 + oy));
                 moaiman.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
+            if (type == "cannon")
+            {
+                float rotation = entity["rotation"].ToObject<float>();
+                float delay = values["Delay"].ToObject<float>();
+                var cannon = new CannonFire(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                cannon.DelayTime = delay;
+            }
         }
 
         public override string ToString()

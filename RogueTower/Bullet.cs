@@ -147,6 +147,23 @@ namespace RogueTower
         }
     }
 
+    class Fireball : Bullet
+    {
+        public Fireball(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || hit.Box.Data == Shooter)
+                return;
+            if (hit.Box.Data is Player player)
+            {
+                player.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
+            }
+        }
+    }
+
     class Knife : Bullet
     {
         double knifeDamage = 15.0;

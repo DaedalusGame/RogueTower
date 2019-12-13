@@ -44,10 +44,50 @@
       "gridCellsX": 16,
       "gridCellsY": 16,
       "entities": [
-        {"name": "cannon", "id": 0, "_eid": "00630934", "x": 24, "y": 40, "originX": 8, "originY": 8, "rotation": 180},
-        {"name": "cannon", "id": 1, "_eid": "00630934", "x": 24, "y": 56, "originX": 8, "originY": 8, "rotation": 180},
-        {"name": "cannon", "id": 2, "_eid": "00630934", "x": 24, "y": 72, "originX": 8, "originY": 8, "rotation": 180},
-        {"name": "cannon", "id": 3, "_eid": "00630934", "x": 24, "y": 88, "originX": 8, "originY": 8, "rotation": 180}
+        {
+          "name": "cannon",
+          "id": 0,
+          "_eid": "00630934",
+          "x": 24,
+          "y": 40,
+          "originX": 8,
+          "originY": 8,
+          "rotation": 450,
+          "values": {"Delay": 0}
+        },
+        {
+          "name": "cannon",
+          "id": 1,
+          "_eid": "00630934",
+          "x": 24,
+          "y": 56,
+          "originX": 8,
+          "originY": 8,
+          "rotation": 450,
+          "values": {"Delay": 0}
+        },
+        {
+          "name": "cannon",
+          "id": 2,
+          "_eid": "00630934",
+          "x": 24,
+          "y": 72,
+          "originX": 8,
+          "originY": 8,
+          "rotation": 450,
+          "values": {"Delay": 0}
+        },
+        {
+          "name": "cannon",
+          "id": 3,
+          "_eid": "00630934",
+          "x": 24,
+          "y": 88,
+          "originX": 8,
+          "originY": 8,
+          "rotation": 450,
+          "values": {"Delay": 0}
+        }
       ]
     }
   ]

@@ -18,7 +18,7 @@ namespace RogueTower
             get;
             private set;
         }
-        public Random Random = new Random();
+        public Random Random => World.Random;
 
         public abstract RectangleF ActivityZone
         {
