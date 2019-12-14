@@ -136,16 +136,6 @@ namespace RogueTower
                     else if (dx < 0 && Velocity.X < 1)
                         Velocity.X = 1;
                 }
-                if (nearby.Data is Player player)
-                {
-                    float dx = player.Position.X - Position.X;
-                    if (Math.Abs(dx) < 1)
-                        dx = Random.NextFloat() - 0.5f;
-                    if (dx > 0 && Velocity.X > -1)
-                        Velocity.X = -1;
-                    else if (dx < 0 && Velocity.X < 1)
-                        Velocity.X = 1;
-                }
             }
 
             if (IsMovingVertically)
@@ -943,9 +933,11 @@ namespace RogueTower
                         bool damaged = false;
                         foreach (var box in Snake.World.FindBoxes(new RectangleF(Snake.Position + Snake.Head.Offset - maskSize/2, maskSize)))
                         {
-                            if(box.Data is Player player)
+                            if (box == Snake.Box)
+                                continue;
+                            if(box.Data is Enemy enemy)
                             {
-                                player.Hit(new Vector2(GetFacingVector(Snake.Facing).X, -2), 20, 50, 20);
+                                enemy.Hit(new Vector2(GetFacingVector(Snake.Facing).X, -2), 20, 50, 20);
                                 damaged = true;
                             }
                         }
@@ -1275,11 +1267,11 @@ namespace RogueTower
         {
             if (hit.Box.HasTag(CollisionTag.NoCollision))
                 return;
-            if (hit.Box.Data is Player player)
+            if (hit.Box.Data is Enemy enemy)
             {
                 var hitVelocity = (Offset - LastOffset);
                 hitVelocity.Normalize();
-                player.Hit(hitVelocity * 5, 40, 30, Damage);
+                enemy.Hit(hitVelocity * 5, 40, 30, Damage);
             }
         }
 
