@@ -412,11 +412,11 @@ namespace RogueTower
 
             DrawMapBackground(World.Map);
             DepthShear = new Shear(double.NegativeInfinity, 0.75);
-            DrawPlayer(World.Player);
+            DrawHuman(World.Player);
             DepthShear = Shear.All;
             DrawMap(World.Map);
             DepthShear = new Shear(0.75, double.PositiveInfinity);
-            DrawPlayer(World.Player);
+            DrawHuman(World.Player);
             DepthShear = Shear.All;
 
             var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
@@ -446,7 +446,7 @@ namespace RogueTower
                     Vector2 truePos = Vector2.Transform(moaiMan.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawMoaiMan(moaiMan);
+                    DrawHuman(moaiMan);
                 }
                 if(obj is Snake snake)
                 {
@@ -769,62 +769,28 @@ namespace RogueTower
             return drawZone;
         }
 
-        private void DrawPlayer(Player player)
+        private void DrawHuman(EnemyHuman human)
         {
-            var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
-
             SpriteEffects mirror = SpriteEffects.None;
 
-            if (player.Facing == HorizontalFacing.Left)
+            if (human.Facing == HorizontalFacing.Left)
                 mirror = SpriteEffects.FlipHorizontally;
 
-            Vector2 position = player.Position;
+            Vector2 position = human.Position;
 
-            PlayerState state = new PlayerState(
-                HeadState.Forward,
-                BodyState.Stand,
-                ArmState.Shield,
-                ArmState.Neutral,
-                player.Weapon.GetWeaponState(MathHelper.ToRadians(0))
-            );
-            player.CurrentAction.GetPose(state);
+            PlayerState state = human.GetBasePose();
+            human.CurrentAction.GetPose(state);
+            human.SetPhenoType(state);
 
             if (state.Body == BodyState.Kneel)
             {
                 position += new Vector2(0, 1);
             }
 
-            DrawPlayerState(state, position - new Vector2(8, 8), mirror);
-        }
-
-        private void DrawMoaiMan(MoaiMan moaiMan)
-        {
-            SpriteEffects mirror = SpriteEffects.None;
-
-            if (moaiMan.Facing == HorizontalFacing.Left)
-                mirror = SpriteEffects.FlipHorizontally;
-
-            Vector2 position = moaiMan.Position;
-
-            PlayerState state = new PlayerState(
-                HeadState.Forward,
-                BodyState.Stand,
-                ArmState.Angular(5),
-                ArmState.Angular(3),
-                WeaponState.WandOrange(MathHelper.ToRadians(270-20))
-            );
-
-            moaiMan.CurrentAction.GetPose(state);
-
-            if (state.Body == BodyState.Kneel)
+            if((int)human.Lifetime % 2 == 0)
             {
-                position += new Vector2(0, 1);
+
             }
-
-            state.Head.SetPhenoType("moai");
-            state.LeftArm.SetPhenoType("moai");
-            state.RightArm.SetPhenoType("moai");
-
             DrawPlayerState(state, position - new Vector2(8, 8), mirror);
         }
 

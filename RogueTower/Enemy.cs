@@ -75,6 +75,7 @@ namespace RogueTower
         public float AppliedFriction;
         public int ExtraJumps = 0;
         public int Invincibility = 0;
+        public float Lifetime;
 
         public override bool Attacking => CurrentAction.Attacking;
 
@@ -106,6 +107,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            Lifetime += delta;
+
             CurrentAction.UpdateDelta(delta);
 
             var movement = CalculateMovement(delta);
@@ -235,6 +238,10 @@ namespace RogueTower
                 }
             }
         }
+
+        public abstract PlayerState GetBasePose();
+
+        public abstract void SetPhenoType(PlayerState pose);
 
         protected virtual void HandleInput()
         {
@@ -575,7 +582,6 @@ namespace RogueTower
 
         //public override bool Attacking => CurrentAction is ActionAttack;
 
-        public float Lifetime;
         public int AttackCooldown = 0;
         public int RangedCooldown = 0;
 
@@ -764,8 +770,6 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
-            Lifetime += delta;
-
             if (Active)
             {
                 base.UpdateDelta(delta);
@@ -778,6 +782,24 @@ namespace RogueTower
             {
                 base.UpdateDiscrete();
             }
+        }
+
+        public override PlayerState GetBasePose()
+        {
+            return new PlayerState(
+                HeadState.Forward,
+                BodyState.Stand,
+                ArmState.Angular(5),
+                ArmState.Angular(3),
+                WeaponState.WandOrange(MathHelper.ToRadians(270 - 20))
+            );
+        }
+
+        public override void SetPhenoType(PlayerState pose)
+        {
+            pose.Head.SetPhenoType("moai");
+            pose.LeftArm.SetPhenoType("moai");
+            pose.RightArm.SetPhenoType("moai");
         }
     }
 
