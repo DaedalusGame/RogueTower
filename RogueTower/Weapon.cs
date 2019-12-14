@@ -185,6 +185,7 @@ namespace RogueTower
     class WeaponRapier : Weapon
     {
         public int FinesseCounter = 0;
+        public float LastCombo;
         public int FinesseLimit;
         public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 3) : base(damage, weaponSizeMult, weaponSize, 0.7f)
         {
@@ -197,23 +198,43 @@ namespace RogueTower
             return WeaponState.Rapier(angle);
         }
 
+        public void IncrementFinesse(Player player)
+        {
+            LastCombo = player.Lifetime;
+            FinesseCounter++;
+        }
         public override void HandleAttack(Player player)
-        {   
+        {
+            if (player.Lifetime - LastCombo > 45)
+                FinesseCounter = 0;
             if (player.Controls.Attack && FinesseCounter < FinesseLimit)
+            {
+                IncrementFinesse(player);
+
+                if (player.CurrentAction.GetType() == typeof(ActionSlash))
+                    SlashUp(player);
+                else
                 {
                     Slash(player);
-                    FinesseCounter++;
                 }
+            }
             else if (player.Controls.Attack && FinesseCounter >= FinesseLimit)
+            {
+                if (FinesseCounter == FinesseLimit)
                 {
-                    player.Velocity.X *= -5;
-                    StabDown(player);
+                    DashAttack(player, new ActionDownStab(player, 4, 2, this), dashFactor: 6, reversed: true);
+                    IncrementFinesse(player);
+                }
+                else if (FinesseCounter == FinesseLimit + 1)
+                {
+                    DashAttack(player, new ActionStab(player, 4, 2, this), dashTime: 6, dashFactor: 6);
                     FinesseCounter = 0;
                 }
+            }
             if (player.Controls.AltAttack)
-                {
-                    player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
-                }
+            {
+                player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
+            }
         }
     }
 }
