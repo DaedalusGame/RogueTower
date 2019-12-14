@@ -77,6 +77,7 @@ namespace RogueTower
         public int Invincibility = 0;
         public float Lifetime;
 
+        public virtual bool Strafing => false;
         public override bool Attacking => CurrentAction.Attacking;
 
         public Action CurrentAction;
@@ -579,6 +580,7 @@ namespace RogueTower
 
         public override float Acceleration => 0.25f;
         public override float SpeedLimit => InCombat ? 3.0f : 1.0f;
+        public override bool Strafing => true;
 
         //public override bool Attacking => CurrentAction is ActionAttack;
 
@@ -671,6 +673,14 @@ namespace RogueTower
                 else if (CurrentAction is ActionWandBlast)
                 {
                     AttackCooldown--;
+                }
+                else if (CurrentAction is ActionJump)
+                {
+
+                }
+                else if (CurrentAction is ActionClimb)
+                {
+                    OnWall = false;
                 }
                 else
                 {

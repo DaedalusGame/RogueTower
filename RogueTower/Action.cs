@@ -136,13 +136,16 @@ namespace RogueTower
         {
             if (WalkingLeft || WalkingRight)
             {
-                if (Human.Velocity.X > 0 && WalkingRight)
+                if (!Human.Strafing)
                 {
-                    Human.Facing = HorizontalFacing.Right;
-                }
-                else if (Human.Velocity.X < 0 && WalkingLeft)
-                {
-                    Human.Facing = HorizontalFacing.Left;
+                    if (Human.Velocity.X > 0 && WalkingRight)
+                    {
+                        Human.Facing = HorizontalFacing.Right;
+                    }
+                    else if (Human.Velocity.X < 0 && WalkingLeft)
+                    {
+                        Human.Facing = HorizontalFacing.Left;
+                    }
                 }
                 WalkFrame += Math.Abs(Human.Velocity.X * delta * 0.125f) / (float)Math.Sqrt(Human.GroundFriction);
             }
@@ -196,10 +199,13 @@ namespace RogueTower
         {
             if (JumpingLeft || JumpingRight)
             {
-                if (Human.Velocity.X > 0 && JumpingRight)
-                    Human.Facing = HorizontalFacing.Right;
-                else if (Human.Velocity.X < 0 && JumpingLeft)
-                    Human.Facing = HorizontalFacing.Left;
+                if (!Human.Strafing)
+                {
+                    if (Human.Velocity.X > 0 && JumpingRight)
+                        Human.Facing = HorizontalFacing.Right;
+                    else if (Human.Velocity.X < 0 && JumpingLeft)
+                        Human.Facing = HorizontalFacing.Left;
+                }
             }
 
             if (Human.Velocity.Y < 0)
