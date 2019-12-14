@@ -787,9 +787,9 @@ namespace RogueTower
                 position += new Vector2(0, 1);
             }
 
-            if((int)human.Lifetime % 2 == 0)
+            if(human.Invincibility > 0 && (int)human.Lifetime % 2 == 0)
             {
-
+                return;
             }
             DrawPlayerState(state, position - new Vector2(8, 8), mirror);
         }
