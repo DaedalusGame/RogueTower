@@ -14,14 +14,14 @@ namespace RogueTower
 {
     abstract class Action
     {
-        protected Player Player;
-        protected Action(Player player)
+        protected EnemyHuman Human;
+        protected Action(EnemyHuman player)
         {
-            Player = player;
+            Human = player;
         }
 
         public virtual bool HasGravity => true;
-        public virtual float Friction => 1 - (1 - 0.85f) * Player.GroundFriction;
+        public virtual float Friction => 1 - (1 - 0.85f) * Human.GroundFriction;
         public virtual float Drag => 0.85f;
         public virtual bool Attacking => false;
 
@@ -31,42 +31,42 @@ namespace RogueTower
 
         abstract public void UpdateDiscrete();
 
-        protected bool HandleJumpInput()
+        protected bool HandleJumpInput(Player player)
         {
-            if (Player.Controls.Jump)
+            if (player.Controls.Jump)
             {
-                Player.Velocity.Y -= Player.GetJumpVelocity(60);
+                Human.Velocity.Y -= Human.GetJumpVelocity(60);
                 PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
                 return true;
             }
             return false;
         }
 
-        protected void HandleExtraJump()
+        protected void HandleExtraJump(Player player)
         {
-            if (Player.ExtraJumps > 0 && HandleJumpInput())
-                Player.ExtraJumps--;
+            if (Human.ExtraJumps > 0 && HandleJumpInput(player))
+                Human.ExtraJumps--;
         }
 
-        protected void HandleMoveInput()
+        protected void HandleMoveInput(Player player)
         {
-            float adjustedSpeedLimit = Player.SpeedLimit;
-            float baseAcceleraton = Player.Acceleration;
-            if (Player.OnGround)
-                baseAcceleraton *= Player.GroundFriction;
+            float adjustedSpeedLimit = Human.SpeedLimit;
+            float baseAcceleraton = Human.Acceleration;
+            if (Human.OnGround)
+                baseAcceleraton *= Human.GroundFriction;
             float acceleration = baseAcceleraton;
 
-            if (Player.Controls.MoveLeft && Player.Velocity.X > -adjustedSpeedLimit)
-                Player.Velocity.X = Math.Max(Player.Velocity.X - acceleration, -adjustedSpeedLimit);
-            if (Player.Controls.MoveRight && Player.Velocity.X < adjustedSpeedLimit)
-                Player.Velocity.X = Math.Min(Player.Velocity.X + acceleration, adjustedSpeedLimit);
-            if ((Player.Controls.MoveLeft && Player.Velocity.X < 0) || (Player.Controls.MoveRight && Player.Velocity.X > 0))
-                Player.AppliedFriction = 1;
+            if (player.Controls.MoveLeft && Human.Velocity.X > -adjustedSpeedLimit)
+                Human.Velocity.X = Math.Max(Human.Velocity.X - acceleration, -adjustedSpeedLimit);
+            if (player.Controls.MoveRight && Human.Velocity.X < adjustedSpeedLimit)
+                Human.Velocity.X = Math.Min(Human.Velocity.X + acceleration, adjustedSpeedLimit);
+            if ((player.Controls.MoveLeft && Human.Velocity.X < 0) || (player.Controls.MoveRight && Human.Velocity.X > 0))
+                Human.AppliedFriction = 1;
         }
 
-        protected void HandleSlashInput()
+        protected void HandleSlashInput(Player player)
         {
-            Player.Weapon.HandleAttack(Player);
+            player.Weapon.HandleAttack(player);
         }
 
         abstract public void GetPose(PlayerState basePose);
@@ -74,7 +74,7 @@ namespace RogueTower
 
     class ActionIdle : Action
     {
-        public ActionIdle(Player player) : base(player)
+        public ActionIdle(EnemyHuman player) : base(player)
         {
 
         }
@@ -86,17 +86,18 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            HandleMoveInput();
-            HandleJumpInput();
-            HandleSlashInput();
+            var player = (Player)Human;
+            HandleMoveInput(player);
+            HandleJumpInput(player);
+            HandleSlashInput(player);
         }
 
         public override void UpdateDelta(float delta)
         {
-            if (!Player.OnGround)
-                Player.CurrentAction = new ActionJump(Player,true,true);
-            else if(Math.Abs(Player.Velocity.X) >= 0.01)
-                Player.CurrentAction = new ActionMove(Player);
+            if (!Human.OnGround)
+                Human.CurrentAction = new ActionJump(Human,true,true);
+            else if(Math.Abs(Human.Velocity.X) >= 0.01)
+                Human.CurrentAction = new ActionMove(Human);
         }
 
         public override void UpdateDiscrete()
@@ -111,18 +112,19 @@ namespace RogueTower
         public bool WalkingLeft;
         public bool WalkingRight;
 
-        public ActionMove(Player player) : base(player)
+        public ActionMove(EnemyHuman player) : base(player)
         {
 
         }
 
         public override void OnInput()
         {
-            HandleMoveInput();
-            WalkingLeft = Player.Controls.MoveLeft;
-            WalkingRight = Player.Controls.MoveRight;
-            HandleJumpInput();
-            HandleSlashInput();
+            var player = (Player)Human;
+            HandleMoveInput(player);
+            WalkingLeft = player.Controls.MoveLeft;
+            WalkingRight = player.Controls.MoveRight;
+            HandleJumpInput(player);
+            HandleSlashInput(player);
         }
 
         public override void GetPose(PlayerState basePose)
@@ -134,20 +136,20 @@ namespace RogueTower
         {
             if (WalkingLeft || WalkingRight)
             {
-                if (Player.Velocity.X > 0 && WalkingRight)
+                if (Human.Velocity.X > 0 && WalkingRight)
                 {
-                    Player.Facing = HorizontalFacing.Right;
+                    Human.Facing = HorizontalFacing.Right;
                 }
-                else if (Player.Velocity.X < 0 && WalkingLeft)
+                else if (Human.Velocity.X < 0 && WalkingLeft)
                 {
-                    Player.Facing = HorizontalFacing.Left;
+                    Human.Facing = HorizontalFacing.Left;
                 }
-                WalkFrame += Math.Abs(Player.Velocity.X * delta * 0.125f) / (float)Math.Sqrt(Player.GroundFriction);
+                WalkFrame += Math.Abs(Human.Velocity.X * delta * 0.125f) / (float)Math.Sqrt(Human.GroundFriction);
             }
-            if (!Player.OnGround)
-                Player.CurrentAction = new ActionJump(Player, true, true);
-            else if (Math.Abs(Player.Velocity.X) < 0.01)
-                Player.CurrentAction = new ActionIdle(Player);
+            if (!Human.OnGround)
+                Human.CurrentAction = new ActionJump(Human, true, true);
+            else if (Math.Abs(Human.Velocity.X) < 0.01)
+                Human.CurrentAction = new ActionIdle(Human);
         }
 
         public override void UpdateDiscrete()
@@ -172,7 +174,7 @@ namespace RogueTower
 
         public override float Drag => AllowAirControl ? base.Drag : 1;
 
-        public ActionJump(Player player, bool airControl, bool jumpControl) : base(player)
+        public ActionJump(EnemyHuman player, bool airControl, bool jumpControl) : base(player)
         {
             AllowAirControl = airControl;
             AllowJumpControl = jumpControl;
@@ -180,44 +182,45 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            HandleMoveInput();
-            if (AllowJumpControl && !Player.Controls.JumpHeld && Player.Velocity.Y < 0)
-                Player.Velocity.Y *= 0.7f;
-            JumpingLeft = Player.Controls.MoveLeft;
-            JumpingRight = Player.Controls.MoveRight;
-            HandleExtraJump();
-            HandleSlashInput();
+            var player = (Player)Human;
+            HandleMoveInput(player);
+            if (AllowJumpControl && !player.Controls.JumpHeld && Human.Velocity.Y < 0)
+                Human.Velocity.Y *= 0.7f;
+            JumpingLeft = player.Controls.MoveLeft;
+            JumpingRight = player.Controls.MoveRight;
+            HandleExtraJump(player);
+            HandleSlashInput(player);
         }
 
         public override void UpdateDelta(float delta)
         {
             if (JumpingLeft || JumpingRight)
             {
-                if (Player.Velocity.X > 0 && JumpingRight)
-                    Player.Facing = HorizontalFacing.Right;
-                else if (Player.Velocity.X < 0 && JumpingLeft)
-                    Player.Facing = HorizontalFacing.Left;
+                if (Human.Velocity.X > 0 && JumpingRight)
+                    Human.Facing = HorizontalFacing.Right;
+                else if (Human.Velocity.X < 0 && JumpingLeft)
+                    Human.Facing = HorizontalFacing.Left;
             }
 
-            if (Player.Velocity.Y < 0)
+            if (Human.Velocity.Y < 0)
                 CurrentState = State.Up;
             else
                 CurrentState = State.Down;
 
-            if (Player.OnGround)
-                Player.CurrentAction = new ActionIdle(Player);
+            if (Human.OnGround)
+                Human.CurrentAction = new ActionIdle(Human);
         }
 
         public override void UpdateDiscrete()
         {
-            if (Player.OnWall)
+            if (Human.OnWall)
             {
-                var wallTiles = Player.World.FindTiles(Player.Box.Bounds.Offset(GetFacingVector(Player.Facing)));
-                var climbTiles = wallTiles.Where(tile => tile.CanClimb(Player.Facing.Mirror()));
-                if (Player.InAir && climbTiles.Any() && CurrentState == State.Down)
+                var wallTiles = Human.World.FindTiles(Human.Box.Bounds.Offset(GetFacingVector(Human.Facing)));
+                var climbTiles = wallTiles.Where(tile => tile.CanClimb(Human.Facing.Mirror()));
+                if (Human.InAir && climbTiles.Any() && CurrentState == State.Down)
                 {
-                    Player.Velocity.Y = 0;
-                    Player.CurrentAction = new ActionClimb(Player);
+                    Human.Velocity.Y = 0;
+                    Human.CurrentAction = new ActionClimb(Human);
                 }
             }
         }
@@ -228,7 +231,7 @@ namespace RogueTower
             {
                 default:
                 case (State.Up):
-                    if (Player.Velocity.Y < -0.5)
+                    if (Human.Velocity.Y < -0.5)
                         basePose.Body = BodyState.Walk(1);
                     else
                         basePose.Body = BodyState.Walk(0);
@@ -246,7 +249,7 @@ namespace RogueTower
 
         public override float Drag => 1;
 
-        public ActionHit(Player player, int time) : base(player)
+        public ActionHit(EnemyHuman player, int time) : base(player)
         {
             Time = time;
         }
@@ -273,7 +276,7 @@ namespace RogueTower
             Time--;
             if (Time <= 0)
             {
-                Player.ResetState();
+                Human.ResetState();
             }
         }
     }
@@ -284,7 +287,7 @@ namespace RogueTower
 
         public override bool HasGravity => false;
 
-        public ActionClimb(Player player) : base(player)
+        public ActionClimb(EnemyHuman player) : base(player)
         {
         }
 
@@ -298,42 +301,43 @@ namespace RogueTower
 
         public override void OnInput()
         {
-            if (Player.Controls.ClimbUp)
-                Player.Velocity.Y = -0.5f;
-            if (Player.Controls.ClimbDown)
-                Player.Velocity.Y = 0.5f;
-            if (!Player.Controls.ClimbUp && !Player.Controls.ClimbDown)
-                Player.Velocity.Y = 0;
-            if (Player.Controls.Jump)
+            var player = (Player)Human;
+            if (player.Controls.ClimbUp)
+                Human.Velocity.Y = -0.5f;
+            if (player.Controls.ClimbDown)
+                Human.Velocity.Y = 0.5f;
+            if (!player.Controls.ClimbUp && !player.Controls.ClimbDown)
+                Human.Velocity.Y = 0;
+            if (player.Controls.Jump)
             {
-                Player.OnWall = false;
-                Player.CurrentAction = new ActionJump(Player, false, true);
-                Player.Velocity = GetFacingVector(Player.Facing) * -Player.GetJumpVelocity(30) * 0.5f + new Vector2(0, -Player.GetJumpVelocity(30));
+                Human.OnWall = false;
+                Human.CurrentAction = new ActionJump(Human, false, true);
+                Human.Velocity = GetFacingVector(Human.Facing) * -Human.GetJumpVelocity(30) * 0.5f + new Vector2(0, -Human.GetJumpVelocity(30));
                 //Player.DisableAirControl = true;
-                Player.Facing = Player.Facing.Mirror();
+                Human.Facing = Human.Facing.Mirror();
                 PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
             }
-            if (Player.OnGround && ((Player.Controls.MoveLeft && Player.Facing == HorizontalFacing.Right) || (Player.Controls.MoveRight && Player.Facing == HorizontalFacing.Left)))
+            if (Human.OnGround && ((player.Controls.MoveLeft && Human.Facing == HorizontalFacing.Right) || (player.Controls.MoveRight && Human.Facing == HorizontalFacing.Left)))
             {
-                Player.OnWall = false;
-                Player.ResetState();
-                Player.Facing = Player.Facing.Mirror();
+                Human.OnWall = false;
+                Human.ResetState();
+                Human.Facing = Human.Facing.Mirror();
             }
         }
 
         public override void UpdateDelta(float delta)
         {
-            ClimbFrame += Player.Velocity.Y * delta * 0.5f;
+            ClimbFrame += Human.Velocity.Y * delta * 0.5f;
         }
 
         public override void UpdateDiscrete()
         {
-            var climbTiles = Player.World.FindTiles(Player.Box.Bounds.Offset(GetFacingVector(Player.Facing))).Where(tile => tile.CanClimb(Player.Facing.Mirror()));
+            var climbTiles = Human.World.FindTiles(Human.Box.Bounds.Offset(GetFacingVector(Human.Facing))).Where(tile => tile.CanClimb(Human.Facing.Mirror()));
             if (!climbTiles.Any())
             {
-                Player.OnWall = false;
-                Player.CurrentAction = new ActionJump(Player, true, true);
-                Player.Velocity.X = GetFacingVector(Player.Facing).X; //Tiny nudge to make the player stand on the ladder
+                Human.OnWall = false;
+                Human.CurrentAction = new ActionJump(Human, true, true);
+                Human.Velocity.X = GetFacingVector(Human.Facing).X; //Tiny nudge to make the player stand on the ladder
             }
         }
     }
@@ -356,7 +360,7 @@ namespace RogueTower
             DashEnd,
         }
 
-        public ActionDash(Player player, float dashStartTime, float dashTime, float dashEndTime, float dashFactor, bool phasing, bool reversed) : base(player)
+        public ActionDash(EnemyHuman player, float dashStartTime, float dashTime, float dashEndTime, float dashFactor, bool phasing, bool reversed) : base(player)
         {
             DashStartTime = dashStartTime;
             DashTime = dashTime;
@@ -401,14 +405,14 @@ namespace RogueTower
                     break;
                 case (DashState.Dash):
                     DashTime -= delta;
-                    Player.Velocity.X = MathHelper.Clamp((GetFacingVector(Player.Facing).X * (Reversed ? -1 : 1)) * DashFactor, -DashFactor, DashFactor);
+                    Human.Velocity.X = MathHelper.Clamp((GetFacingVector(Human.Facing).X * (Reversed ? -1 : 1)) * DashFactor, -DashFactor, DashFactor);
                     if (DashTime < 0)
                         DashAction = DashState.DashEnd;
                     break;
                 case (DashState.DashEnd):
                     DashEndTime -= delta;
                     if (DashEndTime < 0)
-                        Player.ResetState();
+                        Human.ResetState();
                     break;
             }
         }
@@ -421,7 +425,7 @@ namespace RogueTower
     class ActionDashAttack : ActionDash
     {
         public Action DashAttack;
-        public ActionDashAttack(Player player, float dashStartTime, float dashTime, float dashEndTime, float dashFactor, bool phasing, bool reversed, Action actionDashAttack) : base(player, dashStartTime, dashTime, dashEndTime, dashFactor, phasing, reversed)
+        public ActionDashAttack(EnemyHuman player, float dashStartTime, float dashTime, float dashEndTime, float dashFactor, bool phasing, bool reversed, Action actionDashAttack) : base(player, dashStartTime, dashTime, dashEndTime, dashFactor, phasing, reversed)
         {
             DashStartTime = dashStartTime;
             DashTime = dashTime;
@@ -443,20 +447,21 @@ namespace RogueTower
                     break;
                 case (DashState.Dash):
                     DashTime -= delta;
-                    Player.Velocity.X = MathHelper.Clamp((GetFacingVector(Player.Facing).X * (Reversed ? -1 : 1)) * DashFactor, -DashFactor, DashFactor);
+                    Human.Velocity.X = MathHelper.Clamp((GetFacingVector(Human.Facing).X * (Reversed ? -1 : 1)) * DashFactor, -DashFactor, DashFactor);
                     if (DashTime < 0)
                         DashAction = DashState.DashEnd;
                     break;
                 case (DashState.DashEnd):
                     DashEndTime -= delta;
                     if (DashEndTime < 0)
-                        Player.CurrentAction = DashAttack;
+                        Human.CurrentAction = DashAttack;
                     break;
             }
         }
     }
     class ActionSlash : Action
     {
+        public Weapon Weapon;
         public SwingAction SlashAction;
         public float SlashStartTime;
         public float SlashUpTime;
@@ -479,37 +484,38 @@ namespace RogueTower
             FinishSwing,
         }
 
-        public ActionSlash(Player player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime) : base(player)
+        public ActionSlash(EnemyHuman player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime, Weapon weapon) : base(player)
         {
             SlashStartTime = slashStartTime;
             SlashUpTime = slashUpTime;
             SlashDownTime = slashDownTime;
             SlashFinishTime = slashFinishTime;
+            Weapon = weapon;
         }
 
         public override void GetPose(PlayerState basePose)
         {
-            basePose.Body = !Player.InAir ? BodyState.Stand : BodyState.Walk(1);
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
 
             switch(SlashAction)
             {
                 default:
                 case (SwingAction.StartSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 22));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 22));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
                     break;
             }
             
@@ -517,12 +523,13 @@ namespace RogueTower
 
         public override void OnInput()
         {
+            var player = (Player)Human;
             if (IsDownSwing)
             {
-                HandleSlashInput();
+                HandleSlashInput(player);
             }
             if (Parried)
-                HandleExtraJump();
+                HandleExtraJump(player);
         }
 
         public override void UpdateDelta(float delta)
@@ -547,35 +554,35 @@ namespace RogueTower
                 case (SwingAction.FinishSwing):
                     SlashFinishTime -= delta;
                     if (SlashFinishTime < 0)
-                        Player.ResetState();
+                        Human.ResetState();
                     break;
             }
         }
 
         public virtual void Swing()
         {
-            Vector2 Position = Player.Position;
-            HorizontalFacing Facing = Player.Facing;
+            Vector2 Position = Human.Position;
+            HorizontalFacing Facing = Human.Facing;
             Vector2 FacingVector = GetFacingVector(Facing);
-            Vector2 PlayerWeaponOffset = Position + FacingVector * Player.Weapon.WeaponSizeMult;
-            Vector2 WeaponSize = Player.Weapon.WeaponSize;
+            Vector2 PlayerWeaponOffset = Position + FacingVector * Weapon.WeaponSizeMult;
+            Vector2 WeaponSize = Weapon.WeaponSize;
             RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
-            if (Player.Weapon.CanParry == true)
+            if (Weapon.CanParry == true)
             {
                 Vector2 parrySize = new Vector2(22, 22);
-                bool success = Player.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
                 if(success)
                     Parried = true;
             }
             if (!Parried)
-                Player.SwingWeapon(weaponMask, 10);
+                Human.SwingWeapon(weaponMask, 10);
             SwingVisual(Parried);
             SlashAction = SwingAction.DownSwing;
         }
 
         public virtual void SwingVisual(bool parry)
         {
-            var effect = new SlashEffectRound(Player.World, () => Player.Position, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -588,13 +595,13 @@ namespace RogueTower
     }
     class ActionSlashUp : ActionSlash
     {
-        public ActionSlashUp(Player player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime)
+        public ActionSlashUp(EnemyHuman player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime, Weapon weapon) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime, weapon)
         {
         }
 
         public override void GetPose(PlayerState basePose)
         {
-            basePose.Body = !Player.InAir ? BodyState.Stand : BodyState.Walk(1);
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
 
             switch (SlashAction)
             {
@@ -602,37 +609,39 @@ namespace RogueTower
                 case (SwingAction.StartSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(100));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(100));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(125));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(125));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-75));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-75));
                     break;
             }
-            if (Parried)
-                HandleExtraJump();
         }
 
         public override void OnInput()
         {
+            var player = (Player)Human;
             if (IsDownSwing)
             {
-                HandleSlashInput();
+                HandleSlashInput(player);
             }
+
+            if (Parried)
+                HandleExtraJump(player);
         }
 
         public override void SwingVisual(bool parry)
         {
-            var effect = new SlashEffectRound(Player.World, () => Player.Position, Player.Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -647,6 +656,7 @@ namespace RogueTower
             DownSwing,
         }
 
+        public Weapon Weapon;
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
@@ -658,27 +668,28 @@ namespace RogueTower
         public override float Friction => Parried ? 1 : base.Friction;
         public override float Drag => 1 - (1 - base.Drag) * 0.1f;
 
-        public ActionStab(Player player, float upTime, float downTime) : base(player)
+        public ActionStab(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player)
         {
             SlashUpTime = upTime;
             SlashDownTime = downTime;
+            Weapon = weapon;
         }
 
         public override void GetPose(PlayerState basePose)
         {
-            basePose.Body = !Player.InAir ? BodyState.Stand : BodyState.Walk(1);
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
 
             switch (SlashAction)
             {
                 default:
                 case (SwingAction.UpSwing):
                     basePose.RightArm = ArmState.Angular(8);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(-90 + 22.5f));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 + 22.5f));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(0);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
                     break;
             }
         }
@@ -700,7 +711,7 @@ namespace RogueTower
                 case (SwingAction.DownSwing):
                     SlashDownTime -= delta;
                     if (SlashDownTime < 0)
-                        Player.ResetState();
+                        Human.ResetState();
                     break;
             }
         }
@@ -712,29 +723,39 @@ namespace RogueTower
 
         public virtual void Swing()
         {
-            Vector2 Position = Player.Position;
-            HorizontalFacing Facing = Player.Facing;
-            Vector2 FacingVector = GetFacingVector(Facing);
+            float sizeMult = (Human.Random.NextFloat() * 3 - 0.5f) + 1;
+            Vector2 weaponSize = new Vector2(12, 4) * sizeMult;
+            RectangleF weaponMask = new RectangleF(Human.Position
+                + GetFacingVector(Human.Facing) * 8
+                + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
+                + new Vector2(0, 1)
+                - weaponSize / 2f,
+                weaponSize);
+            new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
+            /*
             Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
             Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
-            RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
-            if (Player.Weapon.CanParry)
+            RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);*/
+            if (Weapon.CanParry)
             {
+                HorizontalFacing Facing = Human.Facing;
+                Vector2 Position = Human.Position;
+                Vector2 FacingVector = GetFacingVector(Facing);
                 Vector2 parrySize = new Vector2(22, 22);
-                bool success = Player.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
                 if (success)
                     Parried = true;
             }
             if (!Parried)
-                Player.SwingWeapon(weaponMask, 10);
+                Human.SwingWeapon(weaponMask, 10);
             SwingVisual(Parried);
             SlashAction = SwingAction.DownSwing;
         }
 
         public virtual void SwingVisual(bool parry)
         {
-            Vector2 FacingVector = GetFacingVector(Player.Facing);
-            var effect = new SlashEffectStraight(Player.World, () => Player.Position + FacingVector * 6, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            Vector2 FacingVector = GetFacingVector(Human.Facing);
+            var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 6, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -743,7 +764,7 @@ namespace RogueTower
 
     class ActionDownStab : ActionStab
     {
-        public ActionDownStab(Player player, float upTime, float downTime) : base(player, upTime, downTime)
+        public ActionDownStab(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
         {
         }
 
@@ -755,20 +776,20 @@ namespace RogueTower
                 case (SwingAction.UpSwing):
                     basePose.Body = BodyState.Crouch(2);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(1);
-                    basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
                     break;
             }
         }
 
         public override void SwingVisual(bool parry)
         {
-            Vector2 FacingVector = GetFacingVector(Player.Facing);
-            var effect = new SlashEffectStraight(Player.World, () => Player.Position + new Vector2(0,2) + FacingVector * 6, Player.Weapon.SwingSize, 0, Player.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            Vector2 FacingVector = GetFacingVector(Human.Facing);
+            var effect = new SlashEffectStraight(Human.World, () => Human.Position + new Vector2(0,2) + FacingVector * 6, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -779,7 +800,7 @@ namespace RogueTower
     {
         public override bool Attacking => false;
 
-        public ActionKnifeThrow(Player player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime)
+        public ActionKnifeThrow(EnemyHuman player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime, Weapon weapon) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime, weapon)
         {
 
         }
@@ -819,12 +840,12 @@ namespace RogueTower
 
         public override void Swing()
         {
-            Vector2 facing = GetFacingVector(Player.Facing);
-            new Knife(Player.World, Player.Position + facing * 5)
+            Vector2 facing = GetFacingVector(Human.Facing);
+            new Knife(Human.World, Human.Position + facing * 5)
             {
                 Velocity = facing * 8,
                 FrameEnd = 20,
-                Shooter = Player
+                Shooter = Human
             };
             PlaySFX(sfx_knife_throw, 1.0f, 0.4f, 0.7f);
             SlashAction = SwingAction.DownSwing;
@@ -833,16 +854,18 @@ namespace RogueTower
 
     class ActionPlunge : Action
     {
+        public Weapon Weapon;
         public float PlungeStartTime;
         public float PlungeFinishTime;
         public bool PlungeFinished = false;
 
         public override bool HasGravity => false;
 
-        public ActionPlunge(Player player, float plungeStartTime, float plungeFinishTime) : base(player)
+        public ActionPlunge(EnemyHuman player, float plungeStartTime, float plungeFinishTime, Weapon weapon) : base(player)
         {
             PlungeStartTime = plungeStartTime;
             PlungeFinishTime = plungeFinishTime;
+            Weapon = weapon;
         }
 
         public override void OnInput()
@@ -852,18 +875,18 @@ namespace RogueTower
         public override void UpdateDiscrete()
         {
             if (PlungeStartTime <= 0)
-                Player.Velocity.Y = 5;
-            if (Player.OnGround)
+                Human.Velocity.Y = 5;
+            if (Human.OnGround)
             {
-                Player.Velocity.Y = -4;
-                Player.OnGround = false;
-                Player.World.Hitstop = 4;
+                Human.Velocity.Y = -4;
+                Human.OnGround = false;
+                Human.World.Hitstop = 4;
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
-                Player.CurrentAction = new ActionJump(Player, true, false);
+                Human.CurrentAction = new ActionJump(Human, true, false);
                 PlungeFinished = true;
 
-                double damageIn = Player.Weapon.Damage * 1.5;
-                foreach (var box in Player.World.FindBoxes(Player.Box.Bounds.Offset(0, 1)))
+                double damageIn = Weapon.Damage * 1.5;
+                foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
                 {
                     if(box.Data is Tile tile)
                         tile.HandleTileDamage(damageIn);
@@ -872,7 +895,7 @@ namespace RogueTower
                 }
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
-                Player.CurrentAction = new ActionIdle(Player);
+                Human.CurrentAction = new ActionIdle(Human);
         }
 
         public override void UpdateDelta(float delta)
@@ -889,7 +912,7 @@ namespace RogueTower
             basePose.Body = BodyState.Crouch(1);
             basePose.LeftArm = ArmState.Angular(4);
             basePose.RightArm = ArmState.Angular(2);
-            basePose.Weapon = Player.Weapon.GetWeaponState(MathHelper.ToRadians(90));
+            basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(90));
         }
     }
 

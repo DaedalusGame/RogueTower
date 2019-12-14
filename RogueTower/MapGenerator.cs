@@ -597,7 +597,21 @@ namespace RogueTower
                         case (11):
                             map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Right);
                             break;
-                        
+                        case (17):
+                            if(Random.NextDouble() < 0.5)
+                                map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
+                            else
+                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
+                            break;
+                        case (18):
+                            if (Random.NextDouble() < 0.5)
+                                map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
+                            else
+                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
+                            break;
+                        case (20):
+                            map.Tiles[px + x, py + y] = new SpikeDeath(map, px + x, py + y);
+                            break;
                     }
 
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);

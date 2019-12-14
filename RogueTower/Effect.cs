@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RogueTower
 {
-    class VisualEffect : GameObject
+    abstract class VisualEffect : GameObject
     {
         public float Frame;
 

@@ -449,8 +449,9 @@ namespace RogueTower
                 }
                 if(obj is Snake snake)
                 {
-                    Vector2 truePos = Vector2.Transform(snake.Position, WorldTransform);
-                    if (!drawZone.Contains(truePos))
+                    Vector2 truePosA = Vector2.Transform(snake.Position, WorldTransform);
+                    Vector2 truePosB = Vector2.Transform(snake.Position + snake.Head.Offset, WorldTransform);
+                    if (!drawZone.Contains(truePosA) && !drawZone.Contains(truePosB))
                         continue;
                     int i = snake.Segments.Count;
                     foreach (var segment in snake.Segments)
@@ -692,6 +693,7 @@ namespace RogueTower
             var grass = SpriteLoader.Instance.AddSprite("content/grass-top");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
+            var spikeDeath = SpriteLoader.Instance.AddSprite("content/wall_spike_death");
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
 
             Rectangle drawZone = GetDrawZone();
@@ -722,6 +724,10 @@ namespace RogueTower
                     else if (tile is Ladder ladderTile)
                     {
                         SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), Color.White, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                    }
+                    else if (tile is SpikeDeath)
+                    {
+                        SpriteBatch.Draw(spikeDeath.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
                     else if (tile is Spike)
                     {

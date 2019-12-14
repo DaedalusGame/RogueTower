@@ -18,7 +18,6 @@ namespace RogueTower
         public bool CanDamage = false;
         public float Friction = 1.0f;
         public double Health, MaxHealth;
-        public double Damage = 0;
         public virtual Sound breakSound => sfx_tile_break;
 
         public Tile(Map map, int x, int y, bool passable, double health)
@@ -77,6 +76,11 @@ namespace RogueTower
 
         //Copy values over here
         public virtual void CopyTo(Tile tile)
+        {
+            //NOOP
+        }
+
+        public virtual void StepOn(EnemyHuman human)
         {
             //NOOP
         }
@@ -141,9 +145,23 @@ namespace RogueTower
 
     class Spike : Wall
     {
+        public double Damage = 10.0;
+
         public Spike(Map map, int x, int y) : base(map, x, y)
         {
-            Damage = 10.0;
+        }
+
+        public override void StepOn(EnemyHuman human)
+        {
+            human.Hit(-Util.GetFacingVector(human.Facing) * 1 + new Vector2(0, -2), 20, 50, Damage);
+        }
+    }
+
+    class SpikeDeath : Spike
+    {
+        public SpikeDeath(Map map, int x, int y) : base(map, x, y)
+        {
+            Damage = double.PositiveInfinity;
         }
     }
 

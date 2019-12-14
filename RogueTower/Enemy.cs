@@ -44,7 +44,334 @@ namespace RogueTower
         }
     }
 
-    class MoaiMan : Enemy
+    abstract class EnemyHuman : Enemy
+    {
+        public IBox Box;
+        public override Vector2 Position
+        {
+            get
+            {
+                return Box.Bounds.Center;
+            }
+            set
+            {
+                var pos = value + Box.Bounds.Center - Box.Bounds.Location;
+                Box.Teleport(pos.X, pos.Y);
+            }
+        }
+        public Vector2 Velocity;
+        protected Vector2 VelocityLeftover;
+        public HorizontalFacing Facing;
+
+        public virtual float Gravity => 0.2f;
+        public virtual float GravityLimit => 10f;
+        public virtual float Acceleration => 0.25f;
+        public virtual float SpeedLimit => 2;
+        public bool OnGround;
+        public bool InAir => !OnGround;
+        public bool OnWall;
+        public bool OnCeiling;
+        public float GroundFriction = 1.0f;
+        public float AppliedFriction;
+        public int ExtraJumps = 0;
+        public int Invincibility = 0;
+
+        public override bool Attacking => CurrentAction.Attacking;
+
+        public Action CurrentAction;
+
+        public EnemyHuman(GameWorld world, Vector2 position) : base(world, position)
+        {
+            CurrentAction = new ActionIdle(this);
+        }
+
+        public override void Create(float x, float y)
+        {
+            Box = World.Create(x, y, 12, 14);
+            Box.AddTags(CollisionTag.Character);
+            Box.Data = this;
+        }
+
+        public void ResetState()
+        {
+            if (OnGround)
+            {
+                CurrentAction = new ActionIdle(this);
+            }
+            else
+            {
+                CurrentAction = new ActionJump(this, true, true);
+            }
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            CurrentAction.UpdateDelta(delta);
+
+            var movement = CalculateMovement(delta);
+
+            bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
+            bool IsMovingHorizontally = Math.Abs(movement.X) > 0.1;
+
+            IMovement move = Move(movement);
+
+            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
+
+            /*if (move.Hits.Any() && !hits.Any())
+            {
+                IsMovingHorizontally = false;
+                IsMovingVertically = false;
+            }*/
+
+            var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+            foreach (var nearby in nearbies)
+            {
+                if (nearby.Data is Enemy enemy)
+                {
+                    float dx = enemy.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
+                if (nearby.Data is Player player)
+                {
+                    float dx = player.Position.X - Position.X;
+                    if (Math.Abs(dx) < 1)
+                        dx = Random.NextFloat() - 0.5f;
+                    if (dx > 0 && Velocity.X > -1)
+                        Velocity.X = -1;
+                    else if (dx < 0 && Velocity.X < 1)
+                        Velocity.X = 1;
+                }
+            }
+
+            if (IsMovingVertically)
+            {
+                if (hits.Any((c) => c.Normal.Y < 0))
+                {
+                    OnGround = true;
+                }
+                else
+                {
+                    OnGround = false;
+                }
+
+                if (hits.Any((c) => c.Normal.Y > 0))
+                {
+                    OnCeiling = true;
+                }
+                else
+                {
+                    OnCeiling = false;
+                }
+            }
+
+            if (IsMovingHorizontally)
+            {
+                if (hits.Any((c) => c.Normal.X != 0))
+                {
+                    OnWall = true;
+                }
+                else
+                {
+                    OnWall = false;
+                }
+            }
+
+            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
+            var found = World.FindBoxes(panicBox);
+            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
+            {
+                Box.Teleport(move.Origin.X, move.Origin.Y);
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (OnCeiling)
+            {
+                Velocity.Y = 1;
+                AppliedFriction = 1;
+            }
+            else if (OnGround) //Friction
+            {
+                UpdateGroundFriction();
+                if (Velocity.Y < 0)
+                {
+
+                }
+                Velocity.Y = 0;
+                AppliedFriction = CurrentAction.Friction;
+                ExtraJumps = 0;
+            }
+            else //Drag
+            {
+                AppliedFriction = CurrentAction.Drag;
+            }
+
+            if (OnWall)
+            {
+                var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
+                if (wallTiles.Any())
+                {
+                    Velocity.X = 0;
+                }
+                else
+                {
+                    OnWall = false;
+                }
+            }
+
+            HandleDamage();
+
+            CurrentAction.UpdateDiscrete();
+            HandleInput(); //For implementors
+
+            Velocity.X *= AppliedFriction;
+
+            if (CurrentAction.HasGravity && Velocity.Y < GravityLimit)
+                Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
+
+            if (OnGround) //Damage
+            {
+                var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
+                if (tiles.Any())
+                {
+                    Tile steppedTile = tiles.WithMin(tile => Math.Abs(tile.X * 16 + 8 - Position.X));
+                    steppedTile.StepOn(this);
+                }
+            }
+        }
+
+        protected virtual void HandleInput()
+        {
+            //NOOP
+        }
+
+        public bool Parry(RectangleF hitmask)
+        {
+            //new RectangleDebug(World, hitmask, Color.Orange, 20);
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is Enemy enemy && enemy.Attacking)
+                {
+                    PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
+                    World.Hitstop = 15;
+                    Invincibility = 10;
+                    if (OnGround)
+                    {
+                        Velocity += GetFacingVector(Facing) * -2;
+                    }
+                    else
+                    {
+                        ExtraJumps = Math.Max(ExtraJumps, 1);
+                        Velocity.Y = 0;
+                    }
+                    new ParryEffect(World, Vector2.Lerp(Box.Bounds.Center, Position, 0.5f), 0, 10);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
+        {
+            //new RectangleDebug(World, hitmask, Color.Lime, 20);
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is Enemy enemy)
+                {
+                    enemy.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
+                }
+                if (Box.Data is Tile tile)
+                {
+                    tile.HandleTileDamage(damageIn);
+                }
+            }
+
+        }
+
+        protected Vector2 CalculateMovement(float delta)
+        {
+            var velocity = Velocity * delta + VelocityLeftover;
+            var movement = new Vector2((int)velocity.X, (int)velocity.Y);
+
+            VelocityLeftover = velocity - movement;
+
+            return movement;
+        }
+
+        protected IMovement Move(Vector2 movement)
+        {
+            return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
+            {
+                if (IgnoresCollision(collision.Hit.Box))
+                    return new CrossResponse(collision);
+                return new SlideAdvancedResponse(collision);
+            });
+        }
+
+        protected bool IgnoresCollision(IBox box)
+        {
+            return box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
+        }
+
+        public float GetJumpVelocity(float height)
+        {
+            return (float)Math.Sqrt(2 * Gravity * height);
+        }
+
+        protected void UpdateGroundFriction()
+        {
+            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
+            if (tiles.Any())
+                GroundFriction = tiles.Max(tile => tile.Friction);
+            else
+                GroundFriction = 1.0f;
+        }
+
+        protected void HandleDamage()
+        {
+            if (!(CurrentAction is ActionHit))
+                Invincibility--;
+        }
+
+        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            if (CurrentAction is ActionSlash slash && slash.IsUpSwing)
+            {
+                //Parry
+                slash.Swing();
+                return;
+            }
+            if (Invincibility > 0)
+                return;
+            if (CurrentAction is ActionClimb)
+                Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
+            else
+                Velocity = velocity;
+            OnWall = false;
+            OnGround = false;
+            Invincibility = invincibility;
+            CurrentAction = new ActionHit(this, hurttime);
+            PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            HandleDamage(damageIn);
+            World.Hitstop = 6;
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
+        }
+    }
+
+    class MoaiMan : EnemyHuman
     {
         enum IdleState
         {
@@ -53,81 +380,7 @@ namespace RogueTower
             MoveRight,
         }
 
-        public abstract class Action
-        {
-            public MoaiMan MoaiMan;
-
-            public virtual float Friction => 1 - (1 - 0.85f) * MoaiMan.GroundFriction;
-            public virtual float Drag => 0.85f;
-
-            public Action(MoaiMan moaiMan)
-            {
-                MoaiMan = moaiMan;
-            }
-
-            public abstract void GetPose(PlayerState basePose);
-
-            public abstract void UpdateDelta(float delta);
-
-            public abstract void UpdateDiscrete();
-        }
-
-        class ActionIdle : Action
-        {
-            public ActionIdle(MoaiMan moaiMan) : base(moaiMan)
-            {
-
-            }
-
-            public override void GetPose(PlayerState basePose)
-            {
-                //NOOP
-            }
-
-            public override void UpdateDelta(float delta)
-            {
-                if (Math.Abs(MoaiMan.Velocity.X) >= 0.01)
-                    MoaiMan.CurrentAction = new ActionMove(MoaiMan);
-            }
-
-            public override void UpdateDiscrete()
-            {
-                //NOOP
-            }
-        }
-
-        class ActionMove : Action
-        {
-            public float WalkFrame;
-            public bool Walking;
-
-            public ActionMove(MoaiMan moaiMan) : base(moaiMan)
-            {
-            }
-
-            public override void GetPose(PlayerState basePose)
-            {
-                basePose.Body = BodyState.Walk((int)WalkFrame);
-            }
-
-            public override void UpdateDelta(float delta)
-            {
-                if (Walking)
-                {
-                    var facingMod = MoaiMan.Facing == HorizontalFacing.Left ? -1 : 1;
-                    WalkFrame += facingMod * MoaiMan.Velocity.X * delta * 0.125f / (float)Math.Sqrt(MoaiMan.GroundFriction);
-                }
-                if (Math.Abs(MoaiMan.Velocity.X) < 0.01)
-                    MoaiMan.CurrentAction = new ActionIdle(MoaiMan);
-            }
-
-            public override void UpdateDiscrete()
-            {
-                //NOOP
-            }
-        }
-
-        class ActionAttack : Action
+        class ActionTwohandSlash : Action
         {
             public enum SwingAction
             {
@@ -146,15 +399,20 @@ namespace RogueTower
             public override float Friction => Parried ? 1 : base.Friction;
             public override float Drag => 1 - (1 - base.Drag) * 0.1f;
 
-            public ActionAttack(MoaiMan moaiMan, float upTime, float downTime) : base(moaiMan)
+            public ActionTwohandSlash(EnemyHuman moaiMan, float upTime, float downTime) : base(moaiMan)
             {
                 SlashUpTime = upTime;
                 SlashDownTime = downTime;
             }
 
+            public override void OnInput()
+            {
+                //NOOP
+            }
+
             public override void GetPose(PlayerState basePose)
             {
-                basePose.Body = !MoaiMan.InAir ? BodyState.Stand : BodyState.Walk(1);
+                basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
 
                 switch (SlashAction)
                 {
@@ -185,7 +443,7 @@ namespace RogueTower
                     case (SwingAction.DownSwing):
                         SlashDownTime -= delta;
                         if (SlashDownTime < 0)
-                            MoaiMan.ResetState();
+                            Human.ResetState();
                         break;
                 }
             }
@@ -197,8 +455,8 @@ namespace RogueTower
 
             public virtual void Swing()
             {
-                Vector2 Position = MoaiMan.Position;
-                HorizontalFacing Facing = MoaiMan.Facing;
+                Vector2 Position = Human.Position;
+                HorizontalFacing Facing = Human.Facing;
                 Vector2 FacingVector = GetFacingVector(Facing);
                 Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
                 Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
@@ -206,20 +464,20 @@ namespace RogueTower
                 if (true)
                 {
                     Vector2 parrySize = new Vector2(22, 22);
-                    bool success = MoaiMan.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                    bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
                     if (success)
                         Parried = true;
                 }
                 if(!Parried)
-                    MoaiMan.SwingWeapon(weaponMask, 10);
-                var effect = new SlashEffectRound(MoaiMan.World, () => MoaiMan.Position, 0.7f, 0, MoaiMan.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+                    Human.SwingWeapon(weaponMask, 10);
+                var effect = new SlashEffectRound(Human.World, () => Human.Position, 0.7f, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
                 if (Parried)
                     effect.Frame = effect.FrameEnd / 2;
                 SlashAction = SwingAction.DownSwing;
             }
         }
 
-        class ActionRanged : Action
+        class ActionWandBlast : Action
         {
             public enum SwingAction
             {
@@ -232,7 +490,7 @@ namespace RogueTower
             public float SlashUpTime;
             public float SlashDownTime;
 
-            public ActionRanged(MoaiMan moaiMan, Player target, float upTime, float downTime) : base(moaiMan)
+            public ActionWandBlast(EnemyHuman moaiMan, Player target, float upTime, float downTime) : base(moaiMan)
             {
                 Target = target;
                 SlashUpTime = upTime;
@@ -240,9 +498,14 @@ namespace RogueTower
                 PlaySFX(sfx_wand_charge, 1.0f, 0.1f, 0.4f);
             }
 
+            public override void OnInput()
+            {
+                //NOOP
+            }
+
             public override void GetPose(PlayerState basePose)
             {
-                basePose.Body = !MoaiMan.InAir ? BodyState.Stand : BodyState.Walk(1);
+                basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
 
                 switch (SlashAction)
                 {
@@ -273,7 +536,7 @@ namespace RogueTower
                     case (SwingAction.DownSwing):
                         SlashDownTime -= delta;
                         if (SlashDownTime < 0)
-                            MoaiMan.ResetState();
+                            Human.ResetState();
                         break;
                 }
             }
@@ -286,54 +549,20 @@ namespace RogueTower
             public void Fire()
             {
                 SlashAction = SwingAction.DownSwing;
-                var facing = GetFacingVector(MoaiMan.Facing);
-                var firePosition = MoaiMan.Position + facing * 10;
+                var facing = GetFacingVector(Human.Facing);
+                var firePosition = Human.Position + facing * 10;
                 var homing = Target.Position - firePosition;
                 homing.Normalize();
-                new SpellOrange(MoaiMan.World, firePosition)
+                new SpellOrange(Human.World, firePosition)
                 {
                     Velocity = homing * 3,
                     FrameEnd = 70,
-                    Shooter = MoaiMan
+                    Shooter = Human
                 };
                 PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
             }
         }
 
-        class ActionHit : Action
-        {
-            int Time;
-
-            public override float Drag => 1;
-
-            public ActionHit(MoaiMan moaiMan, int time) : base(moaiMan)
-            {
-                Time = time;
-            }
-
-            public override void GetPose(PlayerState basePose)
-            {
-                basePose.Head = HeadState.Down;
-                basePose.Body = BodyState.Hit;
-                basePose.RightArm = ArmState.Angular(3);
-            }
-
-            public override void UpdateDelta(float delta)
-            {
-                //NOOP
-            }
-
-            public override void UpdateDiscrete()
-            {
-                Time--;
-                if (Time <= 0)
-                {
-                    MoaiMan.ResetState();
-                }
-            }
-        }
-
-        public IBox Box;
         public override Vector2 Position
         {
             get
@@ -346,30 +575,15 @@ namespace RogueTower
                 Box.Teleport(pos.X, pos.Y);
             }
         }
-        public Vector2 Velocity;
-        private Vector2 VelocityLeftover;
 
-        public Action CurrentAction;
+        public override float Acceleration => 0.25f;
+        public override float SpeedLimit => InCombat ? 3.0f : 1.0f;
 
-        public float Gravity = 0.2f;
-        public float GravityLimit = 10f;
-        public float Acceleration = 0.25f;
-        public float SpeedLimit => InCombat ? 3.0f : 1.0f;
-        public bool OnGround;
-        public bool InAir => !OnGround;
-        public bool OnWall;
-        public bool OnCeiling;
-        public float GroundFriction = 1.0f;
-        public float AppliedFriction;
-
-        public override bool Attacking => CurrentAction is ActionAttack;
+        //public override bool Attacking => CurrentAction is ActionAttack;
 
         public float Lifetime;
-        public int Invincibility = 0;
         public int AttackCooldown = 0;
         public int RangedCooldown = 0;
-
-        public HorizontalFacing Facing;
 
         public bool InCombat => Target != null;
 
@@ -392,34 +606,6 @@ namespace RogueTower
             Box.AddTags(CollisionTag.Character);
         }
 
-        public void ResetState()
-        {
-            if (OnGround)
-            {
-                CurrentAction = new ActionIdle(this);
-            }
-        }
-
-        private Vector2 CalculateMovement(float delta)
-        {
-            var velocity = Velocity * delta + VelocityLeftover;
-            var movement = new Vector2((int)velocity.X, (int)velocity.Y);
-
-            VelocityLeftover = velocity - movement;
-
-            return movement;
-        }
-
-        private IMovement Move(Vector2 movement)
-        {
-            return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
-            {
-                if (IgnoresCollision(collision.Hit.Box))
-                    return new CrossResponse(collision);
-                return new SlideAdvancedResponse(collision);
-            });
-        }
-
         private void Walk(float dx)
         {
             float adjustedSpeedLimit = SpeedLimit;
@@ -435,7 +621,10 @@ namespace RogueTower
             if (Math.Sign(dx) == Math.Sign(Velocity.X))
                 AppliedFriction = 1;
             if (CurrentAction is ActionMove move)
-                move.Walking = dx != 0;
+            {
+                move.WalkingLeft = dx < 0;
+                move.WalkingRight = dx > 0;
+            }
         }
 
         private void WalkConstrained(float dx) //Same as walk but don't jump off cliffs
@@ -447,51 +636,6 @@ namespace RogueTower
             if (!floor.Any())
                 return;
             Walk(dx);
-        }
-
-        public bool Parry(RectangleF hitmask)
-        {
-            //new RectangleDebug(World, hitmask, Color.Orange, 20);
-            var affectedHitboxes = World.FindBoxes(hitmask);
-            foreach (Box Box in affectedHitboxes)
-            {
-                if (Box.Data is Player player && player.Attacking)
-                {
-                    PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
-                    World.Hitstop = 15;
-                    Invincibility = 10;
-                    if (OnGround)
-                    {
-                        Velocity += GetFacingVector(Facing) * -2;
-                    }
-                    else
-                    {
-                        Velocity.Y = 0;
-                    }
-                    new ParryEffect(World, Vector2.Lerp(Box.Bounds.Center, Position, 0.5f), 0, 10);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
-        {
-            //new RectangleDebug(World, hitmask, Color.Lime, 20);
-            var affectedHitboxes = World.FindBoxes(hitmask).ToList();
-            foreach (Box Box in affectedHitboxes)
-            {
-                if (Box.Data is Player player)
-                {
-                    player.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
-                }
-                if (Box.Data is Tile tile)
-                {
-                    tile.HandleTileDamage(damageIn);
-                }
-            }
-
         }
 
         private void UpdateAI()
@@ -516,7 +660,7 @@ namespace RogueTower
                 float dx = Target.Position.X - Position.X;
                 float dy = Target.Position.Y - Position.Y;
 
-                if (CurrentAction is ActionAttack)
+                if (CurrentAction is ActionTwohandSlash)
                 {
                     RangedCooldown--;
                 }
@@ -524,7 +668,7 @@ namespace RogueTower
                 {
 
                 }
-                else if (CurrentAction is ActionRanged)
+                else if (CurrentAction is ActionWandBlast)
                 {
                     AttackCooldown--;
                 }
@@ -548,7 +692,10 @@ namespace RogueTower
                         preferredDistanceMax = 50;
                     }
                     if (CurrentAction is ActionMove move)
-                        move.Walking = false;
+                    {
+                        move.WalkingLeft = false;
+                        move.WalkingRight = false;
+                    }
                     if (Math.Abs(dx) > preferredDistanceMax)
                     {
                         WalkConstrained(dx);
@@ -562,13 +709,13 @@ namespace RogueTower
                     bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
                     {
-                        CurrentAction = new ActionRanged(this, Target, 24, 12);
+                        CurrentAction = new ActionWandBlast(this, Target, 24, 12);
                         RangedCooldown = 60 + Random.Next(40);
                     }
                     else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
                         Velocity.X += Math.Sign(dx) * 2;
-                        CurrentAction = new ActionAttack(this, 3, 12);
+                        CurrentAction = new ActionTwohandSlash(this, 3, 12);
                         AttackCooldown = 30;
                     }
                 }
@@ -616,183 +763,27 @@ namespace RogueTower
             }
         }
 
+        protected override void HandleInput()
+        {
+            UpdateAI();
+        }
+
         protected override void UpdateDelta(float delta)
         {
             Lifetime += delta;
 
             if (Active)
             {
-                CurrentAction.UpdateDelta(delta);
-
-                var movement = CalculateMovement(delta);
-
-                bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
-                bool IsMovingHorizontally = Math.Abs(movement.X) > 0.1;
-
-                IMovement move = Move(movement);
-
-                var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
-
-                /*if (move.Hits.Any() && !hits.Any())
-                {
-                    IsMovingHorizontally = false;
-                    IsMovingVertically = false;
-                }*/
-
-                var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
-                foreach (var nearby in nearbies)
-                {
-                    if (nearby.Data is Enemy enemy)
-                    {
-                        float dx = enemy.Position.X - Position.X;
-                        if (Math.Abs(dx) < 1)
-                            dx = Random.NextFloat() - 0.5f;
-                        if (dx > 0 && Velocity.X > -1)
-                            Velocity.X = -1;
-                        else if (dx < 0 && Velocity.X < 1)
-                            Velocity.X = 1;
-                    }
-                    if (nearby.Data is Player player)
-                    {
-                        float dx = player.Position.X - Position.X;
-                        if (Math.Abs(dx) < 1)
-                            dx = Random.NextFloat() - 0.5f;
-                        if (dx > 0 && Velocity.X > -1)
-                            Velocity.X = -1;
-                        else if (dx < 0 && Velocity.X < 1)
-                            Velocity.X = 1;
-                    }
-                }
-
-                if (IsMovingVertically)
-                {
-                    if (hits.Any((c) => c.Normal.Y < 0))
-                    {
-                        OnGround = true;
-                    }
-                    else
-                    {
-                        OnGround = false;
-                    }
-
-                    if (hits.Any((c) => c.Normal.Y > 0))
-                    {
-                        OnCeiling = true;
-                    }
-                    else
-                    {
-                        OnCeiling = false;
-                    }
-                }
-
-                if (IsMovingHorizontally)
-                {
-                    if (hits.Any((c) => c.Normal.X != 0))
-                    {
-                        OnWall = true;
-                    }
-                    else
-                    {
-                        OnWall = false;
-                    }
-                }
-
-                RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-                var found = World.FindBoxes(panicBox);
-                if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
-                {
-                    Box.Teleport(move.Origin.X, move.Origin.Y);
-                }
+                base.UpdateDelta(delta);
             }
-        }
-
-        private bool IgnoresCollision(IBox box)
-        {
-            return box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
-        }
-
-        private void UpdateGroundFriction()
-        {
-            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
-            if (tiles.Any())
-                GroundFriction = tiles.Max(tile => tile.Friction);
-            else
-                GroundFriction = 1.0f;
         }
 
         protected override void UpdateDiscrete()
         {
             if (Active)
             {
-                if (OnCeiling)
-                {
-                    Velocity.Y = 1;
-                    AppliedFriction = 1;
-                }
-                else if (OnGround) //Friction
-                {
-                    UpdateGroundFriction();
-                    Velocity.Y = 0;
-                    AppliedFriction = CurrentAction.Friction;
-                }
-                else //Drag
-                {
-                    AppliedFriction = CurrentAction.Drag;
-                }
-
-                if (OnWall)
-                {
-                    var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
-                    if (wallTiles.Any())
-                    {
-                        Velocity.X = 0;
-                    }
-                    else
-                    {
-                        OnWall = false;
-                    }
-                }
-
-                HandleDamage();
-
-                UpdateAI();
-                CurrentAction.UpdateDiscrete();
-
-                Velocity.X *= AppliedFriction;
-
-                if (Velocity.Y < GravityLimit)
-                    Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
+                base.UpdateDiscrete();
             }
-        }
-
-        private void HandleDamage()
-        {
-            if (!(CurrentAction is ActionHit))
-                Invincibility--;
-        }
-
-        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
-        {
-            if (CurrentAction is ActionAttack slash && slash.IsUpSwing)
-            {
-                //Parry
-                slash.Swing();
-                return;
-            }
-            if (Invincibility > 0)
-                return;
-            Velocity = velocity;
-            OnGround = false;
-            Invincibility = 1;
-            CurrentAction = new ActionHit(this, hurttime);
-            PlaySFX(sfx_player_hurt, 1.0f, 0.2f, 0.7f);
-            HandleDamage(damageIn);
-            World.Hitstop = 6;
-        }
-
-        public override void ShowDamage(double damage)
-        {
-            new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
         }
     }
 
