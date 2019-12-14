@@ -93,7 +93,7 @@ namespace RogueTower
             if (Destroyed || hit.Box.Data == Shooter)
                 return;
             bool explode = false;
-            if (hit.Box.Data is Player player)
+            if (hit.Box.Data is Enemy enemy)
             {
                 explode = true;
             }
@@ -106,7 +106,7 @@ namespace RogueTower
                 new ScreenShakeRandom(World, 5, 10);
                 new Explosion(World, Position)
                 {
-                    Shooter = this.Shooter,
+                    Shooter = Shooter,
                     FrameEnd = 20,
                 };
                 Destroy();
@@ -139,9 +139,9 @@ namespace RogueTower
         {
             foreach (var box in World.FindBoxes(Box.Bounds))
             {
-                if (box.Data is Player player)
+                if (box.Data is Enemy enemy && box.Data != Shooter)
                 {
-                    player.Hit(new Vector2(Math.Sign(player.Position.X - Position.X), -2), 20, 50, 100);
+                    enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 100);
                 }
             }
         }
@@ -157,9 +157,9 @@ namespace RogueTower
         {
             if (Destroyed || hit.Box.Data == Shooter)
                 return;
-            if (hit.Box.Data is Player player)
+            if (hit.Box.Data is Enemy enemy)
             {
-                player.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
+                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
             }
         }
     }
