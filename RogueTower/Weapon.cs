@@ -181,4 +181,39 @@ namespace RogueTower
             }
         }
     }
+
+    class WeaponRapier : Weapon
+    {
+        public int FinesseCounter = 0;
+        public int FinesseLimit;
+        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 3) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        {
+            CanParry = true;
+            FinesseLimit = finesseLimit;
+        }
+
+        public override WeaponState GetWeaponState(float angle)
+        {
+            return WeaponState.Rapier(angle);
+        }
+
+        public override void HandleAttack(Player player)
+        {   
+            if (player.Controls.Attack && FinesseCounter < FinesseLimit)
+                {
+                    Slash(player);
+                    FinesseCounter++;
+                }
+            else if (player.Controls.Attack && FinesseCounter >= FinesseLimit)
+                {
+                    player.Velocity.X *= -5;
+                    StabDown(player);
+                    FinesseCounter = 0;
+                }
+            if (player.Controls.AltAttack)
+                {
+                    player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
+                }
+        }
+    }
 }
