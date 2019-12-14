@@ -187,7 +187,7 @@ namespace RogueTower
         public int FinesseCounter = 0;
         public float LastCombo;
         public int FinesseLimit;
-        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 3) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 2) : base(damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
             FinesseLimit = finesseLimit;
@@ -222,12 +222,15 @@ namespace RogueTower
             {
                 if (FinesseCounter == FinesseLimit)
                 {
-                    DashAttack(player, new ActionDownStab(player, 4, 2, this), dashFactor: 6, reversed: true);
+                    DashAttack(player, new ActionDownStab(player, 4, 2, this), dashFactor: 4, reversed: true);
                     IncrementFinesse(player);
                 }
                 else if (FinesseCounter == FinesseLimit + 1)
                 {
-                    DashAttack(player, new ActionStab(player, 4, 2, this), dashTime: 6, dashFactor: 6);
+                    if (player.OnGround)
+                        player.Velocity.Y = -2.5f;
+                        player.OnGround = false;
+                    DashAttack(player, new ActionStab(player, 4, 2, this), dashTime: 6, dashFactor: 4);
                     FinesseCounter = 0;
                 }
             }
