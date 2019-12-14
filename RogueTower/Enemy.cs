@@ -259,6 +259,8 @@ namespace RogueTower
             {
                 if (Box.Data is Enemy enemy && enemy.Attacking)
                 {
+                    if (Box.Data == this)
+                        continue;
                     PlaySFX(sfx_sword_bink, 1.0f, -0.3f, -0.5f);
                     World.Hitstop = 15;
                     Invincibility = 10;
@@ -285,6 +287,8 @@ namespace RogueTower
             var affectedHitboxes = World.FindBoxes(hitmask);
             foreach (Box Box in affectedHitboxes)
             {
+                if (Box.Data == this)
+                    continue;
                 if (Box.Data is Enemy enemy)
                 {
                     enemy.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
