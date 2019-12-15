@@ -163,7 +163,7 @@ namespace RogueTower
                     break;
                 case (RoomType.HubDown):
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
-                    Forbid(template => template.TravelDirection == TravelDirection.Down);
+                    //Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.RightUp):
                     Forbid(Direction.Up, connection => SolidEdges.Contains(connection));
@@ -178,12 +178,12 @@ namespace RogueTower
                 case (RoomType.RightDown):
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
-                    Forbid(template => template.TravelDirection == TravelDirection.Down);
+                    //Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                 case (RoomType.LeftDown):
                     Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Down, connection => SolidEdges.Contains(connection));
-                    Forbid(template => template.TravelDirection == TravelDirection.Down);
+                    //Forbid(template => template.TravelDirection == TravelDirection.Down);
                     break;
                     /*case (RoomType.Empty):
                         Forbid(template => template.Connections > 0);
@@ -644,27 +644,32 @@ namespace RogueTower
                 for (int y = 0; y < Height; y++)
                 {
                     var room = Rooms[x, y];
+                    Color color = room.KComponent.Color;
                     switch (room.Type)
                     {
                         case (RoomType.Horizontal):
+                            color = Color.White;
                             BuildHorizontal(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.HubVertical):
+                            color = Color.White;
                             BuildShaft(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.LeftDown):
                         case (RoomType.RightDown):
                         case (RoomType.HubDown):
+                            color = Color.White;
                             BuildHubDown(map, origin + x * 8, y * 8);
                             break;
                         case (RoomType.LeftUp):
                         case (RoomType.RightUp):
                         case (RoomType.HubUp):
+                            color = Color.White;
                             BuildHubUp(map, origin + x * 8, y * 8);
                             break;
                     }
                     if (room.PossibleTemplates.Count(temp => !temp.Forbidden) == 1)
-                        BuildTemplate(map, origin + x * 8, y * 8, room.PossibleTemplates.First(temp => !temp.Forbidden).Template, room.KComponent.Color);
+                        BuildTemplate(map, origin + x * 8, y * 8, room.PossibleTemplates.First(temp => !temp.Forbidden).Template, color);
                 }
             }
         }
