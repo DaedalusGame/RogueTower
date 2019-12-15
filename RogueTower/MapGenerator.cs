@@ -40,12 +40,29 @@ namespace RogueTower
         }
     }
 
+    class KComponent
+    {
+        public List<RoomTile> Tiles = new List<RoomTile>();
+        public Color Color = Color.White;
+
+        public void Add(RoomTile tile)
+        {
+            Tiles.Add(tile);
+            tile.KComponent = this;
+        }
+
+        public override string ToString()
+        {
+            return $"KComponent ({Tiles.Count} elements)";
+        }
+    }
+
     class RoomTile
     {
         static HashSet<string> SolidEdges = new HashSet<string>() {
             "none",
-            "towerleft",
-            "towerright",
+            //"towerleft",
+            //"towerright",
             "outside",
         };
 
@@ -56,6 +73,9 @@ namespace RogueTower
         public Template SelectedTemplate => PossibleTemplates.Count(x => !x.Forbidden) == 1 ? PossibleTemplates.First(x => !x.Forbidden).Template : null;
         public List<PossibleTemplate> PossibleTemplates = new List<PossibleTemplate>();
         public double Entropy => GetEntropy();
+
+        public bool KVisited;
+        public KComponent KComponent;
 
         public string ConnectUp => string.Join(", ", GetNeighbor(0, -1).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down).Distinct());
         public string ConnectDown => string.Join(", ", GetNeighbor(0, 1).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up).Distinct());
@@ -273,6 +293,11 @@ namespace RogueTower
             //return -freqs.Sum();
         }
 
+        public bool InBounds()
+        {
+            return X >= 0 && Y >= 0 && X <= Generator.Width - 1 && Y <= Generator.Height - 1;
+        }
+
         public RoomTile GetNeighbor(int dx, int dy)
         {
             return Generator.GetRoom(X + dx, Y + dy);
@@ -283,10 +308,68 @@ namespace RogueTower
             return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1) }.Shuffle();
         }
 
+        public IEnumerable<RoomTile> GetOutNeighbors()
+        {
+            var template = SelectedTemplate;
+            if (!SolidEdges.Contains(template.Up) && template.TravelDirection != TravelDirection.Down)
+                yield return GetNeighbor(0, -1);
+            if (!SolidEdges.Contains(template.Down))
+                yield return GetNeighbor(0, 1);
+            if (!SolidEdges.Contains(template.Right))
+                yield return GetNeighbor(1, 0);
+            if (!SolidEdges.Contains(template.Left))
+                yield return GetNeighbor(-1, 0);
+        }
+
+        public IEnumerable<RoomTile> GetInNeighbors()
+        {
+            var template = SelectedTemplate;
+            if (!SolidEdges.Contains(template.Up))
+                yield return GetNeighbor(0, -1);
+            if (!SolidEdges.Contains(template.Down) && GetNeighbor(0, 1).SelectedTemplate.TravelDirection != TravelDirection.Down)
+                yield return GetNeighbor(0, 1);
+            if (!SolidEdges.Contains(template.Right))
+                yield return GetNeighbor(1, 0);
+            if (!SolidEdges.Contains(template.Left))
+                yield return GetNeighbor(-1, 0);
+        }
+
+        public void KInit()
+        {
+            KVisited = false;
+            KComponent = null;
+        }
+
+        public void KVisit(List<RoomTile> toVisit)
+        {
+            if(!KVisited && InBounds())
+            {
+                KVisited = true;
+                foreach(var neighbor in GetOutNeighbors())
+                {
+                    neighbor.KVisit(toVisit);
+                }
+                toVisit.Insert(0, this);
+            }
+        }
+
+        public void KAssign(RoomTile root)
+        {
+            if (KComponent == null && InBounds())
+            {
+                if (root.KComponent == null)
+                    root.KComponent = new KComponent();
+                root.KComponent.Add(this);
+                foreach (var neighbor in GetInNeighbors())
+                {
+                    neighbor.KAssign(root);
+                }
+            }
+        }
 
         public override string ToString()
         {
-            return Entropy.ToString();
+            return $"{SelectedTemplate?.Name ?? "unknown"} (entropy: {Entropy.ToString()})";
         }
     }
 
@@ -341,12 +424,31 @@ namespace RogueTower
                     Console.WriteLine($"extinct {i} iterations");
                     return false;
                 }
-
             }
 
             var fillCount = tiles.Where(x => x.Entropy == 0).Count();
 
             return !tiles.Any(x => x.Entropy < 0);
+        }
+
+        public void KConnectivity()
+        {
+            foreach(var tile in EnumerateTiles())
+            {
+                tile.KInit();
+            }
+
+            var toVisit = new List<RoomTile>();
+
+            foreach (var tile in EnumerateTiles())
+            {
+                tile.KVisit(toVisit);
+            }
+
+            foreach (var visit in toVisit)
+            {
+                visit.KAssign(visit);
+            }
         }
 
         public void Generate()
@@ -492,6 +594,17 @@ namespace RogueTower
             var statsString = string.Join("\n", stats.Select(x => $"{x.Key}: {x.Count()}").OrderBy(x => x));
 
             Console.WriteLine($"Statistics:\n\n{statsString}");
+
+            if (Finished)
+            {
+                KConnectivity();
+                var components = EnumerateTiles().Select(x => x.KComponent).Distinct().ToList();
+
+                foreach(var component in components)
+                {
+                    component.Color = new Color(255, 128, 128).RotateHue(Random.NextDouble());
+                }
+            }
         }
 
         public void Build(Map map)
@@ -551,12 +664,12 @@ namespace RogueTower
                             break;
                     }
                     if (room.PossibleTemplates.Count(temp => !temp.Forbidden) == 1)
-                        BuildTemplate(map, origin + x * 8, y * 8, room.PossibleTemplates.First(temp => !temp.Forbidden).Template);
+                        BuildTemplate(map, origin + x * 8, y * 8, room.PossibleTemplates.First(temp => !temp.Forbidden).Template, room.KComponent.Color);
                 }
             }
         }
 
-        private void BuildTemplate(Map map, int px, int py, Template template)
+        private void BuildTemplate(Map map, int px, int py, Template template, Color color)
         {
             for (int x = 0; x < 8; x++)
             {
@@ -614,6 +727,7 @@ namespace RogueTower
                             break;
                     }
 
+                    map.Tiles[px + x, py + y].Color = color;
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
                 }
             }

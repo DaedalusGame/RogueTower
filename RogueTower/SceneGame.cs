@@ -712,11 +712,12 @@ namespace RogueTower
                         continue;
 
                     Tile tile = map.Tiles[x, y];
+                    Color color = tile.Color;
 
                     //TODO: move tile draw code into a method on Tile
                     if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
                     {
-                        SpriteBatch.Draw(wallBlock.Texture, new Vector2(x * 16, y * 16), Color.White);
+                        SpriteBatch.Draw(wallBlock.Texture, new Vector2(x * 16, y * 16), color);
                     }
                     else if (tile is WallIce)
                     {
@@ -724,31 +725,31 @@ namespace RogueTower
                     }
                     else if (tile is Ladder ladderTile)
                     {
-                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), Color.White, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
                     }
                     else if (tile is SpikeDeath)
                     {
-                        SpriteBatch.Draw(spikeDeath.Texture, new Vector2(x * 16, y * 16), Color.White);
+                        SpriteBatch.Draw(spikeDeath.Texture, new Vector2(x * 16, y * 16), color);
                     }
                     else if (tile is Spike)
                     {
-                        SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), Color.White);
+                        SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), color);
                     }
                     else if (tile is Wall wallTile)
                     {
                         switch(wallTile.Facing)
                         {
                             case (Wall.WallFacing.Normal):
-                                SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), color);
                                 break;
                             case (Wall.WallFacing.Bottom):
-                                SpriteBatch.Draw(wallBottom.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                SpriteBatch.Draw(wallBottom.Texture, new Vector2(x * 16, y * 16), color);
                                 break;
                             case (Wall.WallFacing.Top):
-                                SpriteBatch.Draw(wallTop.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                SpriteBatch.Draw(wallTop.Texture, new Vector2(x * 16, y * 16), color);
                                 break;
                             case (Wall.WallFacing.BottomTop):
-                                SpriteBatch.Draw(wallBottomTop.Texture, new Vector2(x * 16, y * 16), Color.White);
+                                SpriteBatch.Draw(wallBottomTop.Texture, new Vector2(x * 16, y * 16), color);
                                 break;
                         }
                         

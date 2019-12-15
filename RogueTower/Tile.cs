@@ -19,6 +19,7 @@ namespace RogueTower
         public float Friction = 1.0f;
         public double Health, MaxHealth;
         public virtual Sound breakSound => sfx_tile_break;
+        public Color Color = Color.White;
 
         public Tile(Map map, int x, int y, bool passable, double health)
         {

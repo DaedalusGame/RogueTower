@@ -29,6 +29,24 @@ namespace RogueTower
     
     static class Util
     {
+        public static Color RotateHue(this Color color, double amount)
+        {
+            double U = Math.Cos(amount * Math.PI * 2);
+            double W = Math.Sin(amount * Math.PI * 2);
+
+            double r = (.299 + .701 * U + .168 * W) * color.R
+                        + (.587 - .587 * U + .330 * W) * color.G
+                        + (.114 - .114 * U - .497 * W) * color.B;
+            double g = (.299 - .299 * U - .328 * W) * color.R
+                        + (.587 + .413 * U + .035 * W) * color.G
+                        + (.114 - .114 * U + .292 * W) * color.B;
+            double b = (.299 - .3 * U + 1.25 * W) * color.R
+                        + (.587 - .588 * U - 1.05 * W) * color.G
+                        + (.114 + .886 * U - .203 * W) * color.B;
+
+            return new Color((int)r, (int)g, (int)b, color.A);
+        }
+
         public static float GetAngleDistance(float a0, float a1)
         {
             var max = Math.PI * 2;

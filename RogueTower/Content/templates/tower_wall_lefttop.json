@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "exit", "ConnectionDown": "towerleft", "ConnectionLeft": "outside", "ConnectionRight": "none", "Weight": 100, "Direction": "Any"},
+  "values": {"ConnectionUp": "exit", "ConnectionDown": "towerleft", "ConnectionLeft": "outside", "ConnectionRight": "none", "Weight": 100, "Direction": "Down"},
   "layers": [
     {
       "name": "Foreground",
