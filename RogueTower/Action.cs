@@ -1139,7 +1139,7 @@ namespace RogueTower
             SlashAction = SwingAction.DownSwing;
             var facing = GetFacingVector(Human.Facing);
             var firePosition = Human.Position + facing * 10;
-            var homing = Target.Position - firePosition;
+            var homing = Target.HomingTarget - firePosition;
             homing.Normalize();
             new SpellOrange(Human.World, firePosition)
             {

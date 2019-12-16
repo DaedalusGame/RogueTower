@@ -23,6 +23,10 @@ namespace RogueTower
         {
             get;
         }
+        public abstract Vector2 HomingTarget
+        {
+            get;
+        }
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -84,6 +88,7 @@ namespace RogueTower
         public virtual bool Strafing => false;
         public override bool Attacking => CurrentAction.Attacking;
         public override bool Incorporeal => CurrentAction.Incorporeal;
+        public override Vector2 HomingTarget => Position;
 
         public Action CurrentAction;
 
@@ -915,6 +920,7 @@ namespace RogueTower
 
         public override bool Attacking => false;
         public override bool Incorporeal => false;
+        public override Vector2 HomingTarget => Position + Head.Offset;
 
         public HorizontalFacing Facing;
         public float MoveDelta;
@@ -1081,6 +1087,7 @@ namespace RogueTower
 
         public override bool Attacking => false;
         public override bool Incorporeal => false;
+        public override Vector2 HomingTarget => Position;
 
         public FireState State;
         public float Angle = 0;
@@ -1204,6 +1211,7 @@ namespace RogueTower
 
         public override bool Attacking => true;
         public override bool Incorporeal => false;
+        public override Vector2 HomingTarget => Position;
 
         public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world, position)
         {
