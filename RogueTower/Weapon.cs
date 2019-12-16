@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Humper.Base;
+using static RogueTower.Game;
 using static RogueTower.Util;
 
 namespace RogueTower
@@ -69,6 +71,16 @@ namespace RogueTower
         {
             player.CurrentAction = new ActionDashAttack(player, dashStartTime, dashTime, dashEndTime, dashFactor, phasing, reversed, dashAttackAction);
         }
+
+        public void TwoHandSlash(Player player, float upTime, float downTime)
+        {
+            player.CurrentAction = new ActionTwohandSlash(player, upTime, downTime, this);
+        }
+
+        public void WandBlast(Player player, Enemy target, float upTime, float downTime)
+        {
+            player.CurrentAction = new ActionWandBlast(player, target, upTime, downTime, this);
+        }
     }
 
     class WeaponSword : Weapon
@@ -118,7 +130,7 @@ namespace RogueTower
         {
             if (player.Controls.DownAttack && player.OnGround)
             {
-                DashAttack(player, new ActionSlashUp(player, 2, 4, 8, 2, this), dashFactor: 4);
+                DashAttack(player, new ActionTwohandSlash(player, 6, 4, this), dashFactor: 4);
             }
             else if (player.Controls.Attack)
             {
@@ -237,6 +249,49 @@ namespace RogueTower
             if (player.Controls.AltAttack)
             {
                 player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
+            }
+        }
+    }
+
+    class WeaponWandOrange : Weapon
+    {
+        bool SuccessOrFail = false;
+        public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        {
+            CanParry = true;
+        }
+
+        public override WeaponState GetWeaponState(float angle)
+        {
+            return WeaponState.WandOrange(angle);
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                TwoHandSlash(player, 4, 6);
+            }
+            else if (player.Controls.AltAttack)
+            {
+                SuccessOrFail = false;
+                Vector2 ScanBox = new Vector2(96, 96);
+                new RectangleDebug(player.World, new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox), Color.Red, 10);
+                foreach (var Box in player.World.FindBoxes(new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox)))
+                {
+                    if(Box.Data is Enemy enemy && Box.Data != player)
+                    {
+                        WandBlast(player, enemy, 15, 10);
+                        SuccessOrFail = true;
+                        //break; One, or many?
+                    }
+
+                }
+                if (!SuccessOrFail)
+                {
+                    PlaySFX(sfx_player_disappointed, 1, 0.3f, 0.5f);
+                    player.CurrentAction = new ActionHit(player, 20);
+                }
             }
         }
     }

@@ -382,189 +382,6 @@ namespace RogueTower
             MoveRight,
         }
 
-        class ActionTwohandSlash : Action
-        {
-            public enum SwingAction
-            {
-                UpSwing,
-                DownSwing,
-            }
-
-            public SwingAction SlashAction;
-            public float SlashUpTime;
-            public float SlashDownTime;
-            public bool Parried;
-
-            public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
-            public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
-
-            public override float Friction => Parried ? 1 : base.Friction;
-            public override float Drag => 1 - (1 - base.Drag) * 0.1f;
-
-            public ActionTwohandSlash(EnemyHuman moaiMan, float upTime, float downTime) : base(moaiMan)
-            {
-                SlashUpTime = upTime;
-                SlashDownTime = downTime;
-            }
-
-            public override void OnInput()
-            {
-                //NOOP
-            }
-
-            public override void GetPose(PlayerState basePose)
-            {
-                basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
-
-                switch (SlashAction)
-                {
-                    default:
-                    case (SwingAction.UpSwing):
-                        basePose.LeftArm = ArmState.Angular(9);
-                        basePose.RightArm = ArmState.Angular(11);
-                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(-90 - 45));
-                        break;
-                    case (SwingAction.DownSwing):
-                        basePose.Body = BodyState.Crouch(1);
-                        basePose.LeftArm = ArmState.Angular(5);
-                        basePose.RightArm = ArmState.Angular(3);
-                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(45 + 22));
-                        break;
-                }
-            }
-
-            public override void UpdateDelta(float delta)
-            {
-                switch (SlashAction)
-                {
-                    case (SwingAction.UpSwing):
-                        SlashUpTime -= delta;
-                        if (SlashUpTime < 0)
-                            Swing();
-                        break;
-                    case (SwingAction.DownSwing):
-                        SlashDownTime -= delta;
-                        if (SlashDownTime < 0)
-                            Human.ResetState();
-                        break;
-                }
-            }
-
-            public override void UpdateDiscrete()
-            {
-                //NOOP
-            }
-
-            public virtual void Swing()
-            {
-                Vector2 Position = Human.Position;
-                HorizontalFacing Facing = Human.Facing;
-                Vector2 FacingVector = GetFacingVector(Facing);
-                Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
-                Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
-                RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
-                if (true)
-                {
-                    Vector2 parrySize = new Vector2(22, 22);
-                    bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
-                    if (success)
-                        Parried = true;
-                }
-                if(!Parried)
-                    Human.SwingWeapon(weaponMask, 10);
-                var effect = new SlashEffectRound(Human.World, () => Human.Position, 0.7f, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
-                if (Parried)
-                    effect.Frame = effect.FrameEnd / 2;
-                SlashAction = SwingAction.DownSwing;
-            }
-        }
-
-        class ActionWandBlast : Action
-        {
-            public enum SwingAction
-            {
-                UpSwing,
-                DownSwing,
-            }
-
-            public Player Target;
-            public SwingAction SlashAction;
-            public float SlashUpTime;
-            public float SlashDownTime;
-
-            public ActionWandBlast(EnemyHuman moaiMan, Player target, float upTime, float downTime) : base(moaiMan)
-            {
-                Target = target;
-                SlashUpTime = upTime;
-                SlashDownTime = downTime;
-                PlaySFX(sfx_wand_charge, 1.0f, 0.1f, 0.4f);
-            }
-
-            public override void OnInput()
-            {
-                //NOOP
-            }
-
-            public override void GetPose(PlayerState basePose)
-            {
-                basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
-
-                switch (SlashAction)
-                {
-                    default:
-                    case (SwingAction.UpSwing):
-                        basePose.LeftArm = ArmState.Angular(9);
-                        basePose.RightArm = ArmState.Angular(11);
-                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(-90 - 45));
-                        break;
-                    case (SwingAction.DownSwing):
-                        basePose.Body = BodyState.Crouch(1);
-                        basePose.LeftArm = ArmState.Angular(0);
-                        basePose.RightArm = ArmState.Angular(0);
-                        basePose.Weapon = WeaponState.WandOrange(MathHelper.ToRadians(0));
-                        break;
-                }
-            }
-
-            public override void UpdateDelta(float delta)
-            {
-                switch (SlashAction)
-                {
-                    case (SwingAction.UpSwing):
-                        SlashUpTime -= delta;
-                        if (SlashUpTime < 0)
-                            Fire();
-                        break;
-                    case (SwingAction.DownSwing):
-                        SlashDownTime -= delta;
-                        if (SlashDownTime < 0)
-                            Human.ResetState();
-                        break;
-                }
-            }
-
-            public override void UpdateDiscrete()
-            {
-                //NOOP
-            }
-
-            public void Fire()
-            {
-                SlashAction = SwingAction.DownSwing;
-                var facing = GetFacingVector(Human.Facing);
-                var firePosition = Human.Position + facing * 10;
-                var homing = Target.Position - firePosition;
-                homing.Normalize();
-                new SpellOrange(Human.World, firePosition)
-                {
-                    Velocity = homing * 3,
-                    FrameEnd = 70,
-                    Shooter = Human
-                };
-                PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
-            }
-        }
-
         public override Vector2 Position
         {
             get
@@ -591,6 +408,8 @@ namespace RogueTower
 
         public Player Target;
         public int TargetTime;
+
+        public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
 
         IdleState Idle;
         int IdleTime;
@@ -719,13 +538,13 @@ namespace RogueTower
                     bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
                     {
-                        CurrentAction = new ActionWandBlast(this, Target, 24, 12);
+                        CurrentAction = new ActionWandBlast(this, Target, 24, 12, Weapon);
                         RangedCooldown = 60 + Random.Next(40);
                     }
                     else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
                         Velocity.X += Math.Sign(dx) * 2;
-                        CurrentAction = new ActionTwohandSlash(this, 3, 12);
+                        CurrentAction = new ActionTwohandSlash(this, 3, 12, Weapon);
                         AttackCooldown = 30;
                     }
                 }
@@ -801,7 +620,7 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Angular(5),
                 ArmState.Angular(3),
-                WeaponState.WandOrange(MathHelper.ToRadians(270 - 20))
+                Weapon.GetWeaponState(MathHelper.ToRadians(270 - 20))
             );
         }
 

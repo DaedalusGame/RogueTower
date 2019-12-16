@@ -34,6 +34,9 @@
 #begin sounds/sfx/jump_sfx.wav
 /copy:sounds/sfx/jump_sfx.wav
 
+#begin sounds/sfx/player_disappointed.wav
+/copy:sounds/sfx/player_disappointed.wav
+
 #begin sounds/sfx/player_hurt.wav
 /copy:sounds/sfx/player_hurt.wav
 

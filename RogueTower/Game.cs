@@ -25,6 +25,7 @@ namespace RogueTower
         public static Sound sfx_explosion1;
         public static Sound sfx_impact_blunt;
         public static Sound sfx_knife_throw;
+        public static Sound sfx_player_disappointed;
         public static Sound sfx_player_hurt;
         public static Sound sfx_player_jump;
         public static Sound sfx_player_land;
@@ -120,6 +121,7 @@ namespace RogueTower
             sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
             sfx_impact_blunt = AudioMgr.LoadSound("sounds/sfx/impact_blunt.wav");
             sfx_knife_throw = AudioMgr.LoadSound("sounds/sfx/knife_throw.wav");
+            sfx_player_disappointed = AudioMgr.LoadSound("sounds/sfx/player_disappointed.wav");
             sfx_player_hurt = AudioMgr.LoadSound("sounds/sfx/player_hurt.wav");
             sfx_player_jump = AudioMgr.LoadSound("sounds/sfx/jump_sfx.wav");
             sfx_player_land = AudioMgr.LoadSound("sounds/sfx/player_land.wav");
