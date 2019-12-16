@@ -701,6 +701,10 @@ namespace RogueTower
             var wallBottomTop = SpriteLoader.Instance.AddSprite("content/wall_bottom_top");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
+            var wallPressure = SpriteLoader.Instance.AddSprite("content/wall_pressure");
+            var wallPressureBottom = SpriteLoader.Instance.AddSprite("content/wall_pressure_bottom");
+            var wallTrap = SpriteLoader.Instance.AddSprite("content/wall_trap");
+            var wallTrapBottom = SpriteLoader.Instance.AddSprite("content/wall_trap_bottom");
             var grass = SpriteLoader.Instance.AddSprite("content/grass-top");
             var ladder = SpriteLoader.Instance.AddSprite("content/ladder");
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
@@ -744,6 +748,21 @@ namespace RogueTower
                     else if (tile is Spike)
                     {
                         SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), color);
+                    }
+                    else if (tile is Trap trap)
+                    {
+                        switch (trap.Facing)
+                        {
+                            case (Wall.WallFacing.Top):
+                            case (Wall.WallFacing.Normal):
+                                SpriteBatch.Draw(wallTrap.Texture, new Vector2(x * 16, y * 16 - 16), wallTrap.GetFrameRect(trap.Triggered ? 1 : 0), color);
+                                break;
+                            case (Wall.WallFacing.Bottom):
+                            case (Wall.WallFacing.BottomTop):
+                                SpriteBatch.Draw(wallTrapBottom.Texture, new Vector2(x * 16, y * 16 - 16), wallTrapBottom.GetFrameRect(trap.Triggered ? 1 : 0), color);
+                                break;
+                        }
+                       
                     }
                     else if (tile is Wall wallTile)
                     {

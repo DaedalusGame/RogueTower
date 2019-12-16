@@ -21,7 +21,8 @@ namespace RogueTower
 
         public Random Random = new Random();
 
-        public float Hitstop = 0;
+        public float Hitstop;
+        public float Frame;
 
         public int Width => Map.Width * 16;
         public int Height => Map.Height * 16;
@@ -64,6 +65,8 @@ namespace RogueTower
 
             if (Hitstop > 0)
                 globalDelta = 0;
+
+            Frame += globalDelta;
 
             foreach (GameObject obj in Objects.ToList())
             {

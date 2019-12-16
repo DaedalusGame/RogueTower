@@ -168,6 +168,56 @@ namespace RogueTower
         }
     }
 
+    abstract class Trap : Wall
+    {
+        public float LastTrigger;
+        public abstract float RetriggerTime
+        {
+            get;
+        }
+
+        public bool Triggered => Map.World.Frame - LastTrigger <= RetriggerTime;
+
+        public Trap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public Trap(Map map, int x, int y, WallFacing facing) : base(map, x, y, facing)
+        {
+        }
+
+        public abstract void Trigger(EnemyHuman human);
+
+        public override void StepOn(EnemyHuman human)
+        {
+            if (!Triggered)
+            {
+                Trigger(human);
+            }
+            LastTrigger = Map.World.Frame;
+        }
+    }
+
+    class BumpTrap : Trap
+    {
+        public override float RetriggerTime => 30;
+
+        public BumpTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public BumpTrap(Map map, int x, int y, WallFacing facing) : base(map, x, y, facing)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            if (human is MoaiMan)
+                return;
+            PlaySFX(sfx_player_hurt, 0.4f, 0.3f, 0.3f);
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;

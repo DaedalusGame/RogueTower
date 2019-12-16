@@ -689,7 +689,10 @@ namespace RogueTower
                             map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Normal);
                             break;
                         case (1):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Top);
+                            if(Random.NextDouble() < 0.07)
+                                map.Tiles[px + x, py + y] = new BumpTrap(map, px + x, py + y, Wall.WallFacing.Top);
+                            else
+                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Top);
                             break;
                         case (2):
                             map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Bottom);
@@ -701,7 +704,10 @@ namespace RogueTower
                             map.Tiles[px + x, py + y] = new Spike(map, px + x, py + y);
                             break;
                         case (6):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.BottomTop);
+                            if (Random.NextDouble() < 0.07)
+                                map.Tiles[px + x, py + y] = new BumpTrap(map, px + x, py + y, Wall.WallFacing.BottomTop);
+                            else
+                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.BottomTop);
                             break;
                         case (8):
                             map.Tiles[px + x, py + y] = new Grass(map, px + x, py + y);
