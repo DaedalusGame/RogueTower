@@ -154,6 +154,8 @@ namespace RogueTower
 
         public override void StepOn(EnemyHuman human)
         {
+            if (human is MoaiMan)
+                return; //Moaimen are spike-immune
             human.Hit(-Util.GetFacingVector(human.Facing) * 1 + new Vector2(0, -2), 20, 50, Damage);
         }
     }
