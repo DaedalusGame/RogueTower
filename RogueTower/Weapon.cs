@@ -26,6 +26,16 @@ namespace RogueTower
             SwingSize = swingSize;
         }
 
+        public Vector2 Input2Direction(Player player)
+        {
+            int up = player.Controls.ClimbUp ? -1 : 0;
+            int down = player.Controls.ClimbDown ? 1 : 0;
+            int left = player.Controls.MoveLeft ? -1 : 0;
+            int right = player.Controls.MoveRight ? 1 : 0;
+
+            return new Vector2(left + right, up + down);
+        }
+
         public abstract WeaponState GetWeaponState(float angle);
 
         public abstract void HandleAttack(Player player);
@@ -289,13 +299,15 @@ namespace RogueTower
                     {
                         WandBlast(player, enemy, 24, 12);
                         SuccessOrFail = true;
-                        //break; One, or many?
+                        //With my ability to control the projectile's direciton, it's up to you if they should still have homing.
                     }
 
                 }
                 if (!SuccessOrFail)
                 {
-                    WandBlastUntargeted(player, GetFacingVector(player.Facing) * new Vector2(1, 0), 24, 12);
+                    Vector2 Direction = Input2Direction(player);
+                    bool NoDirection = Direction.Equals(new Vector2(0, 0));
+                    WandBlastUntargeted(player, NoDirection ? GetFacingVector(player.Facing) * new Vector2(1,0) : Direction, 24, 12);
                 }
             }
         }
