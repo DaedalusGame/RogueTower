@@ -120,9 +120,9 @@ namespace RogueTower
         public override RectangleF ActivityZone => World.Bounds;
 
         //public Weapon Weapon = new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2));
-        public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
+        //public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
         //public Weapon Weapon = new WeaponRapier(15, 20, new Vector2(10, 40));
-        //public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
+        public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
 
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;

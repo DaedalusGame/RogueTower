@@ -81,6 +81,11 @@ namespace RogueTower
         {
             player.CurrentAction = new ActionWandBlast(player, target, upTime, downTime, this);
         }
+
+        public void WandBlastUntargeted(Player player, Vector2 direction, float upTime, float downTime)
+        {
+            player.CurrentAction = new ActionWandBlastUntargeted(player, direction, upTime, downTime, this);
+        }
     }
 
     class WeaponSword : Weapon
@@ -255,6 +260,7 @@ namespace RogueTower
 
     class WeaponWandOrange : Weapon
     {
+
         bool SuccessOrFail = false;
         public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
         {
@@ -276,10 +282,10 @@ namespace RogueTower
             {
                 SuccessOrFail = false;
                 Vector2 ScanBox = new Vector2(96, 96);
-                new RectangleDebug(player.World, new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox), Color.Red, 10);
+                //new RectangleDebug(player.World, new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox), Color.Red, 10);
                 foreach (var Box in player.World.FindBoxes(new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox)))
                 {
-                    if(Box.Data is Enemy enemy && Box.Data != player)
+                    if(Box.Data is Enemy enemy && Box.Data != player && enemy.CanDamage)
                     {
                         WandBlast(player, enemy, 15, 10);
                         SuccessOrFail = true;
@@ -289,8 +295,7 @@ namespace RogueTower
                 }
                 if (!SuccessOrFail)
                 {
-                    PlaySFX(sfx_player_disappointed, 1, 0.3f, 0.5f);
-                    player.CurrentAction = new ActionHit(player, 20);
+                    WandBlastUntargeted(player, GetFacingVector(player.Facing) * new Vector2(1, 0), 15, 10);
                 }
             }
         }
