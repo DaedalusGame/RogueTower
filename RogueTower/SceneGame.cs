@@ -454,10 +454,11 @@ namespace RogueTower
                     Vector2 truePosB = Vector2.Transform(snake.Position + snake.Head.Offset, WorldTransform);
                     if (!drawZone.Contains(truePosA) && !drawZone.Contains(truePosB))
                         continue;
-                    int i = snake.Segments.Count;
                     foreach (var segment in snake.Segments)
                     {
-                        if (i <= 1)
+                        if (!snake.CurrentAction.ShouldRenderSegment(segment))
+                            continue;
+                        if (segment == snake.Head)
                         {
                             SpriteReference sprite;
                             if (snake.CurrentAction.MouthOpen)
@@ -470,7 +471,6 @@ namespace RogueTower
                         {
                             DrawSprite(snakeBody, 0, snake.Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 0);
                         }
-                        i--;
                     } 
                 }
                 if (obj is Cannon cannon)
@@ -486,6 +486,7 @@ namespace RogueTower
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
+            var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
@@ -528,9 +529,18 @@ namespace RogueTower
                 {
                     DrawSpriteExt(knife, 0, knifeBounced.Position + knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
                 }
+                if (effect is SnakeHead snakeHead)
+                {
+                    DrawSpriteExt(snakeHeadOpen, 0, snakeHead.Position + snakeHeadOpen.Middle, snakeHeadOpen.Middle, snakeHead.Rotation * snakeHead.Frame, snakeHead.Mirror, 0);
+                }
                 if (effect is ParryEffect parryEffect)
                 {
                     DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position + crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
+                }
+                if (effect is FireEffect fireEffect)
+                {
+                    var middle = new Vector2(8, 12);
+                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position + middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {

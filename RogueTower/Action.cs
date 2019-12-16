@@ -24,6 +24,7 @@ namespace RogueTower
         public virtual float Friction => 1 - (1 - 0.85f) * Human.GroundFriction;
         public virtual float Drag => 0.85f;
         public virtual bool Attacking => false;
+        public virtual bool Incorporeal => false;
 
         abstract public void OnInput();
 
@@ -284,6 +285,47 @@ namespace RogueTower
             {
                 Human.ResetState();
             }
+        }
+    }
+
+    class ActionEnemyDeath : Action
+    {
+        int Time;
+
+        public override float Drag => 1;
+        public override bool Incorporeal => true;
+
+        public ActionEnemyDeath(EnemyHuman player, int time) : base(player)
+        {
+            Time = time;
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.Head = HeadState.Down;
+            basePose.Body = BodyState.Hit;
+            basePose.RightArm = ArmState.Angular(3);
+        }
+
+        public override void OnInput()
+        {
+            //NOOP
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            //NOOP
+        }
+
+        public override void UpdateDiscrete()
+        {
+            Time--;
+            if (Time <= 0)
+            {
+                Human.Destroy();
+            }
+            Vector2 pos = new Vector2(Human.Box.X + Human.Random.NextFloat() * Human.Box.Width, Human.Box.Y + Human.Random.NextFloat() * Human.Box.Height);
+            new FireEffect(Human.World, pos, 0, 5);
         }
     }
 

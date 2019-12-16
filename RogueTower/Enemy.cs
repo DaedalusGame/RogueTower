@@ -19,6 +19,10 @@ namespace RogueTower
         {
             get;
         }
+        public abstract bool Incorporeal
+        {
+            get;
+        }
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -79,6 +83,7 @@ namespace RogueTower
 
         public virtual bool Strafing => false;
         public override bool Attacking => CurrentAction.Attacking;
+        public override bool Incorporeal => CurrentAction.Incorporeal;
 
         public Action CurrentAction;
 
@@ -92,6 +97,12 @@ namespace RogueTower
             Box = World.Create(x, y, 12, 14);
             Box.AddTags(CollisionTag.Character);
             Box.Data = this;
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            World.Remove(Box);
         }
 
         public void ResetState()
@@ -127,18 +138,21 @@ namespace RogueTower
                 IsMovingVertically = false;
             }*/
 
-            var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
-            foreach (var nearby in nearbies)
+            if (!Incorporeal)
             {
-                if (nearby.Data is Enemy enemy)
+                var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+                foreach (var nearby in nearbies)
                 {
-                    float dx = enemy.Position.X - Position.X;
-                    if (Math.Abs(dx) < 1)
-                        dx = Random.NextFloat() - 0.5f;
-                    if (dx > 0 && Velocity.X > -1)
-                        Velocity.X = -1;
-                    else if (dx < 0 && Velocity.X < 1)
-                        Velocity.X = 1;
+                    if (nearby.Data is Enemy enemy && !enemy.Incorporeal)
+                    {
+                        float dx = enemy.Position.X - Position.X;
+                        if (Math.Abs(dx) < 1)
+                            dx = Random.NextFloat() - 0.5f;
+                        if (dx > 0 && Velocity.X > -1)
+                            Velocity.X = -1;
+                        else if (dx < 0 && Velocity.X < 1)
+                            Velocity.X = 1;
+                    }
                 }
             }
 
@@ -175,12 +189,8 @@ namespace RogueTower
                 }
             }
 
-            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-            var found = World.FindBoxes(panicBox);
-            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
-            {
-                Box.Teleport(move.Origin.X, move.Origin.Y);
-            }
+            if(!Incorporeal)
+                HandlePanicBox(move);
         }
 
         protected override void UpdateDiscrete()
@@ -319,9 +329,19 @@ namespace RogueTower
             });
         }
 
+        private void HandlePanicBox(IMovement move)
+        {
+            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
+            var found = World.FindBoxes(panicBox);
+            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
+            {
+                Box.Teleport(move.Origin.X, move.Origin.Y);
+            }
+        }
+
         protected bool IgnoresCollision(IBox box)
         {
-            return box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
+            return Incorporeal || box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
         }
 
         public float GetJumpVelocity(float height)
@@ -382,19 +402,6 @@ namespace RogueTower
             MoveRight,
         }
 
-        public override Vector2 Position
-        {
-            get
-            {
-                return Box.Bounds.Center;
-            }
-            set
-            {
-                var pos = value + Box.Bounds.Center - Box.Bounds.Location;
-                Box.Teleport(pos.X, pos.Y);
-            }
-        }
-
         public override float Acceleration => 0.25f;
         public override float SpeedLimit => InCombat ? 3.0f : 1.0f;
         public override bool Strafing => true;
@@ -417,6 +424,7 @@ namespace RogueTower
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
             CurrentAction = new ActionIdle(this);
+            Health = 80;
             CanDamage = true;
         }
 
@@ -486,6 +494,10 @@ namespace RogueTower
                     RangedCooldown--;
                 }
                 else if (CurrentAction is ActionHit)
+                {
+
+                }
+                else if (CurrentAction is ActionEnemyDeath)
                 {
 
                 }
@@ -597,6 +609,14 @@ namespace RogueTower
             UpdateAI();
         }
 
+        public override void Update(float delta)
+        {
+            float modifier = 1.0f;
+            if (CurrentAction is ActionEnemyDeath)
+                modifier = 0.5f;
+            base.Update(delta * modifier);
+        }
+
         protected override void UpdateDelta(float delta)
         {
             if (Active)
@@ -629,6 +649,12 @@ namespace RogueTower
             pose.Head.SetPhenoType("moai");
             pose.LeftArm.SetPhenoType("moai");
             pose.RightArm.SetPhenoType("moai");
+        }
+
+        public override void Death()
+        {
+            if (!(CurrentAction is ActionEnemyDeath))
+                CurrentAction = new ActionEnemyDeath(this, 20);
         }
     }
 
@@ -675,6 +701,11 @@ namespace RogueTower
             public Action(Snake snake)
             {
                 Snake = snake;
+            }
+
+            public virtual bool ShouldRenderSegment(SnakeSegment segment)
+            {
+                return true;
             }
 
             public abstract void UpdateDelta(float delta);
@@ -802,6 +833,77 @@ namespace RogueTower
             }
         }
 
+        public class ActionHit : Action
+        {
+            public int Time;
+            public Vector2 Target;
+
+            public ActionHit(Snake snake, Vector2 offset, int time) : base(snake)
+            {
+                Target = snake.Head.Offset + offset;
+                Time = time;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                //NOOP
+            }
+
+            public override void UpdateDiscrete()
+            {
+                Snake.Move(Target, 0.3f);
+                Snake.Move(Target, 0.3f);
+                Snake.Move(Target, 0.3f);
+                Time--;
+                if (Time < 0)
+                {
+                    Snake.ResetState();
+                }
+            }
+        }
+
+        public class ActionDeath : Action
+        {
+            public int Time;
+            public int TimeEnd;
+            public Vector2 Target;
+            public float SegmentCut;
+
+            public ActionDeath(Snake snake, Vector2 offset, int time) : base(snake)
+            {
+                Target = snake.Head.Offset + offset;
+                Time = time;
+                TimeEnd = time;
+                SegmentCut = 1;
+            }
+
+            public override bool ShouldRenderSegment(SnakeSegment segment)
+            {
+                return segment.Index < SegmentCut * Snake.Segments.Count;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                SegmentCut -= delta / TimeEnd;
+            }
+
+            public override void UpdateDiscrete()
+            {
+                Snake.Move(Target, 0.3f);
+                Snake.Move(Target, 0.3f);
+                Snake.Move(Target, 0.3f);
+                Time--;
+                if (Time < 0)
+                {
+                    Snake.Destroy();
+                }
+                int index = MathHelper.Clamp((int)(SegmentCut * Snake.Segments.Count) - 1, 0, Snake.Segments.Count - 1);
+                var segment = Snake.Segments[index];
+                var size = new Vector2(8, 8);
+                new FireEffect(Snake.World, Snake.Position + segment.Offset - size / 2 + new Vector2(Snake.Random.NextFloat() * size.X, Snake.Random.NextFloat() * size.Y), 0, 5);
+            }
+        }
+
         public IBox Box;
         public List<SnakeSegment> Segments = new List<SnakeSegment>();
         public SnakeSegment Head => Segments.Last();
@@ -809,8 +911,10 @@ namespace RogueTower
         public Action CurrentAction;
 
         public float Lifetime;
+        public int Invincibility = 0;
 
         public override bool Attacking => false;
+        public override bool Incorporeal => false;
 
         public HorizontalFacing Facing;
         public float MoveDelta;
@@ -822,6 +926,7 @@ namespace RogueTower
         public Snake(GameWorld world, Vector2 position) : base(world, position)
         {
             CurrentAction = new ActionIdle(this);
+            Health = 80;
             CanDamage = true;
         }
 
@@ -836,6 +941,12 @@ namespace RogueTower
             {
                 Segments.Add(new SnakeSegment(this,i));
             }
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            World.Remove(Box);
         }
 
         public void ResetState()
@@ -920,6 +1031,9 @@ namespace RogueTower
         {
             MoveDelta = 0;
 
+            if (!(CurrentAction is ActionHit))
+                Invincibility--;
+
             foreach (SnakeSegment segment in Segments)
             {
                 segment.UpdateDiscrete();
@@ -930,9 +1044,29 @@ namespace RogueTower
             UpdateAI();
         }
 
+        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            if (Invincibility > 0)
+                return;
+            Invincibility = invincibility;
+            CurrentAction = new ActionHit(this, velocity * 4, hurttime);
+            PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
+            HandleDamage(damageIn);
+            World.Hitstop = 6;
+        }
+
         public override void ShowDamage(double damage)
         {
             new DamagePopup(World, Position + Head.Offset + new Vector2(0, -16), damage.ToString(), 30);
+        }
+
+        public override void Death()
+        {
+            if (!(CurrentAction is ActionDeath))
+            {
+                new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);
+                CurrentAction = new ActionDeath(this, GetFacingVector(Facing) * -24 + new Vector2(0, 0), 30);
+            }
         }
     }
 
@@ -946,6 +1080,7 @@ namespace RogueTower
         }
 
         public override bool Attacking => false;
+        public override bool Incorporeal => false;
 
         public FireState State;
         public float Angle = 0;
@@ -1068,6 +1203,7 @@ namespace RogueTower
         public Vector2 LastOffset;
 
         public override bool Attacking => true;
+        public override bool Incorporeal => false;
 
         public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world, position)
         {
@@ -1084,6 +1220,12 @@ namespace RogueTower
             Box = World.Create(x - 8, y - 8, 16, 16);
             Box.AddTags(CollisionTag.NoCollision);
             Box.Data = this;
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            World.Remove(Box);
         }
 
         private Vector2 AngleToVector(float angle)
