@@ -66,10 +66,16 @@ namespace RogueTower
             if(CanDamage == false)
                 return;
             Health -= damageIn;
-            if(Health <= 0)
-            {
-            }
             ShowDamage(damageIn);
+            if (Health <= 0)
+            {
+                Death();
+            }
+        }
+
+        public virtual void Death()
+        {
+            //NOOP
         }
     }
 }
