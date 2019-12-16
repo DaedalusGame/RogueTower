@@ -276,7 +276,7 @@ namespace RogueTower
         {
             if (player.Controls.Attack)
             {
-                TwoHandSlash(player, 4, 6);
+                TwoHandSlash(player, 3, 12);
             }
             else if (player.Controls.AltAttack)
             {
@@ -287,7 +287,7 @@ namespace RogueTower
                 {
                     if(Box.Data is Enemy enemy && Box.Data != player && enemy.CanDamage)
                     {
-                        WandBlast(player, enemy, 15, 10);
+                        WandBlast(player, enemy, 24, 12);
                         SuccessOrFail = true;
                         //break; One, or many?
                     }
@@ -295,7 +295,7 @@ namespace RogueTower
                 }
                 if (!SuccessOrFail)
                 {
-                    WandBlastUntargeted(player, GetFacingVector(player.Facing) * new Vector2(1, 0), 15, 10);
+                    WandBlastUntargeted(player, GetFacingVector(player.Facing) * new Vector2(1, 0), 24, 12);
                 }
             }
         }
