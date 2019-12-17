@@ -737,6 +737,12 @@ namespace RogueTower
                         case (20):
                             map.Tiles[px + x, py + y] = new SpikeDeath(map, px + x, py + y);
                             break;
+                        case (21):
+                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Left);
+                            break;
+                        case (22):
+                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Right);
+                            break;
                     }
 
                     map.Tiles[px + x, py + y].Color = color;
