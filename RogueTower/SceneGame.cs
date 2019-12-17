@@ -847,8 +847,13 @@ namespace RogueTower
 
         public void DrawPlayerState(PlayerState state, Vector2 position, SpriteEffects mirror)
         {
+            var origin = Vector2.Transform(position, WorldTransform);
+            var transform = WorldTransform;
+            //FORBIDDEN KNOWLEDGE
+            //transform = transform * Matrix.CreateTranslation(-origin.X-16,-origin.Y-16, 0)  * Matrix.CreateRotationZ(MathHelper.Pi * Frame * 0.00f) * Matrix.CreateScale(3.0f, 1.0f, 1.0f) * Matrix.CreateTranslation(origin.X+16, origin.Y+16, 0);
+
             SpriteBatch.End();
-            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: transform);
 
             Vector2 offset = state.Body.Offset;
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
@@ -878,9 +883,14 @@ namespace RogueTower
 
         public void DrawSpriteExt(SpriteReference sprite, int frame, Vector2 position, Vector2 origin, float angle, SpriteEffects mirror, float depth)
         {
+            DrawSpriteExt(sprite, frame, position, origin, angle, Vector2.One, mirror, Color.White, depth);
+        }
+
+        public void DrawSpriteExt(SpriteReference sprite, int frame, Vector2 position, Vector2 origin, float angle, Vector2 scale, SpriteEffects mirror, Color color, float depth)
+        {
             if (!DepthShear.Contains(depth))
                 return;
-            SpriteBatch.Draw(sprite.Texture, position - origin, sprite.GetFrameRect(frame), Color.White, angle, origin, 1, mirror, depth);
+            SpriteBatch.Draw(sprite.Texture, position - origin, sprite.GetFrameRect(frame), color, angle, origin, scale, mirror, depth);
         }
 
         public void StartNormalBatch()
