@@ -207,10 +207,12 @@ namespace RogueTower
     class Shockwave : Bullet
     {
         public float ShockwaveForce;
+        public float ScalingFactor = 0;
         public override Vector2 BulletSize => new Vector2(8, 16);
 
         public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position)
         {
+            ScalingFactor = velocityDown;
             ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
         }
 

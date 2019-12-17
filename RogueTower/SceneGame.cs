@@ -515,7 +515,7 @@ namespace RogueTower
                 }
                 if(bullet is Shockwave shockwave)
                 {
-                    DrawSprite(spriteShockwave, (int)shockwave.Frame, bullet.Position - spriteShockwave.Middle, SpriteEffects.None, 0);
+                    DrawSpriteExt(spriteShockwave, (int)shockwave.Frame, bullet.Position + spriteShockwave.Middle, new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (shockwave.ScalingFactor > 1) ? 1 + shockwave.ScalingFactor / 10 : 1), SpriteEffects.None, Color.White, 0);
                 }
             }
 

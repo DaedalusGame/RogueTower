@@ -999,7 +999,7 @@ namespace RogueTower
                             enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
                         }
                 }
-                TaggedVelocity = Human.Velocity.Y;
+                Console.WriteLine(TaggedVelocity);
                 if (!ShockwaveFinished && floorY.HasValue)
                 {
                     for (int i = 0; i < 2; i++)
@@ -1016,6 +1016,10 @@ namespace RogueTower
                     new ParryEffect(Human.World, Human.Position, 0, 5);
                     ShockwaveFinished = true;
                 }
+            }
+            else
+            {
+                TaggedVelocity = Human.Velocity.Y;
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
                 Human.CurrentAction = new ActionIdle(Human);
