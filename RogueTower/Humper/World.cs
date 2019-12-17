@@ -176,12 +176,29 @@
 				var collision = new Collision() { Box = box, Hit = nearest, Goal = destination, Origin = origin };
 				var response = filter(collision);
 
-                if (response != null && destination != response.Destination)
+                /*if (response != null && destination != response.Destination)
 				{
+                    if(destination != response.Destination)
+                    {
+
+                    }
+                    if(destination.X != response.Destination.X)
+                    {
+
+                    }
 					ignoring.Add(nearest.Box);
 					return this.Simulate(hits, ignoring, box, impact, response.Destination, filter);
-				}
-			}
+				}*/
+                ignoring.Add(nearest.Box);
+                if (response != null)
+                {
+                    return this.Simulate(hits, ignoring, box, impact, response.Destination, filter);
+                }
+                else
+                {
+                    return this.Simulate(hits, ignoring, box, origin, destination, filter);
+                }
+            }
 
             return destination;
 		}

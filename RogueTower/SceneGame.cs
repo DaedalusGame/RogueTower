@@ -579,7 +579,7 @@ namespace RogueTower
                     debugColor = Color.Lime;
                 SpriteBatch.Draw(Pixel, box.Bounds.ToRectangle(), new Color(debugColor, 0.2f));
             }*/
-
+            
             SpriteBatch.End();
 
             //Pause Screen

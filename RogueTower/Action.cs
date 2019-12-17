@@ -984,10 +984,15 @@ namespace RogueTower
             {
                 PlungeFinished = true;
                 double damageIn = Weapon.Damage * 1.5;
+                float? floorY = null;
                 foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
                 {
                     if (box.Data is Tile tile)
+                    {
+                        if (!floorY.HasValue || box.Bounds.Top < floorY)
+                            floorY = box.Bounds.Top;
                         tile.HandleTileDamage(damageIn);
+                    }
                     if (box.Data is Enemy enemy)
                         if (enemy != Human)
                         {
@@ -995,11 +1000,11 @@ namespace RogueTower
                         }
                 }
                 TaggedVelocity = Human.Velocity.Y;
-                if (!ShockwaveFinished)
+                if (!ShockwaveFinished && floorY.HasValue)
                 {
                     for (int i = 0; i < 2; i++)
                     {
-                        new Shockwave(Human.World, Human.Position + new Vector2(0, -1), TaggedVelocity)
+                        new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - 8), TaggedVelocity)
                         {
                             Velocity = (i > 0) ? new Vector2(-1, 0) * 3 : new Vector2(1, 0) * 3,
                             FrameEnd = 70,

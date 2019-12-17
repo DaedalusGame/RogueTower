@@ -26,7 +26,7 @@ namespace RogueTower
                 Box.Teleport(pos.X, pos.Y);
             }
         }
-        public Vector2 BulletSize;
+        public virtual Vector2 BulletSize => new Vector2(8,8);
         public Vector2 Velocity;
         public float Frame, FrameEnd;
         public GameObject Shooter;
@@ -36,7 +36,6 @@ namespace RogueTower
         protected Bullet(GameWorld world, Vector2 position) : base(world)
         {
             Create(position.X, position.Y);
-            BulletSize = new Vector2(8, 8);
         }
 
         public override void Destroy()
@@ -116,11 +115,12 @@ namespace RogueTower
 
     class Explosion : Bullet
     {
+        public override Vector2 BulletSize => new Vector2(32, 32);
+
         public Explosion(GameWorld world, Vector2 position) : base(world, position)
         {
-            BulletSize = new Vector2(32, 32);
             PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
-            HandleDamage();
+            //HandleDamage();
         }
 
         protected override void OnCollision(IHit hit)
@@ -205,7 +205,8 @@ namespace RogueTower
     class Shockwave : Bullet
     {
         public float ShockwaveForce;
-        
+        public override Vector2 BulletSize => new Vector2(8, 16);
+
         public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position)
         {
             ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
@@ -213,12 +214,33 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
-            base.UpdateDelta(delta);       
+            Frame += delta;
+            var move = Box.Move(Box.X + Velocity.X * delta, Box.Y + Velocity.Y * delta, collision =>
+            {
+                return GetCollision(collision);
+            });
+            foreach (var hit in move.Hits)
+                OnCollision(hit);
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
+            if (!tiles.Any())
+            {
+                /*var explosion = new Explosion(World, Position)
+                {
+                    FrameEnd = 20,
+                    Shooter = Shooter
+                };*/
+                Destroy();
+            }
         }
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || hit.Box.Data == Shooter)
+            if (Destroyed || hit.Box.Data == Shooter || hit.Box.Data is Bullet)
                 return;
             bool hitwall = true;
 

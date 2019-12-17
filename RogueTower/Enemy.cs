@@ -130,12 +130,13 @@ namespace RogueTower
 
             var movement = CalculateMovement(delta);
 
-            bool IsMovingVertically = Math.Abs(movement.Y) > 0.1;
-            bool IsMovingHorizontally = Math.Abs(movement.X) > 0.1;
+            bool IsMovingVertically = Math.Abs(movement.Y) >= 1;
+            bool IsMovingHorizontally = Math.Abs(movement.X) >= 1;
 
             IMovement move = Move(movement);
 
             var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
+            var cornerOnly = !hits.Any() && move.Hits.Any();
 
             /*if (move.Hits.Any() && !hits.Any())
             {
@@ -143,7 +144,7 @@ namespace RogueTower
                 IsMovingVertically = false;
             }*/
 
-            if (IsMovingVertically)
+            if (IsMovingVertically && !cornerOnly)
             {
                 if (hits.Any((c) => c.Normal.Y < 0))
                 {
@@ -164,7 +165,7 @@ namespace RogueTower
                 }
             }
 
-            if (IsMovingHorizontally)
+            if (IsMovingHorizontally && !cornerOnly)
             {
                 if (hits.Any((c) => c.Normal.X != 0))
                 {
@@ -331,7 +332,8 @@ namespace RogueTower
             return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
             {
                 if (IgnoresCollision(collision.Hit.Box))
-                    return new CrossResponse(collision);
+                    return null;
+                    //return new CrossResponse(collision);
                 return new SlideAdvancedResponse(collision);
             });
         }
