@@ -35,7 +35,7 @@ namespace RogueTower
                 mirror = SpriteEffects.FlipVertically;
             }
 
-            game.DrawSpriteExt(sprite, Frame, position + Origin, Origin, angle, mirror, depth);
+            game.DrawSpriteExt(sprite, Frame, position - Origin, Origin, angle, mirror, depth);
         }
 
         public class NoneState : WeaponState
@@ -481,7 +481,7 @@ namespace RogueTower
                 }
                 if (obj is Cannon cannon)
                 {
-                    DrawSpriteExt(wallGun, 0, cannon.Position + wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
                 }
             }
 
@@ -499,11 +499,11 @@ namespace RogueTower
             {
                 if (bullet is Knife)
                 {
-                    DrawSpriteExt(knife, 0, bullet.Position + knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
+                    DrawSpriteExt(knife, 0, bullet.Position - knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
                 }
                 if (bullet is Fireball)
                 {
-                    DrawSpriteExt(fireball, 0, bullet.Position + fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(bullet.Frame * 0.5) , SpriteEffects.None, 0);
+                    DrawSpriteExt(fireball, 0, bullet.Position - fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(bullet.Frame * 0.5) , SpriteEffects.None, 0);
                 }
                 if (bullet is SpellOrange spellOrange)
                 {
@@ -539,20 +539,20 @@ namespace RogueTower
                 }
                 if (effect is KnifeBounced knifeBounced)
                 {
-                    DrawSpriteExt(knife, 0, knifeBounced.Position + knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
+                    DrawSpriteExt(knife, 0, knifeBounced.Position - knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
                 }
                 if (effect is SnakeHead snakeHead)
                 {
-                    DrawSpriteExt(snakeHeadOpen, 0, snakeHead.Position + snakeHeadOpen.Middle, snakeHeadOpen.Middle, snakeHead.Rotation * snakeHead.Frame, snakeHead.Mirror, 0);
+                    DrawSpriteExt(snakeHeadOpen, 0, snakeHead.Position - snakeHeadOpen.Middle, snakeHeadOpen.Middle, snakeHead.Rotation * snakeHead.Frame, snakeHead.Mirror, 0);
                 }
                 if (effect is ParryEffect parryEffect)
                 {
-                    DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position + crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position - crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is FireEffect fireEffect)
                 {
                     var middle = new Vector2(8, 12);
-                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position + middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {
@@ -568,7 +568,7 @@ namespace RogueTower
                 }
                 if(effect is ChargeEffect chargeEffect)
                 {
-                    DrawSpriteExt(charge, (int)-chargeEffect.Frame, chargeEffect.Position + charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(charge, (int)-chargeEffect.Frame, chargeEffect.Position - charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
                 }
             }
 
@@ -753,6 +753,11 @@ namespace RogueTower
                     {
                         SpriteBatch.Draw(wallIce.Texture, new Vector2(x * 16, y * 16), Color.White);
                     }
+                    else if (tile is LadderExtend ladderExtendTile)
+                    {
+                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16) + Util.GetFacingVector(ladderExtendTile.Facing) * -2, ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                    }
                     else if (tile is Ladder ladderTile)
                     {
                         SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
@@ -890,7 +895,7 @@ namespace RogueTower
         {
             if (!DepthShear.Contains(depth))
                 return;
-            SpriteBatch.Draw(sprite.Texture, position - origin, sprite.GetFrameRect(frame), color, angle, origin, scale, mirror, depth);
+            SpriteBatch.Draw(sprite.Texture, position + origin, sprite.GetFrameRect(frame), color, angle, origin, scale, mirror, depth);
         }
 
         public void StartNormalBatch()

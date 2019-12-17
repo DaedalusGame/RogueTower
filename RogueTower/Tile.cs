@@ -43,7 +43,7 @@ namespace RogueTower
             Replace(new EmptySpace(Map, X, Y));
         }
 
-        public void HandleTileDamage(double damagein)
+        public virtual void HandleTileDamage(double damagein)
         {
             if(CanDamage == false)
                 return;
@@ -55,6 +55,7 @@ namespace RogueTower
             }
             new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8) + new Vector2(0, -16), damagein.ToString(), 30);
         }
+
         public virtual RectangleF GetBoundingBox()
         {
             return new RectangleF(0, 0, 16, 16);
@@ -237,6 +238,30 @@ namespace RogueTower
                     return new RectangleF(0, 0, 3, 16);
             }
             
+            return base.GetBoundingBox();
+        }
+
+        public override bool CanClimb(HorizontalFacing side)
+        {
+            return Facing == side.Mirror();
+        }
+    }
+
+    class LadderExtend : Ladder
+    {
+        public LadderExtend(Map map, int x, int y, HorizontalFacing facing) : base(map, x, y, facing)
+        {
+        }
+
+        public override RectangleF GetBoundingBox()
+        {
+            switch (Facing)
+            {
+                case (HorizontalFacing.Right):
+                    return new RectangleF(11, 0, 5, 16);
+                case (HorizontalFacing.Left):
+                    return new RectangleF(0, 0, 5, 16);
+            }
 
             return base.GetBoundingBox();
         }
@@ -244,6 +269,16 @@ namespace RogueTower
         public override bool CanClimb(HorizontalFacing side)
         {
             return Facing == side.Mirror();
+        }
+
+        public override void HandleTileDamage(double damagein)
+        {
+            var bottom = GetNeighbor(0, 1);
+            if(bottom is EmptySpace)
+            { 
+                bottom.Replace(new LadderExtend(Map, X, Y + 1, Facing));
+                Replace(new Ladder(Map, X, Y, Facing));
+            }
         }
     }
 }
