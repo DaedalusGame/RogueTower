@@ -1243,21 +1243,33 @@ namespace RogueTower
         public float ChargeTime;
         public Action ChargeAction;
         public Weapon Weapon;
+        public bool SlowDown;
+        public float SlowDownAmount;
+        public bool CanJump = false;
+        public bool CanMove = true;
+        public float WalkFrame;
         public ChargeEffect chargingFX;
         public bool ChargeFinished = false;
-        public ActionCharge(EnemyHuman human, float chargeTime, Action chargeAction, Weapon weapon) : base(human)
+        public ActionCharge(EnemyHuman human, float chargeTime, Action chargeAction, Weapon weapon, bool slowDown, float slowDownAmount) : base(human)
         {
             ChargeTime = chargeTime;
             ChargeAction = chargeAction;
             Weapon = weapon;
+            SlowDown = slowDown;
+            SlowDownAmount = slowDownAmount;
             chargingFX = new ChargeEffect(human.World, human.Position, 0, chargeTime, human);
         }
 
         public override void OnInput()
         {
             var player = (Player)Human;
-            HandleMoveInput(player);
-            player.Velocity.X *= 0.6f;
+            if(SlowDown)
+                player.Velocity.X *= SlowDownAmount;
+            if (CanJump && (player.OnGround || player.ExtraJumps > 0))
+                HandleJumpInput(player);
+            if(CanMove)
+                HandleMoveInput(player);
+
             if (!player.Controls.AltAttackHeld) 
             {
                 if (ChargeTime > 0)
@@ -1281,6 +1293,7 @@ namespace RogueTower
                 new ParryEffect(Human.World, Human.Position, 0, 10);
                 ChargeFinished = true;
             }
+            WalkFrame += Math.Abs(Human.Velocity.X * delta * 0.125f) / (float)Math.Sqrt(Human.GroundFriction);
         }
 
         public override void UpdateDiscrete()
@@ -1289,9 +1302,11 @@ namespace RogueTower
         }
         public override void GetPose(PlayerState basePose)
         {
+            basePose.Body = BodyState.Walk((int)WalkFrame);
             basePose.LeftArm = ArmState.Up;
             basePose.RightArm = ArmState.Up;
             basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90));
+
         }
     }
 

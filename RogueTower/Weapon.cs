@@ -97,9 +97,9 @@ namespace RogueTower
             player.CurrentAction = new ActionWandBlastUntargeted(player, direction, upTime, downTime, this);
         }
 
-        public void ChargeAttack(Player player, float chargeTime, Action chargeAction)
+        public void ChargeAttack(Player player, float chargeTime, Action chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
         {
-            player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this);
+            player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this, slowDown, slowDownAmount);
         }
     }
 
@@ -209,7 +209,7 @@ namespace RogueTower
         {
             if (player.Controls.AltAttack)
             {
-                ChargeAttack(player, 3, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)));
+                player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)), this, false, 0) { CanJump = true, CanMove = true };
             }
         }
     }
