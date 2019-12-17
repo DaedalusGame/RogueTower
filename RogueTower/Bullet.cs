@@ -64,7 +64,8 @@ namespace RogueTower
 
         protected virtual ICollisionResponse GetCollision(ICollision collision)
         {
-            return new CrossResponse(collision);
+            //return new CrossResponse(collision);
+            return null;
         }
 
         protected abstract void OnCollision(IHit hit);
@@ -174,8 +175,9 @@ namespace RogueTower
 
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
-            if(collision.Hit.Box.Data == Shooter)
-                return new CrossResponse(collision);
+            if (collision.Hit.Box.Data == Shooter)
+                return null;
+                //return new CrossResponse(collision);
             return new TouchResponse(collision);
         }
 
@@ -226,14 +228,10 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
-            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
-            if (!tiles.Any())
+            var tilesLeft = World.FindTiles(new RectangleF(Box.Bounds.Left,Box.Bounds.Y+1,1,16));
+            var tilesRight = World.FindTiles(new RectangleF(Box.Bounds.Right, Box.Bounds.Y+1, 1, 16));
+            if ((Velocity.X < 0 && !tilesLeft.Any()) || (Velocity.X > 0 && !tilesRight.Any()))
             {
-                /*var explosion = new Explosion(World, Position)
-                {
-                    FrameEnd = 20,
-                    Shooter = Shooter
-                };*/
                 Destroy();
             }
         }

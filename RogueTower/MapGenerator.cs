@@ -140,9 +140,10 @@ namespace RogueTower
             //var topology = Generator.DebugPrint((x) => Generator.GetChar(x.Type));
             switch (Type)
             {
-                case (RoomType.Entrance):
+                /*case (RoomType.Entrance):
                     Forbid(Direction.Left, connection => connection != "entrance");
-                    break;
+                    Forbid(template => template.TravelDirection == TravelDirection.Down);
+                    break;*/
                 case (RoomType.Horizontal):
                     Forbid(Direction.Left, connection => SolidEdges.Contains(connection));
                     Forbid(Direction.Right, connection => SolidEdges.Contains(connection));
@@ -514,11 +515,11 @@ namespace RogueTower
                 var lastRoom = GetRoom(lastPos.X, lastPos.Y);
                 var dx = pos.X - lastPos.X;
                 var dy = pos.Y - lastPos.Y;
-                if(lastRoom.Type == RoomType.Entrance)
+                /*if(lastRoom.Type == RoomType.Entrance)
                 {
                     //NOOP
                 }
-                else if (dx == 1)
+                else*/ if (dx == 1)
                 {
                     if (lastVertical > 0)
                         lastRoom.Type = RoomType.RightUp;

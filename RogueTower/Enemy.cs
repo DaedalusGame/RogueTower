@@ -665,6 +665,11 @@ namespace RogueTower
             if (!(CurrentAction is ActionEnemyDeath))
                 CurrentAction = new ActionEnemyDeath(this, 20);
         }
+
+        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            base.Hit(velocity, hurttime, invincibility / 10, damageIn);
+        }
     }
 
     class Snake : Enemy
@@ -1057,7 +1062,7 @@ namespace RogueTower
         {
             if (Invincibility > 0)
                 return;
-            Invincibility = invincibility;
+            Invincibility = invincibility/10;
             CurrentAction = new ActionHit(this, velocity * 4, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
