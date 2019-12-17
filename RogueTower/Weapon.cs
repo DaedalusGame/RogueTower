@@ -318,4 +318,35 @@ namespace RogueTower
             }
         }
     }
+
+    class WeaponWarhammer : Weapon
+    {
+        public WeaponWarhammer(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 1.5f)
+        {
+            CanParry = false;
+        }
+
+        public override WeaponState GetWeaponState(float angle)
+        {
+            return WeaponState.Warhammer(angle);
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                TwoHandSlash(player, 8, 16);
+            }
+            else if(player.Controls.AltAttack && player.OnGround)
+            {
+                SlashUp(player, 2, 8, 16, 2);
+                player.Velocity.Y = -5;
+                player.OnGround = false;
+            }
+            else if(player.Controls.AltAttack && player.InAir)
+            {
+                player.CurrentAction = new ActionShockwave(player, 4, 8, this);
+            }
+        }
+    }
 }

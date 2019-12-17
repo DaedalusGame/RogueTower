@@ -57,6 +57,7 @@ namespace RogueTower
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
         public static WeaponState WandOrange(float angle) => new WeaponState("wand_orange", 0, new Vector2(2, 4), angle);
+        public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle);
     }
 
     class ArmState
@@ -493,6 +494,7 @@ namespace RogueTower
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
+            var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
@@ -510,6 +512,10 @@ namespace RogueTower
                 if (bullet is Explosion explosion)
                 {
                     DrawSprite(spriteExplosion, AnimationFrame(spriteExplosion,explosion.Frame,explosion.FrameEnd), explosion.Position - spriteExplosion.Middle, SpriteEffects.None, 0);
+                }
+                if(bullet is Shockwave shockwave)
+                {
+                    DrawSprite(spriteShockwave, (int)shockwave.Frame, bullet.Position - spriteShockwave.Middle, SpriteEffects.None, 0);
                 }
             }
 

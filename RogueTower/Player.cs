@@ -126,7 +126,8 @@ namespace RogueTower
         //public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
         //public Weapon Weapon = new WeaponRapier(15, 20, new Vector2(10, 40));
         //public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
-        public Weapon Weapon = new WeaponLance(20, 38, new Vector2(19, 76));
+        //public Weapon Weapon = new WeaponLance(20, 38, new Vector2(19, 76));
+        public Weapon Weapon = new WeaponWarhammer(30, 36, new Vector2(18, 72));
 
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;

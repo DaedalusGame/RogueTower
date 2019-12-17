@@ -965,6 +965,58 @@ namespace RogueTower
         }
     }
 
+    class ActionShockwave : ActionPlunge
+    {
+        public float TaggedVelocity;
+        public bool ShockwaveFinished = false;
+        public ActionShockwave(EnemyHuman player, float plungeStartTime, float plungeFinishTime, Weapon weapon) : base(player, plungeStartTime, plungeFinishTime, weapon)
+        {
+            PlungeStartTime = plungeStartTime;
+            PlungeFinishTime = plungeFinishTime;
+            Weapon = weapon;
+        }
+
+        public override void UpdateDiscrete()
+        {
+            if (PlungeStartTime <= 0)
+                Human.Velocity.Y += 0.5f;
+            if (Human.OnGround)
+            {
+                PlungeFinished = true;
+                double damageIn = Weapon.Damage * 1.5;
+                foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
+                {
+                    if (box.Data is Tile tile)
+                        tile.HandleTileDamage(damageIn);
+                    if (box.Data is Enemy enemy)
+                        if (enemy != Human)
+                        {
+                            enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
+                        }
+                }
+                TaggedVelocity = Human.Velocity.Y;
+                if (!ShockwaveFinished)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        new Shockwave(Human.World, Human.Position + new Vector2(0, -1), TaggedVelocity)
+                        {
+                            Velocity = (i > 0) ? new Vector2(-1, 0) * 3 : new Vector2(1, 0) * 3,
+                            FrameEnd = 70,
+                            Shooter = Human
+                        };
+                    }
+                    new ScreenShakeRandom(Human.World, 15, 5);
+                    PlaySFX(sfx_explosion1, 1f, 0.01f, 0.2f);
+                    new ParryEffect(Human.World, Human.Position, 0, 5);
+                    ShockwaveFinished = true;
+                }
+            }
+            if (PlungeFinished && PlungeFinishTime <= 0)
+                Human.CurrentAction = new ActionIdle(Human);
+        }
+    }
+
     class ActionTwohandSlash : Action
     {
         public enum SwingAction
@@ -1045,8 +1097,8 @@ namespace RogueTower
             Vector2 Position = Human.Position;
             HorizontalFacing Facing = Human.Facing;
             Vector2 FacingVector = GetFacingVector(Facing);
-            Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
-            Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
+            Vector2 PlayerWeaponOffset = Position + FacingVector * Weapon.WeaponSizeMult;
+            Vector2 WeaponSize = Weapon.WeaponSize;
             RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
             if (true)
             {
@@ -1057,7 +1109,8 @@ namespace RogueTower
             }
             if (!Parried)
                 Human.SwingWeapon(weaponMask, 10);
-            var effect = new SlashEffectRound(Human.World, () => Human.Position, 0.7f, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
             if (Parried)
                 effect.Frame = effect.FrameEnd / 2;
             SlashAction = SwingAction.DownSwing;
@@ -1309,5 +1362,4 @@ namespace RogueTower
 
         }
     }
-
 }

@@ -201,4 +201,49 @@ namespace RogueTower
             Destroy();
         }
     }
+
+    class Shockwave : Bullet
+    {
+        public float ShockwaveForce;
+        
+        public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position)
+        {
+            ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);       
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || hit.Box.Data == Shooter)
+                return;
+            bool hitwall = true;
+
+            if (hit.Box.Data is Tile tile)
+            {
+                tile.HandleTileDamage(ShockwaveForce);
+                if(tile.CanDamage == false)
+                    Destroy();
+                ShockwaveForce -= 20;
+            }
+            if (hit.Box.Data is Enemy enemy)
+            {
+                if (enemy.CanDamage)
+                    hitwall = false;
+                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, ShockwaveForce);
+                ShockwaveForce -= 20;
+            }
+            if (hitwall)
+            {
+                PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
+            }
+            if(ShockwaveForce <= 0)
+            {
+                Destroy();
+            }
+        }
+    }
 }
