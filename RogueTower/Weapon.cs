@@ -96,6 +96,11 @@ namespace RogueTower
         {
             player.CurrentAction = new ActionWandBlastUntargeted(player, direction, upTime, downTime, this);
         }
+
+        public void ChargeAttack(Player player, float chargeTime, Action chargeAction)
+        {
+            player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this);
+        }
     }
 
     class WeaponSword : Weapon
@@ -202,9 +207,9 @@ namespace RogueTower
 
         public override void HandleAttack(Player player)
         {
-            if (player.Controls.Attack)
+            if (player.Controls.AltAttack)
             {
-                SlashDown(player);
+                ChargeAttack(player, 3, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)));
             }
         }
     }

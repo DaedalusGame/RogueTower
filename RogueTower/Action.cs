@@ -7,6 +7,7 @@ using Humper;
 using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ChaiFoxes.FMODAudio;
 using static RogueTower.Game;
 using static RogueTower.Util;
 
@@ -1234,6 +1235,77 @@ namespace RogueTower
                 Shooter = Human
             };
             PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
+        }
+    }
+
+    class ActionCharge : Action
+    {
+        public float ChargeTime;
+        public Action ChargeAction;
+        public Weapon Weapon;
+        public ChargeEffect chargingFX;
+        public bool ChargeFinished = false;
+        public SoundChannel chargingChannel;
+        public ActionCharge(EnemyHuman human, float chargeTime, Action chargeAction, Weapon weapon) : base(human)
+        {
+            ChargeTime = chargeTime;
+            ChargeAction = chargeAction;
+            Weapon = weapon;
+            chargingFX = new ChargeEffect(human.World, human.Position, 0, chargeTime, human);
+            chargingChannel = sfx_player_charging.Play();
+            chargingChannel.Pitch = 1 / chargeTime;
+            chargingChannel.Looping = true;
+        }
+
+        public override void OnInput()
+        {
+            var player = (Player)Human;
+            HandleMoveInput(player);
+            player.Velocity.X *= 0.6f;
+            if (!player.Controls.AltAttackHeld) 
+            {
+                if (ChargeTime > 0)
+                {
+                    chargingChannel.Looping = false;
+                    chargingChannel.Stop();
+                    PlaySFX(sfx_player_disappointed, 1, 0.1f, 0.15f);
+                    chargingFX.Destroy();
+                    player.ResetState();
+                }
+                else
+                {
+                    player.CurrentAction = ChargeAction;
+                }
+            }
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            chargingFX.Position = Human.Position;
+            ChargeTime -= delta;
+            if(ChargeTime > 0)
+            {
+                chargingChannel.Pitch += 0.01f;
+            }
+            if(ChargeTime < 0 && !ChargeFinished)
+            {
+                chargingChannel.Looping = false;
+                chargingChannel.Stop();
+                PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.1f);
+                new ParryEffect(Human.World, Human.Position, 0, 10);
+                ChargeFinished = true;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.LeftArm = ArmState.Up;
+            basePose.RightArm = ArmState.Up;
+            basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90));
         }
     }
 

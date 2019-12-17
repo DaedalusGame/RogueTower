@@ -487,6 +487,7 @@ namespace RogueTower
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
+            var charge = SpriteLoader.Instance.AddSprite("content/charge");
             foreach (Bullet bullet in World.Bullets)
             {
                 if (bullet is Knife)
@@ -553,6 +554,10 @@ namespace RogueTower
                 if(effect is RectangleDebug rectDebug)
                 {
                     SpriteBatch.Draw(Pixel, rectDebug.Rectangle.ToRectangle(), rectDebug.Color);
+                }
+                if(effect is ChargeEffect chargeEffect)
+                {
+                    DrawSpriteExt(charge, (int)chargeEffect.Frame, chargeEffect.Position + charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
                 }
             }
 
