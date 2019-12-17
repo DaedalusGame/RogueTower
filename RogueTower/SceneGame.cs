@@ -424,10 +424,11 @@ namespace RogueTower
             var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
             var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
             var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
+            var hydraBody = SpriteLoader.Instance.AddSprite("content/hydra_body");
             var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
             var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
 
-            foreach (GameObject obj in World.Objects)
+            foreach (GameObject obj in World.Objects.OrderBy(x => x.DrawOrder))
             {
                 if(obj is BallAndChain ballAndChain)
                 {
@@ -472,6 +473,10 @@ namespace RogueTower
                             DrawSprite(snakeBody, 0, snake.Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 0);
                         }
                     } 
+                }
+                if(obj is Hydra hydra)
+                {
+                    DrawSprite(hydraBody, Frame / 20, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                 }
                 if (obj is Cannon cannon)
                 {

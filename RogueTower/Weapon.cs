@@ -299,6 +299,7 @@ namespace RogueTower
                     {
                         WandBlast(player, enemy, 24, 12);
                         SuccessOrFail = true;
+                        break;
                         //With my ability to control the projectile's direciton, it's up to you if they should still have homing.
                     }
 

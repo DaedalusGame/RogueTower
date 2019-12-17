@@ -59,6 +59,11 @@ namespace RogueTower
             return a0 + GetAngleDistance(a0, a1) * t;
         }
 
+        public static Vector2 AngleToVector(float angle)
+        {
+            return new Vector2((float)Math.Sin(angle), (float)Math.Cos(angle));
+        }
+
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable)
         {
             return new HashSet<T>(enumerable);

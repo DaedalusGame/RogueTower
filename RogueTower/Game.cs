@@ -211,7 +211,7 @@ namespace RogueTower
             float pitchmodcalc = (float)(random.NextDouble() * (max_pitchmod_val - min_pitchmod_val) + min_pitchmod_val);
             sfx.Volume = volume;
             sfx.Pitch = (float)Math.Pow(2, pitchmodcalc);
-            sfx.Play();
+            var channel = sfx.Play();
             return sfx;
         }
 

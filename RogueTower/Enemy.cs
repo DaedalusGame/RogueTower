@@ -143,24 +143,6 @@ namespace RogueTower
                 IsMovingVertically = false;
             }*/
 
-            if (!Incorporeal)
-            {
-                var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
-                foreach (var nearby in nearbies)
-                {
-                    if (nearby.Data is Enemy enemy && !enemy.Incorporeal)
-                    {
-                        float dx = enemy.Position.X - Position.X;
-                        if (Math.Abs(dx) < 1)
-                            dx = Random.NextFloat() - 0.5f;
-                        if (dx > 0 && Velocity.X > -1)
-                            Velocity.X = -1;
-                        else if (dx < 0 && Velocity.X < 1)
-                            Velocity.X = 1;
-                    }
-                }
-            }
-
             if (IsMovingVertically)
             {
                 if (hits.Any((c) => c.Normal.Y < 0))
@@ -231,6 +213,26 @@ namespace RogueTower
                 else
                 {
                     OnWall = false;
+                }
+            }
+
+            if (!Incorporeal)
+            {
+                var nearbies = World.FindBoxes(Box.Bounds).Where(x => x.Data != this);
+                foreach (var nearby in nearbies)
+                {
+                    if (nearby.Data is Enemy enemy && !enemy.Incorporeal)
+                    {
+                        float dx = enemy.Position.X - Position.X;
+                        if (Math.Abs(dx) < 3)
+                            dx = -Velocity.X;
+                        if (dx == 0)
+                            dx = Random.NextDouble() < 0.5 ? 1 : -1;
+                        if (dx > 0 && Velocity.X > -1)
+                            Velocity.X = -1;
+                        else if (dx < 0 && Velocity.X < 1)
+                            Velocity.X = 1;
+                    }
                 }
             }
 
@@ -740,12 +742,8 @@ namespace RogueTower
             public override void UpdateDiscrete()
             {
                 var frame = Time + Offset;
-                Vector2 facingVector = GetFacingVector(Snake.Facing);
-                Vector2 wantedPosition;
-                if (Snake.InCombat)
-                    wantedPosition = -10 * facingVector + new Vector2(0, -30) + new Vector2((float)Math.Sin(frame / 20f) * 20 * facingVector.X, (float)Math.Cos(frame / 20f) * 10);
-                else
-                    wantedPosition = -10 * facingVector + new Vector2(0, -15) + new Vector2((float)Math.Sin(frame / 20f) * 10 * facingVector.X, (float)Math.Cos(frame / 20f) * 5);
+                Vector2 idleCircle = Snake.IdleCircle;
+                Vector2 wantedPosition = Snake.IdleOffset + new Vector2((float)Math.Sin(frame / 20f) * idleCircle.X, (float)Math.Cos(frame / 20f) * idleCircle.Y);
                 Snake.Move(wantedPosition, 0.2f);
             }
         }
@@ -922,6 +920,9 @@ namespace RogueTower
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position + Head.Offset;
 
+        public virtual Vector2 IdleOffset => -10 * GetFacingVector(Facing) + new Vector2(0, InCombat ? -30 : -15);
+        public virtual Vector2 IdleCircle => InCombat ? new Vector2(20 * GetFacingVector(Facing).X, 10) : new Vector2(10 * GetFacingVector(Facing).X, 5);
+
         public HorizontalFacing Facing;
         public float MoveDelta;
 
@@ -960,7 +961,7 @@ namespace RogueTower
             CurrentAction = new ActionIdle(this);
         }
 
-        private void UpdateAI()
+        public virtual void UpdateAI()
         {
             var viewSize = new Vector2(200, 100);
             RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
@@ -1073,6 +1074,86 @@ namespace RogueTower
                 new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);
                 CurrentAction = new ActionDeath(this, GetFacingVector(Facing) * -24 + new Vector2(0, 0), 30);
             }
+        }
+    }
+
+    class SnakeHydra : Snake
+    {
+        public Hydra Body;
+        public int Index;
+
+        public override Vector2 Position
+        {
+            get
+            {
+                return Body.NeckPosition;
+            }
+            set
+            {
+                //NOOP
+            }
+        }
+
+        public override Vector2 IdleOffset => new Vector2(0,-20) + 15 * AngleToVector(MathHelper.PiOver2 + MathHelper.PiOver2 / Body.Heads.Count + MathHelper.Pi * Index / Body.Heads.Count);
+        //public override Vector2 IdleCircle => new Vector2(15,5);
+
+        public SnakeHydra(Hydra body, int index) : base(body.World, body.Position)
+        {
+            Body = body;
+            Index = index;
+        }
+
+        public override void UpdateAI()
+        {
+            //NOOP
+        }
+    }
+
+    class Hydra : Enemy
+    {
+        public IBox Box;
+
+        public Vector2 NeckPosition => Position + GetFacingVector(Facing) * 8 + new Vector2(0, -8);
+
+        public List<SnakeHydra> Heads = new List<SnakeHydra>();
+
+        public HorizontalFacing Facing;
+
+        public override bool Attacking => false;
+        public override bool Incorporeal => false;
+        public override Vector2 HomingTarget => Position;
+
+        public Hydra(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
+        public override void Create(float x, float y)
+        {
+            base.Create(x, y);
+            Box = World.Create(x - 8, y - 8, 16, 16);
+            Box.AddTags(CollisionTag.NoCollision);
+            Box.Data = this;
+
+            int heads = 3;
+            for (int i = 0; i < heads; i++)
+            {
+                Heads.Add(new SnakeHydra(this,(i+1) % heads));
+            }
+        }
+
+        public override void ShowDamage(double damage)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            //NOOP
         }
     }
 

@@ -26,6 +26,8 @@ namespace RogueTower
         }
         public bool Active => ActivityZone.Contains(World.Player.Position);
 
+        public virtual double DrawOrder => 0;
+
         public GameObject(GameWorld world)
         {
             World = world;

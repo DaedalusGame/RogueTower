@@ -125,6 +125,7 @@ namespace RogueTower
                 walls.RemoveAt(select);
 
                 new Snake(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
+                
             }
 
                 List<Tile> floors = EnumerateTiles().Where(tile => tile is EmptySpace && tile.GetNeighbor(0,1) is Wall).ToList();
@@ -135,6 +136,15 @@ namespace RogueTower
                 floors.RemoveAt(select);
 
                 new MoaiMan(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
+            }
+
+            for (int i = 0; i < 50; i++)
+            {
+                int select = random.Next(floors.Count);
+                Tile pickWall = floors[select];
+                floors.RemoveAt(select);
+
+                new Hydra(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
             }
         }
 
