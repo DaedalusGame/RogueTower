@@ -207,14 +207,14 @@ namespace RogueTower
             GFPS.Update(gameTime);
             base.Update(gameTime);
         }
-        public static Sound PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
+        public static SoundChannel PlaySFX(Sound sfx, float volume, float min_pitchmod_val = 0, float max_pitchmod_val = 0)
         {
             Random random = new Random();
             float pitchmodcalc = (float)(random.NextDouble() * (max_pitchmod_val - min_pitchmod_val) + min_pitchmod_val);
             sfx.Volume = volume;
             sfx.Pitch = (float)Math.Pow(2, pitchmodcalc);
             var channel = sfx.Play();
-            return sfx;
+            return channel;
         }
 
         /// <summary>

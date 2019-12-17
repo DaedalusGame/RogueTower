@@ -1245,16 +1245,12 @@ namespace RogueTower
         public Weapon Weapon;
         public ChargeEffect chargingFX;
         public bool ChargeFinished = false;
-        public SoundChannel chargingChannel;
         public ActionCharge(EnemyHuman human, float chargeTime, Action chargeAction, Weapon weapon) : base(human)
         {
             ChargeTime = chargeTime;
             ChargeAction = chargeAction;
             Weapon = weapon;
             chargingFX = new ChargeEffect(human.World, human.Position, 0, chargeTime, human);
-            chargingChannel = sfx_player_charging.Play();
-            chargingChannel.Pitch = 1 / chargeTime;
-            chargingChannel.Looping = true;
         }
 
         public override void OnInput()
@@ -1266,10 +1262,7 @@ namespace RogueTower
             {
                 if (ChargeTime > 0)
                 {
-                    chargingChannel.Looping = false;
-                    chargingChannel.Stop();
                     PlaySFX(sfx_player_disappointed, 1, 0.1f, 0.15f);
-                    chargingFX.Destroy();
                     player.ResetState();
                 }
                 else
@@ -1281,16 +1274,9 @@ namespace RogueTower
 
         public override void UpdateDelta(float delta)
         {
-            chargingFX.Position = Human.Position;
             ChargeTime -= delta;
-            if(ChargeTime > 0)
-            {
-                chargingChannel.Pitch += 0.01f;
-            }
             if(ChargeTime < 0 && !ChargeFinished)
             {
-                chargingChannel.Looping = false;
-                chargingChannel.Stop();
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.1f);
                 new ParryEffect(Human.World, Human.Position, 0, 10);
                 ChargeFinished = true;

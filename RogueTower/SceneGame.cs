@@ -562,7 +562,7 @@ namespace RogueTower
                 }
                 if(effect is ChargeEffect chargeEffect)
                 {
-                    DrawSpriteExt(charge, (int)chargeEffect.Frame, chargeEffect.Position + charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(charge, (int)-chargeEffect.Frame, chargeEffect.Position + charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
                 }
             }
 
