@@ -25,6 +25,7 @@ namespace RogueTower
         public static Sound sfx_explosion1;
         public static Sound sfx_impact_blunt;
         public static Sound sfx_knife_throw;
+        public static Sound sfx_player_charging;
         public static Sound sfx_player_disappointed;
         public static Sound sfx_player_hurt;
         public static Sound sfx_player_jump;
@@ -117,6 +118,7 @@ namespace RogueTower
 
             AudioMgr.Init("content");
             bgm_title_theme =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
+            sfx_player_charging = AudioMgr.LoadStreamedSound("sounds/sfx/player_charge.wav");
 
             sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
             sfx_impact_blunt = AudioMgr.LoadSound("sounds/sfx/impact_blunt.wav");
