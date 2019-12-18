@@ -506,7 +506,7 @@
     <Content Include="Content\rapier.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\shockwave_strip6.png">
+    <Content Include="Content\shockwave_strip10.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\slash_round_strip11.png">
