@@ -344,7 +344,7 @@
 			}
 			else if (this.Amount > than.Amount)
 			{
-				return true;
+				return false;
 			}
 
 			var thisDistance = (origin - this.Position).LengthSquared();
