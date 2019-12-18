@@ -999,12 +999,12 @@ namespace RogueTower
                             enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
                         }
                 }
-                Console.WriteLine(TaggedVelocity);
+                //Console.WriteLine(TaggedVelocity);
                 if (!ShockwaveFinished && floorY.HasValue)
                 {
                     for (int i = 0; i < 2; i++)
                     {
-                        new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - 8), TaggedVelocity)
+                        new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - (int)(8 * TaggedVelocity / 5)), TaggedVelocity)
                         {
                             Velocity = (i > 0) ? new Vector2(-1, 0) * 3 : new Vector2(1, 0) * 3,
                             FrameEnd = 70,

@@ -208,7 +208,7 @@ namespace RogueTower
         public float ShockwaveForce;
         public float ScalingFactor = 0;
 
-        public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position, new Vector2(8, 16))
+        public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position, new Vector2(8, (int)(16 * velocityDown / 5)))
         {
             ScalingFactor = velocityDown;
             ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
@@ -232,6 +232,7 @@ namespace RogueTower
             var tilesRight = World.FindTiles(new RectangleF(Box.Bounds.Right, Box.Bounds.Y+1, 1, 16));
             if ((Velocity.X < 0 && !tilesLeft.Any()) || (Velocity.X > 0 && !tilesRight.Any()))
             {
+                Console.WriteLine("Discrete Called");
                 Destroy();
             }
         }
@@ -245,7 +246,8 @@ namespace RogueTower
             if (hit.Box.Data is Tile tile)
             {
                 tile.HandleTileDamage(ShockwaveForce);
-                if(tile.CanDamage == false)
+                if (tile.CanDamage == false)
+                    Console.WriteLine("Tile Called");
                     Destroy();
                 ShockwaveForce -= 20;
             }
@@ -262,6 +264,7 @@ namespace RogueTower
             }
             if(ShockwaveForce <= 0)
             {
+                Console.WriteLine("Damage Called");
                 Destroy();
             }
         }
