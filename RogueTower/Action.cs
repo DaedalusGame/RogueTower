@@ -1004,7 +1004,7 @@ namespace RogueTower
                 {
                     for (int i = 0; i < 2; i++)
                     {
-                        var shockwave = new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - (int)Math.Ceiling(16 * TaggedVelocity / 5) / 2f), TaggedVelocity)
+                        var shockwave = new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - (int)(16 * TaggedVelocity / 5) / 2f), TaggedVelocity)
                         {
                             Velocity = (i > 0) ? new Vector2(-1, 0) * 3 : new Vector2(1, 0) * 3,
                             FrameEnd = 70,
