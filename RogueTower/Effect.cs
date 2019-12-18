@@ -60,7 +60,7 @@ namespace RogueTower
         {
             base.UpdateDelta(delta);
 
-            double amount = Amount * (1 - FrameEnd / Frame);
+            double amount = Amount * (1 - Frame / FrameEnd);
             double shakeAngle = Random.NextDouble() * Math.PI * 2;
             int x = (int)Math.Round(Math.Cos(shakeAngle) * amount);
             int y = (int)Math.Round(Math.Sin(shakeAngle) * amount);
