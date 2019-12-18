@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Humper;
 
 namespace RogueTower
 {
@@ -21,6 +22,7 @@ namespace RogueTower
         public double Health, MaxHealth;
         public virtual Sound breakSound => sfx_tile_break;
         public Color Color = Color.White;
+        public List<Box> Boxes = new List<Box>();
 
         public Tile(Map map, int x, int y, bool passable, double health)
         {
@@ -30,12 +32,27 @@ namespace RogueTower
             Passable = passable;
             Health = health;
             MaxHealth = Health;
-    }
+        }
+
+
+        protected Box CreateBox(RectangleF bounds)
+        {
+            Box box = new Box(World, X * 16 + bounds.X, Y * 16 + bounds.Y, bounds.Width, bounds.Height);
+            box.Data = this;
+            return box;
+        }
+
+        public virtual void AddCollisions()
+        {
+            if (!Passable)
+                Boxes.Add(CreateBox(new RectangleF(0,0,16,16)));
+        }
 
         public void Replace(Tile tile)
         {
+            Map.RemoveTileCollisions(this);
             Map.Tiles[X, Y] = tile;
-            Map.CollisionDirty = true;
+            Map.AddTileCollisions(tile);
             CopyTo(tile);
         }
 
@@ -57,11 +74,6 @@ namespace RogueTower
             new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8) + new Vector2(0, -16), damagein.ToString(), 30);
         }
 
-        public virtual RectangleF GetBoundingBox()
-        {
-            return new RectangleF(0, 0, 16, 16);
-        }
-
         public virtual bool CanClimb(HorizontalFacing side)
         {
             return false;
@@ -80,7 +92,7 @@ namespace RogueTower
         //Copy values over here
         public virtual void CopyTo(Tile tile)
         {
-            //NOOP
+            tile.Color = Color;
         }
 
         public virtual void StepOn(EnemyHuman human)
@@ -229,17 +241,17 @@ namespace RogueTower
             Facing = facing;
         }
 
-        public override RectangleF GetBoundingBox()
+        public override void AddCollisions()
         {
-            switch(Facing)
+            switch (Facing)
             {
                 case (HorizontalFacing.Right):
-                    return new RectangleF(13, 0, 3, 16);
+                    Boxes.Add(CreateBox(new RectangleF(13, 0, 3, 16)));
+                    break;
                 case (HorizontalFacing.Left):
-                    return new RectangleF(0, 0, 3, 16);
+                    Boxes.Add(CreateBox(new RectangleF(0, 0, 3, 16)));
+                    break;
             }
-            
-            return base.GetBoundingBox();
         }
 
         public override bool CanClimb(HorizontalFacing side)
@@ -254,17 +266,17 @@ namespace RogueTower
         {
         }
 
-        public override RectangleF GetBoundingBox()
+        public override void AddCollisions()
         {
             switch (Facing)
             {
                 case (HorizontalFacing.Right):
-                    return new RectangleF(11, 0, 5, 16);
+                    Boxes.Add(CreateBox(new RectangleF(11, 0, 5, 16)));
+                    break;
                 case (HorizontalFacing.Left):
-                    return new RectangleF(0, 0, 5, 16);
+                    Boxes.Add(CreateBox(new RectangleF(0, 0, 5, 16)));
+                    break;
             }
-
-            return base.GetBoundingBox();
         }
 
         public override bool CanClimb(HorizontalFacing side)
@@ -290,6 +302,7 @@ namespace RogueTower
                 }
                 ladder.Replace(new Ladder(ladder.Map, ladder.X, ladder.Y, ladder.Facing));
                 ladder = newLadder;
+                new ScreenShakeRandom(World, 1, 20);
                 yield return new WaitDelta(World,3);
             }
         }

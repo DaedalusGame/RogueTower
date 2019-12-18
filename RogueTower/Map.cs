@@ -210,13 +210,7 @@ namespace RogueTower
             {
                 for (int x = 0; x < Width; x++)
                 {
-                    Tile tile = Tiles[x, y];
-                    if (!tile.Passable)
-                    {
-                        IBox box = World.Create(tile.GetBoundingBox().Offset(x*16,y*16));
-                        box.Data = tile;
-                        CollisionTiles.Add(box);
-                    }
+                    AddTileCollisions(Tiles[x, y]);
                 }
             }
 
@@ -226,6 +220,25 @@ namespace RogueTower
             CollisionTiles.Add(leftBox);
             CollisionTiles.Add(rightBox);
             CollisionTiles.Add(baseBox);
+        }
+
+        public void AddTileCollisions(Tile tile)
+        {
+            tile.AddCollisions();
+            foreach(Box box in tile.Boxes)
+            {
+                World.Add(box);
+                CollisionTiles.Add(box);
+            }
+        }
+
+        public void RemoveTileCollisions(Tile tile)
+        {
+            foreach(Box box in tile.Boxes)
+            {
+                World.Remove(box);
+                CollisionTiles.Remove(box);
+            }
         }
     }
 }
