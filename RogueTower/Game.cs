@@ -89,6 +89,7 @@ namespace RogueTower
             noiseRandom.NextBytes(NoiseBeta);
 
             SpriteLoader.Init(GraphicsDevice);
+            Scheduler.Init();
 
             RenderTarget2D pixel = new RenderTarget2D(GraphicsDevice, 1, 1);
             GraphicsDevice.SetRenderTarget(pixel);
@@ -191,6 +192,7 @@ namespace RogueTower
                 Exit();
 
             SpriteLoader.Instance.Update(gameTime);
+            Scheduler.Instance.Update();
             AudioMgr.Update();
             MouseState = Mouse.GetState();
             KeyState = Keyboard.GetState();

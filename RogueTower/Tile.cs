@@ -271,14 +271,31 @@ namespace RogueTower
             return Facing == side.Mirror();
         }
 
+        public IEnumerable<Wait> Unfold()
+        {
+            bool end = false;
+            LadderExtend ladder = this;
+            while (!end) {
+                var newLadder = ladder;
+                var bottom = GetNeighbor(0, 1);
+                if (bottom is EmptySpace)
+                {
+                    newLadder = new LadderExtend(ladder.Map, ladder.X, ladder.Y + 1, ladder.Facing);
+                    bottom.Replace(newLadder);
+                }
+                else
+                {
+                    end = true;
+                }
+                Replace(new Ladder(ladder.Map, ladder.X, ladder.Y, ladder.Facing));
+                ladder = newLadder;
+                yield return new WaitTime(10);
+            }
+        }
+
         public override void HandleTileDamage(double damagein)
         {
-            var bottom = GetNeighbor(0, 1);
-            if(bottom is EmptySpace)
-            { 
-                bottom.Replace(new LadderExtend(Map, X, Y + 1, Facing));
-                Replace(new Ladder(Map, X, Y, Facing));
-            }
+            Scheduler.Instance.Run(new Coroutine(Unfold()));
         }
     }
 }

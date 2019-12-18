@@ -228,11 +228,10 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
-            var tilesLeft = World.FindTiles(new RectangleF(Box.Bounds.Left,Box.Bounds.Y+1,1,16));
-            var tilesRight = World.FindTiles(new RectangleF(Box.Bounds.Right, Box.Bounds.Y+1, 1, 16));
-            if ((Velocity.X < 0 && !tilesLeft.Any()) || (Velocity.X > 0 && !tilesRight.Any()))
+            var tilesLeft = World.FindTiles(new RectangleF(Box.Bounds.Left,Box.Bounds.Y+1,1, Box.Bounds.Height));
+            var tilesRight = World.FindTiles(new RectangleF(Box.Bounds.Right, Box.Bounds.Y+1, 1, Box.Bounds.Height));
+            if (((Velocity.X < 0 && !tilesLeft.Any()) || (Velocity.X > 0 && !tilesRight.Any())) && !Destroyed)
             {
-                Console.WriteLine("Discrete Called");
                 Destroy();
             }
         }
@@ -246,9 +245,10 @@ namespace RogueTower
             if (hit.Box.Data is Tile tile)
             {
                 tile.HandleTileDamage(ShockwaveForce);
-                if (tile.CanDamage == false)
-                    Console.WriteLine("Tile Called");
+                if (tile.CanDamage == false && !Destroyed)
+                {
                     Destroy();
+                }
                 ShockwaveForce -= 20;
             }
             if (hit.Box.Data is Enemy enemy)
@@ -262,9 +262,8 @@ namespace RogueTower
             {
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
             }
-            if(ShockwaveForce <= 0)
+            if(ShockwaveForce <= 0 && !Destroyed)
             {
-                Console.WriteLine("Damage Called");
                 Destroy();
             }
         }
