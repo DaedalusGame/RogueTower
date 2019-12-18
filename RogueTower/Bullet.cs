@@ -26,15 +26,16 @@ namespace RogueTower
                 Box.Teleport(pos.X, pos.Y);
             }
         }
-        public virtual Vector2 BulletSize => new Vector2(8,8);
+        public Vector2 BulletSize;
         public Vector2 Velocity;
         public float Frame, FrameEnd;
         public GameObject Shooter;
 
         public override RectangleF ActivityZone => World.Bounds;
 
-        protected Bullet(GameWorld world, Vector2 position) : base(world)
+        protected Bullet(GameWorld world, Vector2 position, Vector2 size) : base(world)
         {
+            BulletSize = size;
             Create(position.X, position.Y);
         }
 
@@ -84,7 +85,7 @@ namespace RogueTower
 
     class SpellOrange : Bullet
     {
-        public SpellOrange(GameWorld world, Vector2 position) : base(world, position)
+        public SpellOrange(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
         {
         }
 
@@ -116,9 +117,7 @@ namespace RogueTower
 
     class Explosion : Bullet
     {
-        public override Vector2 BulletSize => new Vector2(32, 32);
-
-        public Explosion(GameWorld world, Vector2 position) : base(world, position)
+        public Explosion(GameWorld world, Vector2 position) : base(world, position, new Vector2(32, 32))
         {
             PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
             //HandleDamage();
@@ -150,7 +149,7 @@ namespace RogueTower
 
     class Fireball : Bullet
     {
-        public Fireball(GameWorld world, Vector2 position) : base(world, position)
+        public Fireball(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
         {
         }
 
@@ -169,7 +168,7 @@ namespace RogueTower
     {
         double knifeDamage = 15.0;
 
-        public Knife(GameWorld world, Vector2 position) : base(world, position)
+        public Knife(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
         {
         }
 
@@ -207,9 +206,8 @@ namespace RogueTower
     class Shockwave : Bullet
     {
         public float ShockwaveForce;
-        public override Vector2 BulletSize => new Vector2(8, 16);
 
-        public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position)
+        public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position, new Vector2(8, 16))
         {
             ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
         }

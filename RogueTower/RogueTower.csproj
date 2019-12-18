@@ -41,6 +41,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Coroutine.cs" />
+    <Compile Include="Scheduler.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="TileBG.cs" />
     <Compile Include="Action.cs" />
