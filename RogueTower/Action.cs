@@ -37,7 +37,7 @@ namespace RogueTower
         {
             if (player.Controls.Jump)
             {
-                Human.Velocity.Y -= Human.GetJumpVelocity(60);
+                Human.Velocity.Y -= Human.GetJumpVelocity(600);
                 PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
                 return true;
             }
@@ -1019,7 +1019,8 @@ namespace RogueTower
             }
             else
             {
-                TaggedVelocity = Human.Velocity.Y;
+                if(Human.Velocity.Y > TaggedVelocity)
+                    TaggedVelocity = Human.Velocity.Y;
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
                 Human.CurrentAction = new ActionIdle(Human);

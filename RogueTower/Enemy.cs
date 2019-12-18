@@ -144,41 +144,45 @@ namespace RogueTower
                 IsMovingVertically = false;
             }*/
 
-            if (IsMovingVertically && !cornerOnly)
+            bool panic = false;
+            if (!Incorporeal)
+                panic = HandlePanicBox(move);
+            if(!panic)
             {
-                if (hits.Any((c) => c.Normal.Y < 0))
+
+                if (IsMovingVertically && !cornerOnly)
                 {
-                    OnGround = true;
-                }
-                else
-                {
-                    OnGround = false;
+                    if (hits.Any((c) => c.Normal.Y < 0))
+                    {
+                        OnGround = true;
+                    }
+                    else
+                    {
+                        OnGround = false;
+                    }
+
+                    if (hits.Any((c) => c.Normal.Y > 0))
+                    {
+                        OnCeiling = true;
+                    }
+                    else
+                    {
+                        OnCeiling = false;
+                    }
                 }
 
-                if (hits.Any((c) => c.Normal.Y > 0))
+                if (IsMovingHorizontally && !cornerOnly)
                 {
-                    OnCeiling = true;
-                }
-                else
-                {
-                    OnCeiling = false;
+                    if (hits.Any((c) => c.Normal.X != 0))
+                    {
+                        OnWall = true;
+                    }
+                    else
+                    {
+                        OnWall = false;
+                    }
                 }
             }
-
-            if (IsMovingHorizontally && !cornerOnly)
-            {
-                if (hits.Any((c) => c.Normal.X != 0))
-                {
-                    OnWall = true;
-                }
-                else
-                {
-                    OnWall = false;
-                }
-            }
-
-            if(!Incorporeal)
-                HandlePanicBox(move);
         }
 
         protected override void UpdateDiscrete()
@@ -191,10 +195,6 @@ namespace RogueTower
             else if (OnGround) //Friction
             {
                 UpdateGroundFriction();
-                if (Velocity.Y < 0)
-                {
-
-                }
                 Velocity.Y = 0;
                 AppliedFriction = CurrentAction.Friction;
                 ExtraJumps = 0;
@@ -333,19 +333,20 @@ namespace RogueTower
             {
                 if (IgnoresCollision(collision.Hit.Box))
                     return null;
-                    //return new CrossResponse(collision);
                 return new SlideAdvancedResponse(collision);
             });
         }
 
-        private void HandlePanicBox(IMovement move)
+        private bool HandlePanicBox(IMovement move)
         {
             RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
             var found = World.FindBoxes(panicBox);
             if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
             {
                 Box.Teleport(move.Origin.X, move.Origin.Y);
+                return true;
             }
+            return false;
         }
 
         protected bool IgnoresCollision(IBox box)
