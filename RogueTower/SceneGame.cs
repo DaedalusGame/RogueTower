@@ -572,13 +572,13 @@ namespace RogueTower
                 }
             }
 
-            foreach(var box in World.Find(World.Bounds))
+            /*foreach(var box in World.Find(World.Bounds))
             {
                 Color debugColor = Color.Red;
                 if (box.Data is Enemy)
                     debugColor = Color.Lime;
                 SpriteBatch.Draw(Pixel, box.Bounds.ToRectangle(), new Color(debugColor, 0.2f));
-            }
+            }*/
             
             SpriteBatch.End();
 
@@ -586,7 +586,7 @@ namespace RogueTower
             if (gameState != GameState.Paused)
             {
                 SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
-                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocity: {World.Player.Velocity.X}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocityX: {World.Player.Velocity.X}\nVelocityY: {World.Player.Velocity.Y}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
             }
             else

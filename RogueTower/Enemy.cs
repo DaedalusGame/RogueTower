@@ -1001,8 +1001,8 @@ namespace RogueTower
                         Facing = HorizontalFacing.Right;
                     }
 
-                    if (idle.Time > 180)
-                        CurrentAction = new ActionBite(this, 40, 20, 30);
+                    //if (idle.Time > 180)
+                        //CurrentAction = new ActionBite(this, 40, 20, 30);
                 }
             }
             else

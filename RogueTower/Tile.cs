@@ -12,6 +12,7 @@ namespace RogueTower
 {
     abstract class Tile
     {
+        public GameWorld World => Map.World;
         public Map Map;
         public int X, Y;
         public bool Passable;
@@ -177,7 +178,7 @@ namespace RogueTower
             get;
         }
 
-        public bool Triggered => Map.World.Frame - LastTrigger <= RetriggerTime;
+        public bool Triggered => World.Frame - LastTrigger <= RetriggerTime;
 
         public Trap(Map map, int x, int y) : base(map, x, y)
         {
@@ -195,7 +196,7 @@ namespace RogueTower
             {
                 Trigger(human);
             }
-            LastTrigger = Map.World.Frame;
+            LastTrigger = World.Frame;
         }
     }
 
@@ -289,7 +290,7 @@ namespace RogueTower
                 }
                 ladder.Replace(new Ladder(ladder.Map, ladder.X, ladder.Y, ladder.Facing));
                 ladder = newLadder;
-                yield return new WaitTime(10);
+                yield return new WaitDelta(World,3);
             }
         }
 

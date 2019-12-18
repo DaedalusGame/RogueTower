@@ -30,6 +30,25 @@ namespace RogueTower
         }
     }
 
+    class WaitDelta : Wait
+    {
+        public GameWorld World;
+        public float Frame;
+
+        public WaitDelta(GameWorld world, float frames)
+        {
+            World = world;
+            Frame = world.Frame + frames;
+        }
+
+        public override bool Done => World.Frame >= Frame;
+
+        public override void Update()
+        {
+            //NOOP
+        }
+    }
+
     public class WaitCoroutine : Wait
     {
         Coroutine Coroutine;

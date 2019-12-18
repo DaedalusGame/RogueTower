@@ -38,6 +38,7 @@ namespace RogueTower
             if (player.Controls.Jump)
             {
                 Human.Velocity.Y -= Human.GetJumpVelocity(600);
+                Human.OnGround = false;
                 PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
                 return true;
             }
