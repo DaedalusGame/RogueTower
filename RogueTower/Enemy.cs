@@ -151,6 +151,14 @@ namespace RogueTower
             }
         }
 
+        public override void Update(float delta)
+        {
+            float modifier = 1.0f;
+            if (CurrentAction is ActionEnemyDeath)
+                modifier = 0.5f;
+            base.Update(delta * modifier);
+        }
+
         protected override void UpdateDelta(float delta)
         {
             Lifetime += delta;
@@ -646,14 +654,6 @@ namespace RogueTower
         protected override void HandleInput()
         {
             UpdateAI();
-        }
-
-        public override void Update(float delta)
-        {
-            float modifier = 1.0f;
-            if (CurrentAction is ActionEnemyDeath)
-                modifier = 0.5f;
-            base.Update(delta * modifier);
         }
 
         protected override void UpdateDelta(float delta)

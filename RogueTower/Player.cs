@@ -196,5 +196,11 @@ namespace RogueTower
         {
             //NOOP
         }
+
+        public override void Death()
+        {
+            if (!(CurrentAction is ActionEnemyDeath))
+                CurrentAction = new ActionPlayerDeath(this, 20);
+        }
     }
 }
