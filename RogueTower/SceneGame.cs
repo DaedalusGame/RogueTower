@@ -304,6 +304,8 @@ namespace RogueTower
 
         public int HeightTraversed;
 
+        public int CurrentWeaponIndex = 0;
+
         public GameState gameState = GameState.Game;
 
         private Matrix CreateViewMatrix()
@@ -328,6 +330,7 @@ namespace RogueTower
             World = new GameWorld(100, 800);
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
+            World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
             World.Player.Health = 100.0;
             World.Player.CanDamage = true;
             World.Player.SetControl(this);
@@ -357,6 +360,16 @@ namespace RogueTower
                 if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab) || (PadState.IsButtonDown(Buttons.RightStick) && LastPadState.IsButtonUp(Buttons.RightStick)))
                     GameSpeedToggle = !GameSpeedToggle;
                 World.Update(GameSpeedToggle ? 0.1f : 1.0f);
+                if (PadState.IsButtonDown(Buttons.RightTrigger) && LastPadState.IsButtonUp(Buttons.RightTrigger))
+                    {
+                    CurrentWeaponIndex = (CurrentWeaponIndex + 1) % World.Player.WeaponList.Length;
+                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                }
+                else if (PadState.IsButtonDown(Buttons.RightShoulder) && LastPadState.IsButtonUp(Buttons.RightShoulder))
+                {
+                    CurrentWeaponIndex = (CurrentWeaponIndex - 1) % World.Player.WeaponList.Length;
+                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                }
                 if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
                 {
                     gameState = GameState.Paused;

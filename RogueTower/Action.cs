@@ -1005,7 +1005,7 @@ namespace RogueTower
                 //Console.WriteLine(TaggedVelocity);
                 if (!ShockwaveFinished && floorY.HasValue)
                 {
-                    for (int i = 0; i < ShockwaveCount+1; i++)
+                    for (int i = 0; i < ShockwaveCount; i++)
                     {
                         var speed = 3 + (i >> 1) * 1.25f;
                         var shockwave = new Shockwave(Human.World, new Vector2(Human.Position.X, floorY.Value - (int)(16 * TaggedVelocity / 5) / 2f), TaggedVelocity)
