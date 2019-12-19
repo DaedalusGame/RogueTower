@@ -308,6 +308,7 @@ namespace RogueTower
 
         Healthbar Health;
         Healthbar HealthShadow;
+        public int CurrentWeaponIndex = 0;
 
         private Matrix CreateViewMatrix()
         {
@@ -332,6 +333,7 @@ namespace RogueTower
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
             World.Player.SetControl(this);
+            World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
 
             Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
@@ -361,6 +363,16 @@ namespace RogueTower
                 if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab) || (PadState.IsButtonDown(Buttons.RightStick) && LastPadState.IsButtonUp(Buttons.RightStick)))
                     GameSpeedToggle = !GameSpeedToggle;
                 World.Update(GameSpeedToggle ? 0.1f : 1.0f);
+                if (PadState.IsButtonDown(Buttons.RightTrigger) && LastPadState.IsButtonUp(Buttons.RightTrigger))
+                    {
+                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, World.Player.WeaponList.Length);
+                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                }
+                else if (PadState.IsButtonDown(Buttons.RightShoulder) && LastPadState.IsButtonUp(Buttons.RightShoulder))
+                {
+                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, World.Player.WeaponList.Length);
+                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                }
                 if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
                 {
                     gameState = GameState.Paused;
