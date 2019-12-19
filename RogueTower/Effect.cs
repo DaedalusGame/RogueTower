@@ -29,11 +29,6 @@ namespace RogueTower
         {
             //NOOP
         }
-
-        public override void ShowDamage(double damage)
-        {
-            //NOOP
-        }
     }
 
     class ScreenShake : VisualEffect

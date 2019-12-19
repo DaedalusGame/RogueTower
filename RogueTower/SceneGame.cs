@@ -306,6 +306,9 @@ namespace RogueTower
 
         public GameState gameState = GameState.Game;
 
+        Healthbar Health;
+        Healthbar HealthShadow;
+
         private Matrix CreateViewMatrix()
         {
             return Matrix.Identity
@@ -328,9 +331,10 @@ namespace RogueTower
             World = new GameWorld(100, 800);
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
-            World.Player.Health = 100.0;
-            World.Player.CanDamage = true;
             World.Player.SetControl(this);
+
+            Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
+            HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
         }
 
         public override bool ShowCursor => true;
@@ -369,6 +373,8 @@ namespace RogueTower
                     gameState = GameState.Game;
                 }
             }
+            Health.Update(1.0f);
+            HealthShadow.Update(1.0f);
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
 
             UpdateCamera();
@@ -589,21 +595,63 @@ namespace RogueTower
             //Pause Screen
             if (gameState != GameState.Paused)
             {
-                SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
+                SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, samplerState: SamplerState.PointWrap);
 
                 //This twisted game needs to be reset, and with this health bar we're one step closer to a world without undying borders.
                 //Also, please clean this up if you can, if not that's okay too lmao. - Church
 
                 //Healthbar Setup
+                var hpBarFill = SpriteLoader.Instance.AddSprite("content/hpbar");
+                var hpBarEmpty = SpriteLoader.Instance.AddSprite("content/hpbar_empty");
+                var hpBarShadow = SpriteLoader.Instance.AddSprite("content/hpbar_shadow");
+                var hpBarBlipFill = SpriteLoader.Instance.AddSprite("content/hpbar_blip");
+                var hpBarBlipEmpty = SpriteLoader.Instance.AddSprite("content/hpbar_blip_empty");
+                var hpBarBlipShadow = SpriteLoader.Instance.AddSprite("content/hpbar_blip_shadow");
                 var HUDBar = SpriteLoader.Instance.AddSprite("content/hud_bar_frame");
                 Vector2 HealthBarPos = new Vector2(GraphicsDevice.Viewport.X + 1, GraphicsDevice.Viewport.Height - (HUDBar.Height + 1));
                 int HealthWidth = (int)LerpHelper.Linear(0, HUDBar.Width - 4, MathHelper.Clamp((float)World.Player.Health, 0, 100))/100;
 
                 //HealthBar Drawing
-                DrawText(Game.ConvertToPixelText("HP"), new Vector2(HealthBarPos.X, HealthBarPos.Y - 16), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
-                DrawSpriteExt(HUDBar, 0, HealthBarPos, HUDBar.Middle, 0, new Vector2(1, 1), SpriteEffects.None, Color.White, 0);
-                SpriteBatch.Draw(Pixel, new Rectangle((int)HealthBarPos.X + 2, (int)HealthBarPos.Y+2, HealthWidth, HUDBar.Height - 4), HSVA2RGBA(MathHelper.Clamp((float)World.Player.Health, 0, 330), 1, 1, 192));
+                DrawText(Game.ConvertToPixelText("HP"), new Vector2(HealthBarPos.X, HealthBarPos.Y - 16), Alignment.Left, new TextParameters().SetColor(HSVA2RGBA(MathHelper.Clamp((float)World.Player.Health, 0, 330), 1, 1, 192), Color.Black));
+                //DrawSpriteExt(HUDBar, 0, HealthBarPos, HUDBar.Middle, 0, new Vector2(1, 1), SpriteEffects.None, Color.White, 0);
+                //SpriteBatch.Draw(Pixel, new Rectangle((int)HealthBarPos.X + 2, (int)HealthBarPos.Y+2, HealthWidth, HUDBar.Height - 4), HSVA2RGBA(MathHelper.Clamp((float)World.Player.Health, 0, 330), 1, 1, 192));
 
+                //TODO move blip code into Healthbar?
+                /*int blipsMax = 12;
+                double hpMax = World.Player.HealthMax;
+                double hp = Math.Min(Math.Max(World.Player.Health, 0), hpMax);
+                double hpBasePerBlip = 1000;
+                int blipsHpMax = Math.Min(blipsMax, (int)(hpMax / hpBasePerBlip));
+                double hpPerBlip = hpMax / (blipsHpMax+1);
+                int blipsHp = Math.Max(0,Math.Min(blipsMax, (int)Math.Ceiling(hp / hpPerBlip)-1));
+                double hpBar = hp - blipsHp * hpPerBlip;
+
+                for (int i = 0; i < blipsHpMax; i++) {
+                    DrawSprite(hpBarBlipEmpty, 0, new Vector2(HealthBarPos.X + 8*i, HealthBarPos.Y + 8), SpriteEffects.None, 0);
+                    if(i < blipsHp)
+                        DrawSprite(hpBarBlipFill, 0, new Vector2(HealthBarPos.X + 8 * i, HealthBarPos.Y + 8), SpriteEffects.None, 0);
+                }
+
+                int width = 100;
+                int widthFill = (int)Math.Round(width * (hpBar / hpPerBlip));
+                if (hpBar > 0 && widthFill <= 0)
+                    widthFill = 1;
+                if (hpBar < hpPerBlip && widthFill >= width)
+                    widthFill = width - 1;
+                SpriteBatch.Draw(hpBarEmpty.Texture, new Rectangle((int)HealthBarPos.X, (int)HealthBarPos.Y, width, hpBarEmpty.Height), new Rectangle(0, 0, width, hpBarEmpty.Height), Color.White);
+                SpriteBatch.Draw(hpBarFill.Texture, new Rectangle((int)HealthBarPos.X, (int)HealthBarPos.Y, widthFill, hpBarEmpty.Height), new Rectangle(0, 0, widthFill, hpBarEmpty.Height), Color.White);
+                //DrawText(Game.ConvertToSmallPixelText(Math.Floor(hp).ToString()), new Vector2(HealthBarPos.X, HealthBarPos.Y), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                */
+                double hpMax = World.Player.HealthMax;
+                //double hp = Math.Min(Math.Max(Health.CurrentValue, 0), hpMax);
+                double hp = Math.Min(Math.Max(World.Player.Health, 0), hpMax);
+                double hpShadow = Math.Min(Math.Max(HealthShadow.CurrentValue, 0), hpMax);
+                HealthBarParams parameters = CalculateHealthBar(12, 50, hpMax);
+
+                DrawHealthbar(hpBarBlipEmpty, hpBarEmpty, HealthBarPos, parameters.BlipsHPMax, 1.0, 100);
+                DrawHealthbar(hpBarBlipShadow, hpBarShadow, HealthBarPos, parameters.GetBlips(hpShadow), parameters.GetExtra(hpShadow) / parameters.HPPerBlip, 100);
+                DrawHealthbar(hpBarBlipFill, hpBarFill, HealthBarPos, parameters.GetBlips(hp), parameters.GetExtra(hp) / parameters.HPPerBlip, 100);
+                //DrawHealthbar(hpBarBlipFill, hpBarFill, HealthBarPos, parameters.GetBlips(hp), parameters.GetExtra(hp) / parameters.HPPerBlip, 100);
 
                 DrawText($"Tiles Ascended: {HeightTraversed}\nVelocityX: {World.Player.Velocity.X}\nVelocityY: {World.Player.Velocity.Y}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
@@ -615,6 +663,54 @@ namespace RogueTower
                 DrawText(Game.ConvertToPixelText("PAUSED"), new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2), Alignment.Center, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
             }
+        }
+
+        struct HealthBarParams
+        {
+            public HealthBarParams(int blipsMax, int blipsHPMax, double hpPerBlip)
+            {
+                BlipsMax = blipsMax;
+                BlipsHPMax = blipsHPMax;
+                HPPerBlip = hpPerBlip;
+            }
+
+            private int BlipsMax;
+            public int BlipsHPMax;
+            public double HPPerBlip;
+
+            public int GetBlips(double hp)
+            {
+                return Math.Max(0, Math.Min(BlipsMax, (int)Math.Ceiling(hp / HPPerBlip) - 1));
+            }
+
+            public double GetExtra(double hp)
+            {
+                return hp - GetBlips(hp) * HPPerBlip;
+            }
+        }
+
+        private HealthBarParams CalculateHealthBar(int blipsMax, double hpBasePerBlip, double hpMax)
+        {
+            int blipsHpMax = Math.Min(blipsMax, (int)(hpMax / hpBasePerBlip));
+            double hpPerBlip = hpMax / (blipsHpMax + 1);
+
+            return new HealthBarParams(blipsMax, blipsHpMax, hpPerBlip);
+        }
+
+        private void DrawHealthbar(SpriteReference spriteBlip, SpriteReference spriteBar, Vector2 position, int blips, double bar, int width)
+        {
+            for (int i = 0; i < blips; i++)
+            {
+                DrawSprite(spriteBlip, 0, position + new Vector2(spriteBlip.Width * i, spriteBar.Height), SpriteEffects.None, 0);
+            }
+
+            int widthFill = (int)Math.Round(width * bar);
+            if (bar > 0 && widthFill <= 0)
+                widthFill = 1;
+            if (bar < 1 && widthFill >= width)
+                widthFill = width - 1;
+
+            SpriteBatch.Draw(spriteBar.Texture, new Rectangle((int)position.X, (int)position.Y, widthFill, spriteBar.Height), new Rectangle(0, 0, widthFill, spriteBar.Height), Color.White);
         }
 
         private void DrawMapBackground(Map map)

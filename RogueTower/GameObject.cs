@@ -10,8 +10,6 @@ namespace RogueTower
     abstract class GameObject
     {
         public GameWorld World;
-        public bool CanDamage = false;
-        public double Health;
         private float LastDelta;
         public bool Destroyed
         {
@@ -60,24 +58,5 @@ namespace RogueTower
         protected abstract void UpdateDelta(float delta);
 
         protected abstract void UpdateDiscrete();
-
-        public abstract void ShowDamage(double damage);
-
-        public virtual void HandleDamage(double damageIn)
-        {
-            if(CanDamage == false)
-                return;
-            Health -= damageIn;
-            ShowDamage(damageIn);
-            if (Health <= 0)
-            {
-                Death();
-            }
-        }
-
-        public virtual void Death()
-        {
-            //NOOP
-        }
     }
 }

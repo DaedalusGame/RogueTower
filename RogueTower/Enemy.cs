@@ -30,6 +30,10 @@ namespace RogueTower
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
+        public bool CanDamage = false;
+        public double Health;
+        public double HealthMax;
+
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
             Create(position.X, position.Y);
@@ -46,9 +50,34 @@ namespace RogueTower
             Position = new Vector2(x, y);
         }
 
+        public void InitHealth(int health)
+        {
+            Health = health;
+            HealthMax = health;
+        }
+
         public virtual void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
             HandleDamage(damageIn);
+        }
+
+        public abstract void ShowDamage(double damage);
+
+        public virtual void HandleDamage(double damageIn)
+        {
+            if (CanDamage == false)
+                return;
+            Health -= damageIn;
+            ShowDamage(damageIn);
+            if (Health <= 0)
+            {
+                Death();
+            }
+        }
+
+        public virtual void Death()
+        {
+            //NOOP
         }
     }
 
@@ -434,7 +463,7 @@ namespace RogueTower
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
             CurrentAction = new ActionIdle(this);
-            Health = 80;
+            InitHealth(80);
             CanDamage = true;
         }
 
@@ -941,7 +970,7 @@ namespace RogueTower
         public Snake(GameWorld world, Vector2 position) : base(world, position)
         {
             CurrentAction = new ActionIdle(this);
-            Health = 80;
+            InitHealth(80);
             CanDamage = true;
         }
 
@@ -1308,7 +1337,7 @@ namespace RogueTower
             Speed = speed;
             Distance = distance;
             CanDamage = false;
-            Health = 240.00; //If we ever do want to make these destroyable, this is the value I propose for health.
+            InitHealth(240); //If we ever do want to make these destroyable, this is the value I propose for health.
         }
 
         public override void Create(float x, float y)

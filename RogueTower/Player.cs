@@ -136,6 +136,8 @@ namespace RogueTower
 
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
+            InitHealth(100);
+            CanDamage = true;
             Controls = new InputQueue(this);
         }
 
@@ -161,6 +163,7 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
+            Health = Math.Max(0,Math.Min(Health+0.1, HealthMax));
         }
 
         protected override void HandleInput()

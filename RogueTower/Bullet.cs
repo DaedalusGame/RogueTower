@@ -76,11 +76,6 @@ namespace RogueTower
             if (Frame >= FrameEnd)
                 Destroy();
         }
-
-        public override void ShowDamage(double damage)
-        {
-            //NOOP
-        }
     }
 
     class SpellOrange : Bullet
