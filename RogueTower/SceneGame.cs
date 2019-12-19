@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Humper.Base;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -515,7 +517,7 @@ namespace RogueTower
                 }
                 if(bullet is Shockwave shockwave)
                 {
-                    DrawSpriteExt(spriteShockwave, (int)shockwave.Frame, bullet.Position - spriteShockwave.Middle, new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (shockwave.ScalingFactor > 1) ? 1 + shockwave.ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
+                    DrawSpriteExt(spriteShockwave, (int)shockwave.Frame, bullet.Position - new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height) + new Vector2(0,bullet.Box.Height / 2), new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (shockwave.ScalingFactor > 1) ? 1 + shockwave.ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
                 }
             }
 
@@ -572,20 +574,37 @@ namespace RogueTower
                 }
             }
 
-            /*foreach(var box in World.Find(World.Bounds))
-            {
-                Color debugColor = Color.Red;
-                if (box.Data is Enemy)
-                    debugColor = Color.Lime;
-                SpriteBatch.Draw(Pixel, box.Bounds.ToRectangle(), new Color(debugColor, 0.2f));
-            }*/
-            
+            if(Keyboard.GetState().IsKeyDown(Keys.RightControl) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.LeftTrigger)) 
+            { 
+                foreach(var box in World.Find(World.Bounds))
+                {
+                    Color debugColor = Color.Red;
+                    if (box.Data is Enemy)
+                        debugColor = Color.Lime;
+                    SpriteBatch.Draw(Pixel, box.Bounds.ToRectangle(), new Color(debugColor, 0.2f));
+                }
+            }
             SpriteBatch.End();
 
             //Pause Screen
             if (gameState != GameState.Paused)
             {
                 SpriteBatch.Begin(blendState: BlendState.NonPremultiplied);
+
+                //This twisted game needs to be reset, and with this health bar we're one step closer to a world without undying borders.
+                //Also, please clean this up if you can, if not that's okay too lmao. - Church
+
+                //Healthbar Setup
+                var HUDBar = SpriteLoader.Instance.AddSprite("content/hud_bar_frame");
+                Vector2 HealthBarPos = new Vector2(GraphicsDevice.Viewport.X + 1, GraphicsDevice.Viewport.Height - (HUDBar.Height + 1));
+                int HealthWidth = (int)LerpHelper.Linear(0, HUDBar.Width - 4, MathHelper.Clamp((float)World.Player.Health, 0, 100))/100;
+
+                //HealthBar Drawing
+                DrawText(Game.ConvertToPixelText("HP"), new Vector2(HealthBarPos.X, HealthBarPos.Y - 16), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                DrawSpriteExt(HUDBar, 0, HealthBarPos, HUDBar.Middle, 0, new Vector2(1, 1), SpriteEffects.None, Color.White, 0);
+                SpriteBatch.Draw(Pixel, new Rectangle((int)HealthBarPos.X + 2, (int)HealthBarPos.Y+2, HealthWidth, HUDBar.Height - 4), HSVA2RGBA(MathHelper.Clamp((float)World.Player.Health, 0, 330), 1, 1, 192));
+
+
                 DrawText($"Tiles Ascended: {HeightTraversed}\nVelocityX: {World.Player.Velocity.X}\nVelocityY: {World.Player.Velocity.Y}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
             }

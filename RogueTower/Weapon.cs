@@ -345,7 +345,7 @@ namespace RogueTower
             }
             else if(player.Controls.AltAttack && player.InAir)
             {
-                player.CurrentAction = new ActionShockwave(player, 4, 8, this);
+                player.CurrentAction = new ActionShockwave(player, 4, 8, this, 2);
             }
         }
     }

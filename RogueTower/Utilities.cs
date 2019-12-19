@@ -232,5 +232,122 @@ namespace RogueTower
                     return new Vector2(1, 0);
             }
         }
+
+        /// <summary>
+        /// Convert HSV to RGB
+        /// h is from 0-360
+        /// s,v values are 0-1
+        /// r,g,b values are 0-255
+        /// Based upon http://ilab.usc.edu/wiki/index.php/HSV_And_H2SV_Color_Space#HSV_Transformation_C_.2F_C.2B.2B_Code_2
+        /// </summary>
+        public static Color HSVA2RGBA(double hue, double saturation, double value, int alpha)
+        {
+            // ######################################################################
+            // T. Nathan Mundhenk
+            // mundhenk@usc.edu
+            // (Editors Note: I edited this to work slightly better than the original -Church)
+            // C/C++ Macro HSV to RGB
+
+            double H = hue;
+            while (H < 0) { H += 360; };
+            while (H >= 360) { H -= 360; };
+            double R, G, B;
+            if (value <= 0)
+            { R = G = B = 0; }
+            else if (saturation <= 0)
+            {
+                R = G = B = value;
+            }
+            else
+            {
+                double hf = H / 60.0;
+                int i = (int)Math.Floor(hf);
+                double f = hf - i;
+                double pv = value * (1 - saturation);
+                double qv = value * (1 - saturation * f);
+                double tv = value * (1 - saturation * (1 - f));
+                switch (i)
+                {
+
+                    // Red is the dominant color
+
+                    case 0:
+                        R = value;
+                        G = tv;
+                        B = pv;
+                        break;
+
+                    // Green is the dominant color
+
+                    case 1:
+                        R = qv;
+                        G = value;
+                        B = pv;
+                        break;
+                    case 2:
+                        R = pv;
+                        G = value;
+                        B = tv;
+                        break;
+
+                    // Blue is the dominant color
+
+                    case 3:
+                        R = pv;
+                        G = qv;
+                        B = value;
+                        break;
+                    case 4:
+                        R = tv;
+                        G = pv;
+                        B = value;
+                        break;
+
+                    // Red is the dominant color
+
+                    case 5:
+                        R = value;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // Just in case we overshoot on our math by a little, we put these here. Since its a switch it won't slow us down at all to put these here.
+
+                    case 6:
+                        R = value;
+                        G = tv;
+                        B = pv;
+                        break;
+                    case -1:
+                        R = value;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // The color is not defined, we should throw an error.
+
+                    default:
+                        //LFATAL("i Value error in Pixel conversion, Value is %d", i);
+                        R = G = B = value; // Just pretend its black/white
+                        break;
+                }
+            }
+            var r = RGBClamp((int)(R * 255.0));
+            var g = RGBClamp((int)(G * 255.0));
+            var b = RGBClamp((int)(B * 255.0));
+            var a = RGBClamp(alpha);
+
+            return new Color(r, g, b, a);
+        }
+
+        /// <summary>
+        /// Clamp a value to 0-255
+        /// </summary>
+        public static int RGBClamp(int i)
+        {
+            if (i < 0) return 0;
+            if (i > 255) return 255;
+            return i;
+        }
     }
 }
