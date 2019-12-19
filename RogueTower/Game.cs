@@ -188,9 +188,6 @@ namespace RogueTower
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             SpriteLoader.Instance.Update(gameTime);
             Scheduler.Instance.Update();
             AudioMgr.Update();
