@@ -886,6 +886,7 @@ namespace RogueTower
             public ActionHit(Snake snake, Vector2 offset, int time) : base(snake)
             {
                 Target = snake.Head.Offset + offset;
+                Target = Math.Min(Target.Length(), 80) * Vector2.Normalize(Target);
                 Time = time;
             }
 
