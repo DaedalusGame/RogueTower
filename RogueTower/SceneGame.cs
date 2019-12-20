@@ -365,7 +365,7 @@ namespace RogueTower
                 World.Update(GameSpeedToggle ? 0.1f : 1.0f);
                 if (PadState.IsButtonDown(Buttons.RightTrigger) && LastPadState.IsButtonUp(Buttons.RightTrigger))
                     {
-                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, World.Player.WeaponList.Length);
+                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex + 1, World.Player.WeaponList.Length);
                     World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
                 }
                 else if (PadState.IsButtonDown(Buttons.RightShoulder) && LastPadState.IsButtonUp(Buttons.RightShoulder))
