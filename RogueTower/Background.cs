@@ -6,11 +6,27 @@ namespace RogueTower
     class Background
     {
         SceneGame SceneGame;
-        private SpriteReference BackgroundImage;     //The image to use
-        private Vector2 Offset;         //Offset to start drawing our image
-        public Vector2 Speed;           //Speed of movement of our parallax effect
-        public float Zoom;              //Zoom level of our image
-
+        /// <summary>
+        /// The image we use in the background.
+        /// </summary>
+        private SpriteReference BackgroundImage;
+        public Vector2 BackgroundSize;
+        /// <summary>
+        /// Offset to start drawing our image.
+        /// </summary>
+        private Vector2 Offset;
+        /// <summary>
+        /// Speed of movement of our parallax effect
+        /// </summary>
+        public Vector2 Speed;
+        /// <summary>
+        /// Do we loop this horizontally?
+        /// </summary>
+        public bool XLooping = false;
+        /// <summary>
+        /// Do we loop this vertically?
+        /// </summary>
+        public bool YLooping = false;
         private Viewport Viewport;      //Our game viewport
 
         //Calculate Rectangle dimensions, based on offset/viewport/zoom values
@@ -21,13 +37,28 @@ namespace RogueTower
             SceneGame = sceneGame;
             Viewport = sceneGame.Viewport;
             BackgroundImage = backgroundImage;
+            BackgroundSize = backgroundImage.Texture.Bounds.Size.ToVector2();
             Offset = offset;
             Speed = speed;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(BackgroundImage.Texture, new Vector2(Viewport.X, Viewport.Y), Rectangle, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            Vector2 position = new Vector2(Viewport.X, Viewport.Y);
+            Rectangle rectangle = Rectangle;
+            if (!XLooping)
+            {
+                position.X = rectangle.X;
+                rectangle.X = 0;
+                rectangle.Width = BackgroundImage.Width;
+            }
+            if (!YLooping)
+            {
+                position.Y = rectangle.Y;
+                rectangle.Y = 0;
+                rectangle.Height = BackgroundImage.Height;
+            }
+            spriteBatch.Draw(BackgroundImage.Texture, position, rectangle, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
         }
     }
 }

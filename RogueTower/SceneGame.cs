@@ -342,9 +342,10 @@ namespace RogueTower
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
 
             Backgrounds = new List<Background>();
-            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), Vector2.Zero, Vector2.Zero));
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), new Vector2(10, 10), new Vector2(0.05f, 0.10f)));
-            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(30, 30), new Vector2(0.20f, 0.20f)));
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), new Vector2(10, 10), new Vector2(0.01f, 0.10f)) {XLooping = true, YLooping = true});
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, World.Height + 380), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, World.Height + 266), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, World.Height + 299), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
         }
 
         public override bool ShowCursor => true;
@@ -435,8 +436,8 @@ namespace RogueTower
             Shader.Parameters["gradient_topright"].SetValue(bg1.ToVector4());
             Shader.Parameters["gradient_bottomleft"].SetValue(bg2.ToVector4());
             Shader.Parameters["gradient_bottomright"].SetValue(bg2.ToVector4());
-            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform * Projection);
-            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.White);
+            Shader.Parameters["WorldViewProjection"].SetValue(Projection);
+            SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
             SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointWrap);
