@@ -297,6 +297,7 @@ namespace RogueTower
         public Vector2 CameraSize => new Vector2(320, 240);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
         Matrix WorldTransform;
+        Matrix Projection;
 
         Shear DepthShear = Shear.All;
         
@@ -414,6 +415,7 @@ namespace RogueTower
 
         public override void Draw(GameTime gameTime)
         {
+            Projection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, -1);
             WorldTransform = CreateViewMatrix();
 
             IEnumerable<ScreenShake> screenShakes = World.Effects.OfType<ScreenShake>();
@@ -433,7 +435,7 @@ namespace RogueTower
             Shader.Parameters["gradient_topright"].SetValue(bg1.ToVector4());
             Shader.Parameters["gradient_bottomleft"].SetValue(bg2.ToVector4());
             Shader.Parameters["gradient_bottomright"].SetValue(bg2.ToVector4());
-            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform);
+            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform * Projection);
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.White);
             SpriteBatch.End();
 
@@ -530,6 +532,7 @@ namespace RogueTower
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
+            var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
             var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
             foreach (Bullet bullet in World.Bullets)
@@ -590,6 +593,11 @@ namespace RogueTower
                 {
                     var middle = new Vector2(8, 12);
                     DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
+                }
+                if (effect is BigFireEffect bigFireEffect)
+                {
+                    var middle = new Vector2(8, 12);
+                    DrawSpriteExt(fireBig, AnimationFrame(fireBig, bigFireEffect.Frame, bigFireEffect.FrameEnd), bigFireEffect.Position - middle, middle, bigFireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {
@@ -1002,7 +1010,23 @@ namespace RogueTower
             //transform = transform * Matrix.CreateTranslation(-origin.X-16,-origin.Y-16, 0)  * Matrix.CreateRotationZ(MathHelper.Pi * Frame * 0.00f) * Matrix.CreateScale(3.0f, 1.0f, 1.0f) * Matrix.CreateTranslation(origin.X+16, origin.Y+16, 0);
 
             SpriteBatch.End();
-            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: transform);
+
+            Matrix testMatrix = new Matrix(
+              -1, 0, 0, 0,
+              0, -1, 0, 0,
+              0, 0, -1, 0,
+              0, 0, 0, 1);
+            Vector4 testAdd = new Vector4(1, 1, 1, 0);
+
+            ColorMatrix identity = new ColorMatrix(Matrix.Identity, Vector4.Zero);
+            ColorMatrix test = new ColorMatrix(testMatrix, testAdd);
+
+            Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
+            Shader.Parameters["color_matrix"].SetValue(test.Matrix);
+            Shader.Parameters["color_add"].SetValue(test.Add);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+
+            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: transform, effect: Shader);
 
             Vector2 offset = state.Body.Offset;
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))

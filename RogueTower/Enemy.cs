@@ -84,8 +84,8 @@ namespace RogueTower
             //NOOP
         }
     }
-
-    abstract class EnemyHuman : Enemy
+    
+    abstract class EnemyGravity : Enemy
     {
         public IBox Box;
         public override Vector2 Position
@@ -102,18 +102,176 @@ namespace RogueTower
         }
         public Vector2 Velocity;
         protected Vector2 VelocityLeftover;
-        public HorizontalFacing Facing;
 
+        public virtual float Friction => 1 - (1 - 0.85f) * GroundFriction;
+        public virtual float Drag => 0.85f;
         public virtual float Gravity => 0.2f;
         public virtual float GravityLimit => 10f;
-        public virtual float Acceleration => 0.25f;
-        public virtual float SpeedLimit => 2;
         public bool OnGround;
         public bool InAir => !OnGround;
         public bool OnWall;
         public bool OnCeiling;
         public float GroundFriction = 1.0f;
         public float AppliedFriction;
+
+        public override Vector2 HomingTarget => Position;
+
+        public EnemyGravity(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
+        protected Vector2 CalculateMovement(float delta)
+        {
+            var velocity = Velocity * delta + VelocityLeftover;
+            var movement = new Vector2((int)velocity.X, (int)velocity.Y);
+
+            VelocityLeftover = velocity - movement;
+
+            return movement;
+        }
+
+        protected IMovement Move(Vector2 movement)
+        {
+            return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
+            {
+                if (IgnoresCollision(collision.Hit.Box))
+                    return null;
+                return new SlideAdvancedResponse(collision);
+            });
+        }
+
+        protected bool HandlePanicBox(IMovement move)
+        {
+            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
+            var found = World.FindBoxes(panicBox);
+            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
+            {
+                Box.Teleport(move.Origin.X, move.Origin.Y);
+                return true;
+            }
+            return false;
+        }
+
+        protected bool IgnoresCollision(IBox box)
+        {
+            return Incorporeal || box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
+        }
+
+        protected void UpdateGroundFriction()
+        {
+            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
+            if (tiles.Any())
+                GroundFriction = tiles.Max(tile => tile.Friction);
+            else
+                GroundFriction = 1.0f;
+        }
+
+        protected void HandleMovement(float delta)
+        {
+            var movement = CalculateMovement(delta);
+
+            bool IsMovingVertically = Math.Abs(movement.Y) >= 1;
+            bool IsMovingHorizontally = Math.Abs(movement.X) >= 1;
+
+            IMovement move = Move(movement);
+
+            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
+            var cornerOnly = !hits.Any() && move.Hits.Any();
+
+            /*if (move.Hits.Any() && !hits.Any())
+            {
+                IsMovingHorizontally = false;
+                IsMovingVertically = false;
+            }*/
+
+            bool panic = false;
+            if (!Incorporeal)
+                panic = HandlePanicBox(move);
+            if (!panic)
+            {
+
+                if (IsMovingVertically && !cornerOnly)
+                {
+                    if (hits.Any((c) => c.Normal.Y < 0))
+                    {
+                        OnGround = true;
+                    }
+                    else
+                    {
+                        OnGround = false;
+                    }
+
+                    if (hits.Any((c) => c.Normal.Y > 0))
+                    {
+                        OnCeiling = true;
+                    }
+                    else
+                    {
+                        OnCeiling = false;
+                    }
+                }
+
+                if (IsMovingHorizontally && !cornerOnly)
+                {
+                    if (hits.Any((c) => c.Normal.X != 0))
+                    {
+                        OnWall = true;
+                    }
+                    else
+                    {
+                        OnWall = false;
+                    }
+                }
+            }
+        }
+
+        protected void HandlePhysicsEarly()
+        {
+            if (OnCeiling)
+            {
+                HandleCeiling();
+            }
+            else if (OnGround) //Friction
+            {
+                UpdateGroundFriction();
+                Velocity.Y = 0;
+                AppliedFriction = Friction;
+            }
+            else //Drag
+            {
+                AppliedFriction = Drag;
+            }
+        }
+
+        protected void HandlePhysicsLate()
+        {
+            Velocity.X *= AppliedFriction;
+
+            if (Velocity.Y < GravityLimit)
+                Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
+        }
+
+        protected virtual void HandleGround()
+        {
+            
+        }
+
+        protected virtual void HandleCeiling()
+        {
+            Velocity.Y = 1;
+            AppliedFriction = 1;
+        }
+    }
+
+    abstract class EnemyHuman : EnemyGravity
+    {
+        public HorizontalFacing Facing;
+
+        public override float Gravity => CurrentAction.HasGravity ? base.Gravity : 0;
+        public override float Friction => CurrentAction.Friction;
+        public override float Drag => CurrentAction.Drag;
+        public virtual float Acceleration => 0.25f;
+        public virtual float SpeedLimit => 2;
         public int ExtraJumps = 0;
         public int Invincibility = 0;
         public float Lifetime;
@@ -121,7 +279,6 @@ namespace RogueTower
         public virtual bool Strafing => false;
         public override bool Attacking => CurrentAction.Attacking;
         public override bool Incorporeal => CurrentAction.Incorporeal;
-        public override Vector2 HomingTarget => Position;
         public override bool Dead => CurrentAction is ActionEnemyDeath;
 
         public Action CurrentAction;
@@ -168,95 +325,28 @@ namespace RogueTower
         {
             Lifetime += delta;
 
+            HandleMovement(delta);
+
             CurrentAction.UpdateDelta(delta);
-
-            var movement = CalculateMovement(delta);
-
-            bool IsMovingVertically = Math.Abs(movement.Y) >= 1;
-            bool IsMovingHorizontally = Math.Abs(movement.X) >= 1;
-
-            IMovement move = Move(movement);
-
-            var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
-            var cornerOnly = !hits.Any() && move.Hits.Any();
-
-            /*if (move.Hits.Any() && !hits.Any())
-            {
-                IsMovingHorizontally = false;
-                IsMovingVertically = false;
-            }*/
-
-            bool panic = false;
-            if (!Incorporeal)
-                panic = HandlePanicBox(move);
-            if(!panic)
-            {
-
-                if (IsMovingVertically && !cornerOnly)
-                {
-                    if (hits.Any((c) => c.Normal.Y < 0))
-                    {
-                        OnGround = true;
-                    }
-                    else
-                    {
-                        OnGround = false;
-                    }
-
-                    if (hits.Any((c) => c.Normal.Y > 0))
-                    {
-                        OnCeiling = true;
-                    }
-                    else
-                    {
-                        OnCeiling = false;
-                    }
-                }
-
-                if (IsMovingHorizontally && !cornerOnly)
-                {
-                    if (hits.Any((c) => c.Normal.X != 0))
-                    {
-                        OnWall = true;
-                    }
-                    else
-                    {
-                        OnWall = false;
-                    }
-                }
-            }
         }
 
         protected override void UpdateDiscrete()
         {
-            if (OnCeiling)
+            if (OnGround)
             {
-                Velocity.Y = 1;
-                AppliedFriction = 1;
-            }
-            else if (OnGround) //Friction
-            {
-                UpdateGroundFriction();
-                Velocity.Y = 0;
-                AppliedFriction = CurrentAction.Friction;
                 ExtraJumps = 0;
             }
-            else //Drag
-            {
-                AppliedFriction = CurrentAction.Drag;
-            }
 
-            if (OnWall)
+            HandlePhysicsEarly();
+
+            var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
+            if (wallTiles.Any())
             {
-                var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
-                if (wallTiles.Any())
-                {
-                    Velocity.X = 0;
-                }
-                else
-                {
-                    OnWall = false;
-                }
+                Velocity.X = 0;
+            }
+            else
+            {
+                OnWall = false;
             }
 
             if (!Incorporeal)
@@ -284,10 +374,7 @@ namespace RogueTower
             CurrentAction.UpdateDiscrete();
             HandleInput(); //For implementors
 
-            Velocity.X *= AppliedFriction;
-
-            if (CurrentAction.HasGravity && Velocity.Y < GravityLimit)
-                Velocity.Y = Math.Min(GravityLimit, Velocity.Y + Gravity); //Gravity
+            HandlePhysicsLate();
 
             if (OnGround) //Damage
             {
@@ -359,55 +446,9 @@ namespace RogueTower
 
         }
 
-        protected Vector2 CalculateMovement(float delta)
-        {
-            var velocity = Velocity * delta + VelocityLeftover;
-            var movement = new Vector2((int)velocity.X, (int)velocity.Y);
-
-            VelocityLeftover = velocity - movement;
-
-            return movement;
-        }
-
-        protected IMovement Move(Vector2 movement)
-        {
-            return Box.Move(Box.X + movement.X, Box.Y + movement.Y, collision =>
-            {
-                if (IgnoresCollision(collision.Hit.Box))
-                    return null;
-                return new SlideAdvancedResponse(collision);
-            });
-        }
-
-        private bool HandlePanicBox(IMovement move)
-        {
-            RectangleF panicBox = new RectangleF(move.Destination.X + 2, move.Destination.Y + 2, move.Destination.Width - 4, move.Destination.Height - 4);
-            var found = World.FindBoxes(panicBox);
-            if (found.Any() && found.Any(x => x != Box && !IgnoresCollision(x)))
-            {
-                Box.Teleport(move.Origin.X, move.Origin.Y);
-                return true;
-            }
-            return false;
-        }
-
-        protected bool IgnoresCollision(IBox box)
-        {
-            return Incorporeal || box.HasTag(CollisionTag.NoCollision) || box.HasTag(CollisionTag.Character);
-        }
-
         public float GetJumpVelocity(float height)
         {
             return (float)Math.Sqrt(2 * Gravity * height);
-        }
-
-        protected void UpdateGroundFriction()
-        {
-            var tiles = World.FindTiles(Box.Bounds.Offset(0, 1));
-            if (tiles.Any())
-                GroundFriction = tiles.Max(tile => tile.Friction);
-            else
-                GroundFriction = 1.0f;
         }
 
         protected void HandleDamage()
@@ -860,7 +901,7 @@ namespace RogueTower
                         bool damaged = false;
                         foreach (var box in Snake.World.FindBoxes(new RectangleF(Snake.Position + Snake.Head.Offset - maskSize/2, maskSize)))
                         {
-                            if (box == Snake.Box)
+                            if (box == Snake.Box || box.Data is Snake)
                                 continue;
                             if(box.Data is Enemy enemy)
                             {
@@ -875,6 +916,190 @@ namespace RogueTower
                         Snake.Move(Target, 0.2f);
                         break;
                 }
+            }
+        }
+
+        public class ActionSpit : Action
+        {
+            public enum BiteState
+            {
+                Start,
+                SpitStart,
+                Spit,
+                End,
+            }
+
+            public override bool MouthOpen => State == BiteState.End || State == BiteState.Spit;
+
+            public Enemy Target;
+            public BiteState State;
+            public float StartTime;
+            public float SpitStartTime;
+            public float SpitTime;
+            public float EndTime;
+            public Vector2 Offset;
+
+            public ActionSpit(Snake snake, Enemy target, Vector2 offset, float startTime, float spitStartTime, float spitTime, float endTime) : base(snake)
+            {
+                Target = target;
+                Offset = offset;
+                StartTime = startTime;
+                SpitStartTime = spitStartTime;
+                SpitTime = spitTime;
+                EndTime = endTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        StartTime -= delta;
+                        if (StartTime < 0)
+                            State = BiteState.SpitStart;
+                        break;
+                    case (BiteState.SpitStart):
+                        SpitStartTime -= delta;
+                        if (SpitStartTime < 0)
+                        {
+                            Vector2 firePosition = Snake.Position + Snake.Head.Offset + GetFacingVector(Snake.Facing) * 8;
+                            var velocity = Target.HomingTarget - firePosition;
+                            velocity = Vector2.Normalize(velocity) * 3;
+                            new Fireball(Snake.World, firePosition)
+                            {
+                                Velocity = velocity,
+                                Shooter = Snake,
+                                FrameEnd = 80,
+                            };
+                            //Fire here
+                            State = BiteState.Spit;
+                        }
+                        break;
+                    case (BiteState.Spit):
+                        SpitTime -= delta;
+                        if (SpitTime < 0)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        EndTime -= delta;
+                        if (EndTime < 0)
+                            Snake.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        Snake.Move(Offset - GetFacingVector(Snake.Facing) * 16, 0.3f);
+                        break;
+                    case (BiteState.SpitStart):
+                        var spitOffset = Offset + new Vector2(0, 12) + GetFacingVector(Snake.Facing) * 20;
+                        Snake.Move(spitOffset, 0.5f);
+                        Snake.Move(spitOffset, 0.5f);
+                        Snake.Move(spitOffset, 0.5f);
+                        break;
+                    case (BiteState.End):
+                        Snake.Move(Offset, 0.1f);
+                        break;
+                }
+            }
+        }
+
+        public class ActionBreath : Action
+        {
+            public enum BiteState
+            {
+                Start,
+                Breath,
+                End,
+            }
+
+            public override bool MouthOpen => State == BiteState.Breath || State == BiteState.End;
+
+            public BiteState State;
+            public float StartTime;
+            public float BiteTime;
+            public float EndTime;
+            public Vector2 Target;
+
+            public ActionBreath(Snake snake, float startTime, float biteTime, float endTime) : base(snake)
+            {
+                StartTime = startTime;
+                BiteTime = biteTime;
+                EndTime = endTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        StartTime -= delta;
+                        if (StartTime < 0)
+                            State = BiteState.Breath;
+                        break;
+                    case (BiteState.Breath):
+                        BiteTime -= delta;
+                        if (BiteTime < 0)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        EndTime -= delta;
+                        if (EndTime < 0)
+                            Snake.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        if (Snake.Target != null && Math.Sign(Snake.Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
+                        {
+                            FindTarget();
+                        }
+                        else
+                        {
+                            Snake.ResetState();
+                        }
+                        Snake.Move(Target, 0.5f);
+                        break;
+                    case (BiteState.Breath):
+                        Snake.Move(Target, 0.1f);
+                        Snake.Move(Target, 0.1f);
+                        if (Snake.Target != null && Math.Sign(Snake.Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
+                        {
+                            FindTarget();
+                        }
+                        var offset = GetFacingVector(Snake.Facing);
+                        if ((int)BiteTime % 3 == 0)
+                        {
+                            float angle = Snake.Random.NextFloat() * MathHelper.TwoPi;
+                            float distance = Snake.Random.NextFloat() * 3;
+                            new Fireball(Snake.World, Snake.Position + Snake.Head.Offset + offset * 8 + distance * new Vector2((float)Math.Sin(angle),(float)Math.Cos(angle)))
+                            {
+                                Velocity = offset * (Snake.Random.NextFloat() * 1.5f + 0.5f),
+                                FrameEnd = 40,
+                                Shooter = Snake,
+                            };
+                        }
+                        break;
+                    case (BiteState.End):
+                        Snake.Move(Target, 0.1f);
+                        break;
+                }
+            }
+
+            private void FindTarget()
+            {
+                var facing = GetFacingVector(Snake.Facing);
+                Target = new Vector2(Snake.Position.X + facing.X * 25, Snake.Target.Position.Y) - Snake.Position;
+                Target = Math.Min(Target.Length(), 80) * Vector2.Normalize(Target);
             }
         }
 
@@ -1038,7 +1263,12 @@ namespace RogueTower
                     }
 
                     if (idle.Time > 180)
-                        CurrentAction = new ActionBite(this, 40, 20, 30);
+                    {
+                        if (Random.NextDouble() < 0.4)
+                            CurrentAction = new ActionSpit(this, Target, new Vector2(0, -70), 60, 20, 20, 20);
+                        else
+                            CurrentAction = new ActionBite(this, 40, 20, 30);
+                    }
                 }
             }
             else
@@ -1153,13 +1383,76 @@ namespace RogueTower
         }
     }
 
-    class Hydra : Enemy
+    class Hydra : EnemyGravity
     {
-        public IBox Box;
+        public abstract class Action
+        {
+            public Hydra Hydra;
+
+            public virtual bool MouthOpen => false;
+
+            public Action(Hydra hydra)
+            {
+                Hydra = hydra;
+            }
+
+            public abstract void UpdateDelta(float delta);
+
+            public abstract void UpdateDiscrete();
+        }
+
+        public class ActionIdle : Action
+        {
+            public float Time;
+
+            public override bool MouthOpen => true;
+
+            public ActionIdle(Hydra hydra) : base(hydra)
+            {
+
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                Time += delta;
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+        }
+
+        public class ActionDeath : Action
+        {
+            public int Time;
+
+            public ActionDeath(Hydra hydra, int time) : base(hydra)
+            {
+                Time = time;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                //NOOP
+            }
+
+            public override void UpdateDiscrete()
+            {
+                Time--;
+                if (Time < 0)
+                {
+                    Hydra.Destroy();
+                }
+                var size = Hydra.Box.Bounds.Size;
+                new BigFireEffect(Hydra.World, Hydra.Position - size / 2 + new Vector2(Hydra.Random.NextFloat() * size.X, Hydra.Random.NextFloat() * size.Y), 0, 5);
+            }
+        }
 
         public Vector2 NeckPosition => Position + GetFacingVector(Facing) * 8 + new Vector2(0, -8);
 
         public List<SnakeHydra> Heads = new List<SnakeHydra>();
+        public Action CurrentAction;
 
         public HorizontalFacing Facing;
 
@@ -1168,13 +1461,18 @@ namespace RogueTower
         public override Vector2 HomingTarget => Position;
         public override bool Dead => false;
 
+        public bool InCombat => Target != null;
+
+        public Player Target;
+        public int TargetTime;
+
         public Hydra(GameWorld world, Vector2 position) : base(world, position)
         {
+            CurrentAction = new ActionIdle(this);
         }
 
         public override void Create(float x, float y)
         {
-            base.Create(x, y);
             Box = World.Create(x - 8, y - 8, 16, 16);
             Box.AddTags(CollisionTag.NoCollision);
             Box.Data = this;
@@ -1186,19 +1484,156 @@ namespace RogueTower
             }
         }
 
+        public override void Destroy()
+        {
+            base.Destroy();
+            foreach (var head in Heads)
+            {
+                head.Destroy();
+            }
+            World.Remove(Box);
+        }
+
         public override void ShowDamage(double damage)
         {
             //NOOP
         }
 
+        private void Walk(float dx)
+        {
+            float adjustedSpeedLimit = 1;
+            float baseAcceleraton = 0.03f;
+            if (OnGround)
+                baseAcceleraton *= GroundFriction;
+            /*if (Math.Sign(-dx) == GetFacingVector(Facing).X)
+            {
+                adjustedSpeedLimit *= 0.8f;
+                baseAcceleraton *= 0.5f;
+            }*/
+            float acceleration = baseAcceleraton;
+
+            if (dx < 0 && Velocity.X > -adjustedSpeedLimit)
+                Velocity.X = Math.Max(Velocity.X - acceleration, -adjustedSpeedLimit);
+            if (dx > 0 && Velocity.X < adjustedSpeedLimit)
+                Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                AppliedFriction = 1;
+        }
+
+        private void WalkConstrained(float dx) //Same as walk but don't jump off cliffs
+        {
+            float offset = Math.Sign(dx);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                offset *= Math.Max(1, Math.Abs(Velocity.X));
+            var floor = World.FindTiles(Box.Bounds.Offset(new Vector2(16 * offset, 1)));
+            if (!floor.Any())
+                return;
+            Walk(dx);
+        }
+
+        private void UpdateAI()
+        {
+            var viewSize = new Vector2(200, 50);
+            RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
+
+            if (viewArea.Contains(World.Player.Position))
+            {
+                Target = World.Player;
+                TargetTime = 200;
+            }
+            else
+            {
+                TargetTime--;
+                if (TargetTime <= 0)
+                    Target = null;
+            }
+
+            foreach (var head in Heads)
+            {
+                head.Target = Target;
+            }
+
+            if (Target != null) //Engaged
+            {
+                float dx = Target.Position.X - Position.X;
+                float dy = Target.Position.Y - Position.Y;
+
+                if(CurrentAction is ActionDeath)
+                {
+
+                }
+                else
+                {
+                    if (dx < 0)
+                        Facing = HorizontalFacing.Left;
+                    else if (dx > 0)
+                        Facing = HorizontalFacing.Right;
+
+                    foreach(var head in Heads)
+                    {
+                        head.Facing = Facing;
+                        if (head.CurrentAction is Snake.ActionIdle idle && idle.Time > 80)
+                        {
+                            SelectAttack(head);
+                        }
+                    }
+
+                    float moveOffset = -Math.Sign(dx) * Target.Velocity.X * 32;
+                    float preferredDistanceMin = 60 + moveOffset;
+                    float preferredDistanceMax = 90 + moveOffset;
+                    if (Math.Abs(dx) > preferredDistanceMax)
+                    {
+                        WalkConstrained(dx);
+                    }
+                    if (Math.Abs(dx) < preferredDistanceMin)
+                    {
+                        WalkConstrained(-dx);
+                    }
+                }
+            }
+            else //Idle
+            {
+                
+            }
+        }
+
+        private void SelectAttack(SnakeHydra head)
+        {
+            head.CurrentAction = new Snake.ActionBite(head, 60 + Random.Next(60), 20, 60 + Random.Next(60));
+            head.CurrentAction = new Snake.ActionBreath(head, 80, 120, 60);
+        }
+
         protected override void UpdateDelta(float delta)
         {
-            //NOOP
+            HandleMovement(delta);
+
+            CurrentAction.UpdateDelta(delta);
+
+            var movement = CalculateMovement(delta);
+
+            IMovement move = Move(movement);
         }
 
         protected override void UpdateDiscrete()
         {
-            //NOOP
+            HandlePhysicsEarly();
+
+            CurrentAction.UpdateDiscrete();
+
+            UpdateAI();
+
+            HandlePhysicsLate();
+
+            if (Heads.All(x => x.Destroyed))
+            {
+                Death();
+            }
+        }
+
+        public override void Death()
+        {
+            if(!(CurrentAction is ActionDeath))
+                CurrentAction = new ActionDeath(this,100);
         }
     }
 
