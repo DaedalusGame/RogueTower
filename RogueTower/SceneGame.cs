@@ -293,9 +293,9 @@ namespace RogueTower
         GameWorld World;
         public Map Map => World.Map;
 
-        Vector2 Camera;
-        Vector2 CameraSize => new Vector2(320, 240);
-        Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
+        public Vector2 Camera;
+        public Vector2 CameraSize => new Vector2(320, 240);
+        public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
         Matrix WorldTransform;
 
         Shear DepthShear = Shear.All;
@@ -309,6 +309,8 @@ namespace RogueTower
         Healthbar Health;
         Healthbar HealthShadow;
         public int CurrentWeaponIndex = 0;
+
+        List<Background> Backgrounds;
 
         private Matrix CreateViewMatrix()
         {
@@ -337,6 +339,11 @@ namespace RogueTower
 
             Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
+
+            Backgrounds = new List<Background>();
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), Vector2.Zero, Vector2.Zero));
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), new Vector2(10, 10), new Vector2(0.05f, 0.10f)));
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(30, 30), new Vector2(0.20f, 0.20f)));
         }
 
         public override bool ShowCursor => true;
@@ -418,7 +425,7 @@ namespace RogueTower
             }
 
             //Background Gradient
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, transformMatrix: WorldTransform, effect: Shader);
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, effect: Shader);
             Color bg1 = new Color(32, 19, 48);
             Color bg2 = new Color(126, 158, 153);
             Shader.CurrentTechnique = Shader.Techniques["Gradient"];
@@ -428,6 +435,13 @@ namespace RogueTower
             Shader.Parameters["gradient_bottomright"].SetValue(bg2.ToVector4());
             Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform);
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)World.Width, (int)World.Height), Color.White);
+            SpriteBatch.End();
+
+            SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointWrap);
+            foreach(Background bg in Backgrounds)
+            {
+                bg.Draw(SpriteBatch);
+            }
             SpriteBatch.End();
 
             StartNormalBatch();
