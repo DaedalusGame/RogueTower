@@ -919,6 +919,190 @@ namespace RogueTower
             }
         }
 
+        public class ActionSpit : Action
+        {
+            public enum BiteState
+            {
+                Start,
+                SpitStart,
+                Spit,
+                End,
+            }
+
+            public override bool MouthOpen => State == BiteState.End || State == BiteState.Spit;
+
+            public Enemy Target;
+            public BiteState State;
+            public float StartTime;
+            public float SpitStartTime;
+            public float SpitTime;
+            public float EndTime;
+            public Vector2 Offset;
+
+            public ActionSpit(Snake snake, Enemy target, Vector2 offset, float startTime, float spitStartTime, float spitTime, float endTime) : base(snake)
+            {
+                Target = target;
+                Offset = offset;
+                StartTime = startTime;
+                SpitStartTime = spitStartTime;
+                SpitTime = spitTime;
+                EndTime = endTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        StartTime -= delta;
+                        if (StartTime < 0)
+                            State = BiteState.SpitStart;
+                        break;
+                    case (BiteState.SpitStart):
+                        SpitStartTime -= delta;
+                        if (SpitStartTime < 0)
+                        {
+                            Vector2 firePosition = Snake.Position + Snake.Head.Offset + GetFacingVector(Snake.Facing) * 8;
+                            var velocity = Target.HomingTarget - firePosition;
+                            velocity = Vector2.Normalize(velocity) * 3;
+                            new Fireball(Snake.World, firePosition)
+                            {
+                                Velocity = velocity,
+                                Shooter = Snake,
+                                FrameEnd = 80,
+                            };
+                            //Fire here
+                            State = BiteState.Spit;
+                        }
+                        break;
+                    case (BiteState.Spit):
+                        SpitTime -= delta;
+                        if (SpitTime < 0)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        EndTime -= delta;
+                        if (EndTime < 0)
+                            Snake.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        Snake.Move(Offset - GetFacingVector(Snake.Facing) * 16, 0.3f);
+                        break;
+                    case (BiteState.SpitStart):
+                        var spitOffset = Offset + new Vector2(0, 12) + GetFacingVector(Snake.Facing) * 20;
+                        Snake.Move(spitOffset, 0.5f);
+                        Snake.Move(spitOffset, 0.5f);
+                        Snake.Move(spitOffset, 0.5f);
+                        break;
+                    case (BiteState.End):
+                        Snake.Move(Offset, 0.1f);
+                        break;
+                }
+            }
+        }
+
+        public class ActionBreath : Action
+        {
+            public enum BiteState
+            {
+                Start,
+                Breath,
+                End,
+            }
+
+            public override bool MouthOpen => State == BiteState.Breath || State == BiteState.End;
+
+            public BiteState State;
+            public float StartTime;
+            public float BiteTime;
+            public float EndTime;
+            public Vector2 Target;
+
+            public ActionBreath(Snake snake, float startTime, float biteTime, float endTime) : base(snake)
+            {
+                StartTime = startTime;
+                BiteTime = biteTime;
+                EndTime = endTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        StartTime -= delta;
+                        if (StartTime < 0)
+                            State = BiteState.Breath;
+                        break;
+                    case (BiteState.Breath):
+                        BiteTime -= delta;
+                        if (BiteTime < 0)
+                            State = BiteState.End;
+                        break;
+                    case (BiteState.End):
+                        EndTime -= delta;
+                        if (EndTime < 0)
+                            Snake.ResetState();
+                        break;
+                }
+            }
+
+            public override void UpdateDiscrete()
+            {
+                switch (State)
+                {
+                    case (BiteState.Start):
+                        if (Snake.Target != null && Math.Sign(Snake.Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
+                        {
+                            FindTarget();
+                        }
+                        else
+                        {
+                            Snake.ResetState();
+                        }
+                        Snake.Move(Target, 0.5f);
+                        break;
+                    case (BiteState.Breath):
+                        Snake.Move(Target, 0.1f);
+                        Snake.Move(Target, 0.1f);
+                        if (Snake.Target != null && Math.Sign(Snake.Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
+                        {
+                            FindTarget();
+                        }
+                        var offset = GetFacingVector(Snake.Facing);
+                        if ((int)BiteTime % 3 == 0)
+                        {
+                            float angle = Snake.Random.NextFloat() * MathHelper.TwoPi;
+                            float distance = Snake.Random.NextFloat() * 3;
+                            new Fireball(Snake.World, Snake.Position + Snake.Head.Offset + offset * 8 + distance * new Vector2((float)Math.Sin(angle),(float)Math.Cos(angle)))
+                            {
+                                Velocity = offset * (Snake.Random.NextFloat() * 1.5f + 0.5f),
+                                FrameEnd = 40,
+                                Shooter = Snake,
+                            };
+                        }
+                        break;
+                    case (BiteState.End):
+                        Snake.Move(Target, 0.1f);
+                        break;
+                }
+            }
+
+            private void FindTarget()
+            {
+                var facing = GetFacingVector(Snake.Facing);
+                Target = new Vector2(Snake.Position.X + facing.X * 25, Snake.Target.Position.Y) - Snake.Position;
+                Target = Math.Min(Target.Length(), 80) * Vector2.Normalize(Target);
+            }
+        }
+
         public class ActionHit : Action
         {
             public int Time;
@@ -1079,7 +1263,12 @@ namespace RogueTower
                     }
 
                     if (idle.Time > 180)
-                        CurrentAction = new ActionBite(this, 40, 20, 30);
+                    {
+                        if (Random.NextDouble() < 0.4)
+                            CurrentAction = new ActionSpit(this, Target, new Vector2(0, -70), 60, 20, 20, 20);
+                        else
+                            CurrentAction = new ActionBite(this, 40, 20, 30);
+                    }
                 }
             }
             else
@@ -1316,6 +1505,11 @@ namespace RogueTower
             float baseAcceleraton = 0.03f;
             if (OnGround)
                 baseAcceleraton *= GroundFriction;
+            /*if (Math.Sign(-dx) == GetFacingVector(Facing).X)
+            {
+                adjustedSpeedLimit *= 0.8f;
+                baseAcceleraton *= 0.5f;
+            }*/
             float acceleration = baseAcceleraton;
 
             if (dx < 0 && Velocity.X > -adjustedSpeedLimit)
@@ -1378,10 +1572,9 @@ namespace RogueTower
                     foreach(var head in Heads)
                     {
                         head.Facing = Facing;
-                        if(head.CurrentAction is Snake.ActionIdle idle && idle.Time > 80)
+                        if (head.CurrentAction is Snake.ActionIdle idle && idle.Time > 80)
                         {
-                            head.Target = Target;
-                            head.CurrentAction = new Snake.ActionBite(head, 30 + Random.Next(60), 20, 30 + Random.Next(60));
+                            SelectAttack(head);
                         }
                     }
 
@@ -1402,6 +1595,12 @@ namespace RogueTower
             {
                 
             }
+        }
+
+        private void SelectAttack(SnakeHydra head)
+        {
+            head.CurrentAction = new Snake.ActionBite(head, 60 + Random.Next(60), 20, 60 + Random.Next(60));
+            head.CurrentAction = new Snake.ActionBreath(head, 80, 120, 60);
         }
 
         protected override void UpdateDelta(float delta)
