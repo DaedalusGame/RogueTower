@@ -175,6 +175,13 @@ namespace RogueTower
         }
     }
 
+    class BigFireEffect : FireEffect
+    {
+        public BigFireEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, angle, time)
+        {
+        }
+    }
+
     class KnifeBounced : Particle
     {
         public Vector2 Velocity;

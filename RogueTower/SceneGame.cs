@@ -516,6 +516,7 @@ namespace RogueTower
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
+            var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
             var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
             foreach (Bullet bullet in World.Bullets)
@@ -576,6 +577,11 @@ namespace RogueTower
                 {
                     var middle = new Vector2(8, 12);
                     DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
+                }
+                if (effect is BigFireEffect bigFireEffect)
+                {
+                    var middle = new Vector2(8, 12);
+                    DrawSpriteExt(fireBig, AnimationFrame(fireBig, bigFireEffect.Frame, bigFireEffect.FrameEnd), bigFireEffect.Position - middle, middle, bigFireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {
