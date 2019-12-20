@@ -136,7 +136,7 @@ namespace RogueTower
             {
                 if (box.Data is Enemy enemy && box.Data != Shooter)
                 {
-                    enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 100);
+                    enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
                 }
             }
         }
