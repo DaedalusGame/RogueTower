@@ -394,12 +394,15 @@ namespace RogueTower
 
         public void UpdateCamera()
         {
-            Camera.X = World.Player.Position.X;
-            float cameraDistance = World.Player.Position.Y - Camera.Y;
-            if (cameraDistance > 30)
-                Camera.Y = World.Player.Position.Y - 30;
-            if (cameraDistance < -30)
-                Camera.Y = World.Player.Position.Y + 30;
+            if (!World.Player.Dead)
+            {
+                Camera.X = World.Player.Position.X;
+                float cameraDistance = World.Player.Position.Y - Camera.Y;
+                if (cameraDistance > 30)
+                    Camera.Y = World.Player.Position.Y - 30;
+                if (cameraDistance < -30)
+                    Camera.Y = World.Player.Position.Y + 30;
+            }
         }
 
         public override void Draw(GameTime gameTime)

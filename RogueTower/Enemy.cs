@@ -27,6 +27,10 @@ namespace RogueTower
         {
             get;
         }
+        public abstract bool Dead
+        {
+            get;
+        } 
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -118,6 +122,7 @@ namespace RogueTower
         public override bool Attacking => CurrentAction.Attacking;
         public override bool Incorporeal => CurrentAction.Incorporeal;
         public override Vector2 HomingTarget => Position;
+        public override bool Dead => CurrentAction is ActionEnemyDeath;
 
         public Action CurrentAction;
 
@@ -149,6 +154,14 @@ namespace RogueTower
             {
                 CurrentAction = new ActionJump(this, true, true);
             }
+        }
+
+        public override void Update(float delta)
+        {
+            float modifier = 1.0f;
+            if (CurrentAction is ActionEnemyDeath)
+                modifier = 0.5f;
+            base.Update(delta * modifier);
         }
 
         protected override void UpdateDelta(float delta)
@@ -411,7 +424,7 @@ namespace RogueTower
                 slash.Swing();
                 return;
             }
-            if (Invincibility > 0)
+            if (Invincibility > 0 || Dead)
                 return;
             if (CurrentAction is ActionClimb)
                 Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
@@ -648,14 +661,6 @@ namespace RogueTower
             UpdateAI();
         }
 
-        public override void Update(float delta)
-        {
-            float modifier = 1.0f;
-            if (CurrentAction is ActionEnemyDeath)
-                modifier = 0.5f;
-            base.Update(delta * modifier);
-        }
-
         protected override void UpdateDelta(float delta)
         {
             if (Active)
@@ -881,6 +886,7 @@ namespace RogueTower
             public ActionHit(Snake snake, Vector2 offset, int time) : base(snake)
             {
                 Target = snake.Head.Offset + offset;
+                Target = Math.Min(Target.Length(), 80) * Vector2.Normalize(Target);
                 Time = time;
             }
 
@@ -956,6 +962,7 @@ namespace RogueTower
         public override bool Attacking => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position + Head.Offset;
+        public override bool Dead => CurrentAction is ActionDeath;
 
         public virtual Vector2 IdleOffset => -10 * GetFacingVector(Facing) + new Vector2(0, InCombat ? -30 : -15);
         public virtual Vector2 IdleCircle => InCombat ? new Vector2(20 * GetFacingVector(Facing).X, 10) : new Vector2(10 * GetFacingVector(Facing).X, 5);
@@ -1030,8 +1037,8 @@ namespace RogueTower
                         Facing = HorizontalFacing.Right;
                     }
 
-                    //if (idle.Time > 180)
-                        //CurrentAction = new ActionBite(this, 40, 20, 30);
+                    if (idle.Time > 180)
+                        CurrentAction = new ActionBite(this, 40, 20, 30);
                 }
             }
             else
@@ -1090,7 +1097,7 @@ namespace RogueTower
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
-            if (Invincibility > 0)
+            if (Invincibility > 0 || Dead)
                 return;
             Invincibility = invincibility/10;
             CurrentAction = new ActionHit(this, velocity * 4, hurttime);
@@ -1159,6 +1166,7 @@ namespace RogueTower
         public override bool Attacking => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
+        public override bool Dead => false;
 
         public Hydra(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -1206,6 +1214,7 @@ namespace RogueTower
         public override bool Attacking => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
+        public override bool Dead => false;
 
         public FireState State;
         public float Angle = 0;
@@ -1330,6 +1339,7 @@ namespace RogueTower
         public override bool Attacking => true;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
+        public override bool Dead => false;
 
         public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world, position)
         {

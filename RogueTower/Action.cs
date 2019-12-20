@@ -37,7 +37,7 @@ namespace RogueTower
         {
             if (player.Controls.Jump)
             {
-                Human.Velocity.Y -= Human.GetJumpVelocity(600);
+                Human.Velocity.Y -= Human.GetJumpVelocity(60);
                 Human.OnGround = false;
                 PlaySFX(sfx_player_jump, 0.5f, 0.1f, 0.5f);
                 return true;
@@ -324,10 +324,30 @@ namespace RogueTower
             Time--;
             if (Time <= 0)
             {
-                Human.Destroy();
+                Cleanup();
             }
             Vector2 pos = new Vector2(Human.Box.X + Human.Random.NextFloat() * Human.Box.Width, Human.Box.Y + Human.Random.NextFloat() * Human.Box.Height);
             new FireEffect(Human.World, pos, 0, 5);
+        }
+
+        protected virtual void Cleanup()
+        {
+            Human.Destroy();
+        }
+    }
+
+    class ActionPlayerDeath : ActionEnemyDeath
+    {
+        public ActionPlayerDeath(EnemyHuman player, int time) : base(player, time)
+        {
+        }
+
+        protected override void Cleanup()
+        {
+            Human.Position = new Vector2(50, Human.World.Height - 50);
+            Human.Velocity = Vector2.Zero;
+            Human.ResetState();
+            Human.Health = Human.HealthMax;
         }
     }
 

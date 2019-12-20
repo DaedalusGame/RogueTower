@@ -172,7 +172,7 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
-            Health = Math.Max(0,Math.Min(Health+0.1, HealthMax));
+            //Health = Math.Max(0,Math.Min(Health+0.1, HealthMax));
         }
 
         protected override void HandleInput()
@@ -195,6 +195,12 @@ namespace RogueTower
         public override void SetPhenoType(PlayerState pose)
         {
             //NOOP
+        }
+
+        public override void Death()
+        {
+            if (!(CurrentAction is ActionEnemyDeath))
+                CurrentAction = new ActionPlayerDeath(this, 100);
         }
     }
 }
