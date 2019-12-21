@@ -138,14 +138,14 @@ namespace RogueTower
                 new MoaiMan(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
             }
 
-            for (int i = 0; i < 50; i++)
+            /*for (int i = 0; i < 50; i++)
             {
                 int select = random.Next(floors.Count);
                 Tile pickWall = floors[select];
                 floors.RemoveAt(select);
 
                 new Hydra(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
-            }
+            }*/
         }
 
         public void BuildLadder(int ladderx, int laddery, int ladderheight, HorizontalFacing ladderfacing)

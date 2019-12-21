@@ -192,11 +192,15 @@ namespace RogueTower
             }
             if (type == "snake")
             {
+                bool flipped = entity["flippedX"].ToObject<bool>();
                 var snake = new Snake(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                snake.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
             if (type == "hydra")
             {
+                bool flipped = entity["flippedX"].ToObject<bool>();
                 var hydra = new Hydra(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                hydra.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
         }
 
