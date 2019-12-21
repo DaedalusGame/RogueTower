@@ -290,11 +290,11 @@ namespace RogueTower
     {
         const float ViewScale = 2f;
 
-        GameWorld World;
+        public GameWorld World;
         public Map Map => World.Map;
 
         public Vector2 Camera;
-        public Vector2 CameraSize => new Vector2(320, 240);
+        public Vector2 CameraSize => new Vector2(Viewport.Width / 2, Viewport.Height / 2);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
         Matrix WorldTransform;
         Matrix Projection;
@@ -342,16 +342,29 @@ namespace RogueTower
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
 
             Backgrounds = new List<Background>();
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), new Vector2(10, 10), new Vector2(0.01f, 0.10f)) {XLooping = true, YLooping = true});
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, World.Height + 380), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, World.Height + 266), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, World.Height + 299), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), () => new Vector2(10, 10), new Vector2(0.10f, 0.02f)) {XLooping = true, YLooping = true});
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, 192 - 114), new Vector2(-0.2f, 0.4f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 0), new Vector2(-0.2f, 0.4f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
+
+
+            //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, 0), new Vector2(-1.0f, -1.0f)) { XLooping = true, YLooping = false });
+
         }
 
         public override bool ShowCursor => true;
 
+        private void AddGroundBackground(SpriteReference sprite, Vector2 offset, Vector2 speed)
+        {
+            Backgrounds.Add(new Background(this, sprite, () => new Vector2(offset.X, World.Height - offset.Y - (World.Height - CameraSize.Y) * speed.Y), speed) { XLooping = true, YLooping = false });
+        }
+
         private Vector2 FitCamera(Vector2 camera)
         {
+            //camera = Vector2.Zero;
             if (camera.X < 0)
                 camera.X = 0;
             if (camera.Y < 0)
@@ -440,7 +453,7 @@ namespace RogueTower
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
-            SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointWrap);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, samplerState: SamplerState.PointWrap, transformMatrix: WorldTransform);
             foreach(Background bg in Backgrounds)
             {
                 bg.Draw(SpriteBatch);
