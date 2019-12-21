@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace RogueTower
 {
@@ -14,7 +15,7 @@ namespace RogueTower
         /// <summary>
         /// Offset to start drawing our image.
         /// </summary>
-        private Vector2 Offset;
+        private Func<Vector2> Offset;
         /// <summary>
         /// Speed of movement of our parallax effect
         /// </summary>
@@ -27,15 +28,16 @@ namespace RogueTower
         /// Do we loop this vertically?
         /// </summary>
         public bool YLooping = false;
-        private Viewport Viewport;      //Our game viewport
+        private GameWorld World => SceneGame.World;
+        private Viewport Viewport => SceneGame.Viewport;      //Our game viewport
 
+        private Vector2 CurrentOffset => Offset();
         //Calculate Rectangle dimensions, based on offset/viewport/zoom values
-        private Rectangle Rectangle => new Rectangle((int)(Speed.X * SceneGame.Camera.X + Offset.X), (int)(Speed.Y * SceneGame.Camera.Y + Offset.Y), (int)(Viewport.Width), (int)(Viewport.Height));
+        private Rectangle Rectangle => new Rectangle((int)(Speed.X * SceneGame.CameraPosition.X + CurrentOffset.X), (int)(Speed.Y * SceneGame.CameraPosition.Y + CurrentOffset.Y), World.Width, World.Height);
 
-        public Background(SceneGame sceneGame, SpriteReference backgroundImage, Vector2 offset, Vector2 speed)
+        public Background(SceneGame sceneGame, SpriteReference backgroundImage, Func<Vector2> offset, Vector2 speed)
         {
             SceneGame = sceneGame;
-            Viewport = sceneGame.Viewport;
             BackgroundImage = backgroundImage;
             BackgroundSize = backgroundImage.Texture.Bounds.Size.ToVector2();
             Offset = offset;
@@ -44,7 +46,7 @@ namespace RogueTower
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Vector2 position = new Vector2(Viewport.X, Viewport.Y);
+            Vector2 position = new Vector2(0, 0);
             Rectangle rectangle = Rectangle;
             if (!XLooping)
             {
