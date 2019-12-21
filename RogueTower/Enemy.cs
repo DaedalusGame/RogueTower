@@ -176,7 +176,7 @@ namespace RogueTower
             IMovement move = Move(movement);
 
             var hits = move.Hits.Where(c => c.Normal != Vector2.Zero && !IgnoresCollision(c.Box));
-            var cornerOnly = !hits.Any() && move.Hits.Any();
+            var cornerOnly = !move.Hits.Any(c => c.Normal != Vector2.Zero) && move.Hits.Any();
 
             /*if (move.Hits.Any() && !hits.Any())
             {
