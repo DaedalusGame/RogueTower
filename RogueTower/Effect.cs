@@ -116,6 +116,12 @@ namespace RogueTower
         }
     }
 
+    class PunchEffectStraight : SlashEffectRound
+    {
+        public PunchEffectStraight(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, anchor, size, angle, mirror, time)
+        {
+        }
+    }
     abstract class Particle : VisualEffect
     {
         public virtual Vector2 Position

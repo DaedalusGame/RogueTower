@@ -276,6 +276,8 @@ namespace RogueTower
         public int Invincibility = 0;
         public float Lifetime;
 
+        public Weapon Weapon;
+
         public virtual bool Strafing => false;
         public override bool Attacking => CurrentAction.Attacking;
         public override bool Incorporeal => CurrentAction.Incorporeal;
@@ -509,13 +511,15 @@ namespace RogueTower
         public Player Target;
         public int TargetTime;
 
-        public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
-
         IdleState Idle;
         int IdleTime;
 
         public MoaiMan(GameWorld world, Vector2 position) : base(world, position)
         {
+            //Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
+            //Weapon = new WeaponUnarmed(10, 14, new Vector2(7, 28));
+
+            Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
             CanDamage = true;
@@ -606,6 +610,10 @@ namespace RogueTower
                 {
                     OnWall = false;
                 }
+                else if (CurrentAction is ActionStealWeapon)
+                {
+                    AttackCooldown--;
+                }
                 else
                 {
                     if (dx < 0)
@@ -641,7 +649,7 @@ namespace RogueTower
                     var attackSize = new Vector2(40, 30);
                     var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
                     bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
-                    if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3)
+                    if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3 && Weapon is WeaponWandOrange)
                     {
                         CurrentAction = new ActionWandBlast(this, Target, 24, 12, Weapon);
                         RangedCooldown = 60 + Random.Next(40);
@@ -649,7 +657,14 @@ namespace RogueTower
                     else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
                     {
                         Velocity.X += Math.Sign(dx) * 2;
-                        CurrentAction = new ActionTwohandSlash(this, 3, 12, Weapon);
+                        if (Weapon is WeaponUnarmed && !(Target.Weapon is WeaponUnarmed))
+                        {
+                            CurrentAction = new ActionStealWeapon(this, Target, 4, 8);
+                        }
+                        else 
+                        {
+                            CurrentAction = new ActionTwohandSlash(this, 3, 12, Weapon);
+                        }
                         AttackCooldown = 30;
                     }
                 }

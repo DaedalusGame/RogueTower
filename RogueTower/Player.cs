@@ -126,18 +126,8 @@ namespace RogueTower
         //public Weapon Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
         //public Weapon Weapon = new WeaponRapier(15, 20, new Vector2(10, 40));
         //public Weapon Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
+        //public Weapon Weapon = new WeaponUnarmed(10, 14, new Vector2(7, 28));
         //public Weapon Weapon = new WeaponLance(20, 38, new Vector2(19, 76));
-        public Weapon[] WeaponList =
-        {
-            new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2)),
-            new WeaponKatana(15, 20, new Vector2(10, 40)),
-            new WeaponRapier(15, 20, new Vector2(10, 40)),
-            new WeaponWandOrange(10, 16, new Vector2(8, 32)),
-            new WeaponLance(20, 38, new Vector2(19, 76)),
-            new WeaponWarhammer(30, 36, new Vector2(18, 72))
-
-        };
-        public Weapon Weapon;
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;
 
@@ -148,6 +138,7 @@ namespace RogueTower
             InitHealth(100);
             CanDamage = true;
             Controls = new InputQueue(this);
+            //Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
         }
 
         public override void Create(float x, float y)

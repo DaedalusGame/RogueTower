@@ -26,6 +26,16 @@ namespace RogueTower
             SwingSize = swingSize;
         }
 
+        public static Weapon[] PresetWeaponList =
+        {
+            new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2)),
+            new WeaponKatana(15, 20, new Vector2(10, 40)),
+            new WeaponRapier(15, 20, new Vector2(10, 40)),
+            new WeaponWandOrange(10, 16, new Vector2(8, 32)),
+            new WeaponLance(20, 38, new Vector2(19, 76)),
+            new WeaponWarhammer(30, 36, new Vector2(18, 72)),
+            new WeaponUnarmed(10, 14, new Vector2(14, 10))
+        };
         public Vector2 Input2Direction(Player player)
         {
             int up = player.Controls.ClimbUp ? -1 : 0;
@@ -100,6 +110,44 @@ namespace RogueTower
         public void ChargeAttack(Player player, float chargeTime, Action chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
         {
             player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this, slowDown, slowDownAmount);
+        }
+    }
+
+    class WeaponUnarmed : Weapon
+    {
+        public EnemyHuman Target;
+        public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.5f)
+        {
+            CanParry = false;
+        }
+
+        public override WeaponState GetWeaponState(float angle)
+        {
+            return WeaponState.None;
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                if (player.CurrentAction.GetType() == typeof(ActionPunch))
+                    player.CurrentAction = new ActionLeftPunch(player, 4, 8, this);
+                else
+                    player.CurrentAction = new ActionPunch(player, 4, 8, this);
+            }
+            else if(player.Controls.AltAttack){
+
+                RectangleF searchBox = new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (WeaponSize.X / 2) + new Vector2(0, 1) - WeaponSize / 2f, WeaponSize);
+                new RectangleDebug(player.World, searchBox, Color.Pink, 10);
+                foreach (var box in player.World.FindBoxes(searchBox))
+                {
+                    if(box.Data is EnemyHuman human && !(human.Weapon is WeaponUnarmed) && !(human is Player))
+                    {
+                        player.CurrentAction = new ActionStealWeapon(player, human, 4, 8);
+                        break;
+                    }
+                }
+            }
         }
     }
 

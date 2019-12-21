@@ -1396,4 +1396,209 @@ namespace RogueTower
 
         }
     }
+
+    class ActionPunch : Action
+    {
+        public enum PunchState
+        {
+            PunchStart,
+            PunchEnd
+        }
+
+        public PunchState PunchAction;
+        public float PunchStartTime;
+        public float PunchFinishTime;
+        public Weapon Weapon;
+        public ActionPunch(EnemyHuman human, float punchStartTime, float punchFinishTime, Weapon weapon) : base(human)
+        {
+            PunchStartTime = punchStartTime;
+            PunchFinishTime = punchFinishTime;
+            Weapon = weapon;
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (PunchAction)
+            {
+                case (PunchState.PunchStart):
+                    basePose.Head = HeadState.Down;
+                    basePose.RightArm = ArmState.Low;
+                    basePose.Body = BodyState.Kneel;
+                    break;
+                case (PunchState.PunchEnd):
+                    basePose.RightArm = ArmState.Forward;
+                    basePose.Body = BodyState.Stand;
+                    break;
+            }
+            
+        }
+
+        public override void OnInput()
+        {
+            //NOOP
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            switch (PunchAction)
+            {
+                case (PunchState.PunchStart):
+                    PunchStartTime -= delta;
+                    if(PunchStartTime < 0)
+                    {
+                        Punch();
+                        PunchAction = PunchState.PunchEnd;
+                    }
+                    break;
+                case (PunchState.PunchEnd):
+                    PunchFinishTime -= delta;
+                    if(PunchFinishTime < 0)
+                    {
+                        Human.ResetState();
+                    }
+                    break;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+        }
+
+        public virtual void Punch()
+        {
+            Vector2 weaponSize = Weapon.WeaponSize;
+            RectangleF weaponMask = new RectangleF(Human.Position
+                + GetFacingVector(Human.Facing) * 8
+                + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
+                + new Vector2(0, 1)
+                - weaponSize / 2f,
+                weaponSize);
+            Human.SwingWeapon(weaponMask, Weapon.Damage);
+            PunchVisual();
+            //new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
+        }
+
+        public virtual void PunchVisual()
+        {
+            new PunchEffectStraight(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+        }
+    }
+
+    class ActionLeftPunch : ActionPunch
+    {
+        public ActionLeftPunch(EnemyHuman human, float punchStartTime, float punchEndTime, Weapon weapon) : base(human, punchStartTime, punchEndTime, weapon)
+        {
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (PunchAction)
+            {
+                case (PunchState.PunchStart):
+                    basePose.Head = HeadState.Down;
+                    basePose.LeftArm = ArmState.Low;
+                    basePose.Body = BodyState.Kneel;
+                    break;
+                case (PunchState.PunchEnd):
+                    basePose.LeftArm = ArmState.Forward;
+                    basePose.Body = BodyState.Stand;
+                    break;
+            }
+
+        }
+
+        public override void Punch()
+        {
+            Vector2 weaponSize = Weapon.WeaponSize;
+            RectangleF weaponMask = new RectangleF(Human.Position
+                + GetFacingVector(Human.Facing) * 8
+                + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
+                + new Vector2(0, 2)
+                - weaponSize / 2f,
+                weaponSize);
+            Human.SwingWeapon(weaponMask, Weapon.Damage);
+            PunchVisual();
+            //new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
+        }
+
+        public override void PunchVisual()
+        {
+            new PunchEffectStraight(Human.World, () => Human.Position + new Vector2(0, 2), Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+        }
+    }
+
+    class ActionStealWeapon : Action
+    {
+        public enum StealState
+        {
+            StealStart,
+            StealFinish
+        }
+
+        public StealState StealAction;
+        public EnemyHuman Victim;
+        public float StealStartTime;
+        public float StealEndTime;
+        public ActionStealWeapon(EnemyHuman thief, EnemyHuman victim, float stealStartTime, float stealEndTime) : base(thief)
+        {
+            Victim = victim;
+            StealStartTime = stealStartTime;
+            StealEndTime = stealEndTime;
+        }
+
+        public override void OnInput()
+        {
+            //NOOP
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (StealAction)
+            {
+                case (StealState.StealStart):
+                    basePose.Body = BodyState.Kneel;
+                    basePose.LeftArm = ArmState.Forward;
+                    basePose.Head = HeadState.Down;
+                    break;
+                case (StealState.StealFinish):
+                    basePose.Body = BodyState.Stand;
+                    basePose.LeftArm = ArmState.Up;
+                    basePose.Head = HeadState.Backward;
+                    break;
+            }
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            switch (StealAction)
+            {
+                case (StealState.StealStart):
+                    StealStartTime -= delta;
+                    if (StealStartTime < 0)
+                    {
+                        if (!(Victim.Weapon is WeaponUnarmed) && !(Victim.Weapon is null))
+                        {
+                            Human.Weapon = Victim.Weapon;
+                            Victim.Weapon = new WeaponUnarmed(10, 14, new Vector2(14, 10));
+                            new ParryEffect(Human.World, Victim.Position, 0, 10);
+                            PlaySFX(sfx_player_disappointed, 1.0f);
+                        }
+                        StealAction = StealState.StealFinish;
+                    }
+                    break;
+
+                case (StealState.StealFinish):
+                    StealEndTime -= delta;
+                    if(StealEndTime < 0)
+                    {
+                        Human.ResetState();
+                    }
+                    break;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+        }
+    }
 }

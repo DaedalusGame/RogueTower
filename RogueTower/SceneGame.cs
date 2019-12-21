@@ -336,7 +336,7 @@ namespace RogueTower
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
             World.Player.SetControl(this);
-            World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+            World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
 
             Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
@@ -374,13 +374,13 @@ namespace RogueTower
                 World.Update(GameSpeedToggle ? 0.1f : 1.0f);
                 if (PadState.IsButtonDown(Buttons.RightTrigger) && LastPadState.IsButtonUp(Buttons.RightTrigger))
                     {
-                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex + 1, World.Player.WeaponList.Length);
-                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex + 1, Weapon.PresetWeaponList.Length);
+                    World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
                 }
                 else if (PadState.IsButtonDown(Buttons.RightShoulder) && LastPadState.IsButtonUp(Buttons.RightShoulder))
                 {
-                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, World.Player.WeaponList.Length);
-                    World.Player.Weapon = World.Player.WeaponList[CurrentWeaponIndex];
+                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, Weapon.PresetWeaponList.Length);
+                    World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
                 }
                 if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
                 {
@@ -529,6 +529,7 @@ namespace RogueTower
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
             var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
+            var punchStraight = SpriteLoader.Instance.AddSprite("content/punch");
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
@@ -568,6 +569,13 @@ namespace RogueTower
                     if (slashEffectStraight.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
                         slashAngle = -slashAngle;
                     SpriteBatch.Draw(stab.Texture, slashEffectStraight.Position + new Vector2(8, 8) - new Vector2(8, 8), stab.GetFrameRect(Math.Min(stab.SubImageCount - 1, (int)(stab.SubImageCount * slashEffectStraight.Frame / slashEffectStraight.FrameEnd))), Color.White, slashAngle, stab.Middle, slashEffectStraight.Size, slashEffectStraight.Mirror, 0);
+                }
+                else if(effect is PunchEffectStraight punchEffectStraight)
+                {
+                    var punchAngle = punchEffectStraight.Angle;
+                    if (punchEffectStraight.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                        punchAngle = -punchAngle;
+                    DrawSpriteExt(punchStraight, AnimationFrame(punchStraight, punchEffectStraight.Frame, punchEffectStraight.FrameEnd), punchEffectStraight.Position - punchStraight.Middle, punchStraight.Middle, punchAngle, punchEffectStraight.Mirror, 0);
                 }
                 else if (effect is SlashEffectRound slashEffectRound)
                 {
