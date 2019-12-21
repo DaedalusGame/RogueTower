@@ -72,7 +72,8 @@ namespace RogueTower
             if (CanDamage == false)
                 return;
             Health -= damageIn;
-            ShowDamage(damageIn);
+            if(Math.Abs(damageIn) >= 0.1)
+                ShowDamage(damageIn);
             if (Health <= 0)
             {
                 Death();
