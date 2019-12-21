@@ -26,6 +26,12 @@ namespace RogueTower
             SwingSize = swingSize;
         }
 
+        public virtual void GetPose(PlayerState pose)
+        {
+            pose.LeftArm = ArmState.Shield;
+            pose.Weapon = GetWeaponState(MathHelper.ToRadians(0));
+        }
+
         public static Weapon[] PresetWeaponList =
         {
             new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2)),
@@ -119,6 +125,11 @@ namespace RogueTower
         public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.5f)
         {
             CanParry = false;
+        }
+
+        public override void GetPose(PlayerState pose)
+        {
+            //NOOP
         }
 
         public override WeaponState GetWeaponState(float angle)

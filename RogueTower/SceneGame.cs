@@ -728,7 +728,7 @@ namespace RogueTower
 
         private HealthBarParams CalculateHealthBar(int blipsMax, double hpBasePerBlip, double hpMax)
         {
-            int blipsHpMax = Math.Min(blipsMax, (int)(hpMax / hpBasePerBlip));
+            int blipsHpMax = Math.Min(blipsMax,(int)Math.Ceiling(hpMax / hpBasePerBlip)-1);
             double hpPerBlip = hpMax / (blipsHpMax + 1);
 
             return new HealthBarParams(blipsMax, blipsHpMax, hpPerBlip);

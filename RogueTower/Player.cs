@@ -174,13 +174,15 @@ namespace RogueTower
 
         public override PlayerState GetBasePose()
         {
-            return new PlayerState(
+            PlayerState pose = new PlayerState(
                 HeadState.Forward,
                 BodyState.Stand,
-                ArmState.Shield,
                 ArmState.Neutral,
-                Weapon.GetWeaponState(MathHelper.ToRadians(0))
+                ArmState.Neutral,
+                WeaponState.None
             );
+            Weapon.GetPose(pose);
+            return pose;
         }
 
         public override void SetPhenoType(PlayerState pose)
