@@ -86,7 +86,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || hit.Box.Data == Shooter)
+            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
                 return;
             bool explode = false;
             if (hit.Box.Data is Enemy enemy)
@@ -134,7 +134,9 @@ namespace RogueTower
         {
             foreach (var box in World.FindBoxes(Box.Bounds))
             {
-                if (box.Data is Enemy enemy && box.Data != Shooter)
+                if (Destroyed || Shooter.NoFriendlyFire(box.Data))
+                    return;
+                if (box.Data is Enemy enemy)
                 {
                     enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
                 }
@@ -150,7 +152,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || hit.Box.Data == Shooter)
+            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
                 return;
             if (hit.Box.Data is Enemy enemy)
             {
@@ -169,7 +171,7 @@ namespace RogueTower
 
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
-            if (collision.Hit.Box.Data == Shooter)
+            if (Shooter.NoFriendlyFire(collision.Hit.Box.Data))
                 return null;
                 //return new CrossResponse(collision);
             return new TouchResponse(collision);
@@ -177,7 +179,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || hit.Box.Data == Shooter)
+            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
                 return;
             bool bounced = true;
             
@@ -233,7 +235,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || hit.Box.Data == Shooter || hit.Box.Data is Bullet)
+            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
                 return;
             bool hitwall = true;
 

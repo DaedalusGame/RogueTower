@@ -55,6 +55,11 @@ namespace RogueTower
             }
         }
 
+        public virtual bool NoFriendlyFire(object hit)
+        {
+            return hit == this;
+        }
+
         protected abstract void UpdateDelta(float delta);
 
         protected abstract void UpdateDiscrete();
