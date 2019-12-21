@@ -124,7 +124,7 @@
 
 			if (ignoring != null)
 			{
-				boxes = boxes.Except(ignoring);
+				boxes = boxes.Where(box => !ignoring.Contains(box));
 			}
 
 			IHit nearest = null;
@@ -157,14 +157,14 @@
 			{
 				Origin = origin,
 				Goal = destination,
-				Destination = this.Simulate(hits, new List<IBox>() { box }, box, origin, destination, filter),
+				Destination = this.Simulate(hits, new HashSet<IBox>() { box }, box, origin, destination, filter),
 				Hits = hits,
 			};
 
 			return result;
 		}
 
-		private RectangleF Simulate(List<IHit> hits, List<IBox> ignoring, Box box, RectangleF origin, RectangleF destination, Func<ICollision, ICollisionResponse> filter)
+		private RectangleF Simulate(List<IHit> hits, HashSet<IBox> ignoring, Box box, RectangleF origin, RectangleF destination, Func<ICollision, ICollisionResponse> filter)
 		{
 			var nearest = this.Hit(origin, destination, ignoring);
 				

@@ -985,13 +985,19 @@
     <None Include="Content\templates\pit_spike.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\templates\pit_spikeleft.json">
+    <None Include="Content\templates\pit_spikeleft0.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\templates\pit_spikemiddle.json">
+    <None Include="Content\templates\pit_spikeleft1.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\templates\pit_spikeright.json">
+    <None Include="Content\templates\pit_spikemiddle0.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\pit_spikeright0.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\pit_spikeright1.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Content\templates\pit_topleft.json">

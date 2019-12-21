@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "none", "ConnectionRight": "hydral", "Weight": 10000, "Direction": "Any"},
+  "values": {"ConnectionUp": "pitleft", "ConnectionDown": "none", "ConnectionLeft": "none", "ConnectionRight": "pitspike", "Weight": 100, "Direction": "Down"},
   "layers": [
     {
       "name": "Foreground",
@@ -16,7 +16,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Foreground",
-      "data": [0, 2, 2, 2, 2, 2, 2, 2, 0, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 0, 1, 1, 1, 1, -1, -1, -1, 0, 0, 0, 0, 0, 1, 1, 1],
+      "data": [0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "exportMode": 0,
       "arrayMode": 0
     },
@@ -30,7 +30,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Background",
-      "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 11, 0, 0, 0, 0, 27, 0, 0, 27, 0, 0, 1, 1, 27, 1, 1, 27, 1, 0, 1, 1, 27, 1, 1, 27, 1, 0, 0, 0, 19, 0, 0, 19, 0, 0, 0, 0, 27, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "data": [0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "exportMode": 0,
       "arrayMode": 0
     },
@@ -43,9 +43,7 @@
       "gridCellHeight": 8,
       "gridCellsX": 16,
       "gridCellsY": 16,
-      "entities": [
-        {"name": "hydra", "id": 0, "_eid": "93719179", "x": 24, "y": 88, "originX": 16, "originY": 24, "flippedX": false}
-      ]
+      "entities": []
     }
   ]
 }

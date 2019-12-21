@@ -14,18 +14,10 @@ namespace RogueTower
 {
     abstract class Bullet : GameObject
     {
-        public IBox Box;
-        public Vector2 Position
+        public virtual Vector2 Position
         {
-            get
-            {
-                return Box.Bounds.Center;
-            }
-            set
-            {
-                var pos = value + Box.Bounds.Center - Box.Bounds.Location;
-                Box.Teleport(pos.X, pos.Y);
-            }
+            get;
+            set;
         }
         public Vector2 BulletSize;
         public Vector2 Velocity;
@@ -40,17 +32,75 @@ namespace RogueTower
             Create(position.X, position.Y);
         }
 
-        public override void Destroy()
+        public virtual void Create(float x, float y)
         {
-            base.Destroy();
-            World.Remove(Box);
+            Position = new Vector2(x, y);
         }
 
-        public void Create(float x, float y)
+        protected override void UpdateDelta(float delta)
+        {
+            Frame += delta;
+            Position += Velocity * delta;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+                Destroy();
+        }
+
+        protected void HandleDamage()
+        {
+            foreach (var box in World.FindBoxes(new RectangleF(Position - BulletSize / 2, BulletSize)))
+            {
+                if (Destroyed || Shooter.NoFriendlyFire(box.Data))
+                    return;
+                if (box.Data is Enemy enemy)
+                {
+                    ApplyEffect(enemy);
+                }
+            }
+        }
+
+        protected virtual void ApplyEffect(Enemy enemy)
+        {
+            //NOOP
+        }
+
+        public abstract void Draw(SceneGame scene);
+    }
+
+    abstract class BulletSolid : Bullet
+    {
+        public IBox Box;
+        public override Vector2 Position
+        {
+            get
+            {
+                return Box.Bounds.Center;
+            }
+            set
+            {
+                var pos = value + Box.Bounds.Center - Box.Bounds.Location;
+                Box.Teleport(pos.X, pos.Y);
+            }
+        }
+
+        protected BulletSolid(GameWorld world, Vector2 position, Vector2 size) : base(world, position, size)
+        {
+        }
+
+        public override void Create(float x, float y)
         {
             Box = World.Create(x - BulletSize.X / 2, y - BulletSize.Y / 2, BulletSize.X, BulletSize.Y);
             Box.Data = this;
             Box.AddTags(CollisionTag.NoCollision);
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            World.Remove(Box);
         }
 
         protected override void UpdateDelta(float delta)
@@ -71,17 +121,9 @@ namespace RogueTower
         }
 
         protected abstract void OnCollision(IHit hit);
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-                Destroy();
-        }
-
-        public abstract void Draw(SceneGame scene);
     }
 
-    class SpellOrange : Bullet
+    class SpellOrange : BulletSolid
     {
         public SpellOrange(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
         {
@@ -119,7 +161,7 @@ namespace RogueTower
         }
     }
 
-    class SnakeSpit : Bullet
+    class SnakeSpit : BulletSolid
     {
         public SnakeSpit(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
         {
@@ -161,38 +203,27 @@ namespace RogueTower
 
     class Explosion : Bullet
     {
-        public Explosion(GameWorld world, Vector2 position) : base(world, position, new Vector2(32, 32))
+        public override RectangleF ActivityZone => World.Bounds;
+
+        public Explosion(GameWorld world, Vector2 position, Vector2 size) : base(world,position, size)
         {
-            PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
-            //HandleDamage();
+            
         }
 
-        protected override void OnCollision(IHit hit)
+        public Explosion(GameWorld world, Vector2 position) : this(world, position, new Vector2(16,16))
         {
-            //NOOP
+            PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
         }
 
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
-            if(Frame < FrameEnd / 2)
+
+            if (Frame < FrameEnd / 2)
                 HandleDamage();
         }
 
-        private void HandleDamage()
-        {
-            foreach (var box in World.FindBoxes(Box.Bounds))
-            {
-                if (Destroyed || Shooter.NoFriendlyFire(box.Data))
-                    return;
-                if (box.Data is Enemy enemy)
-                {
-                    ApplyEffect(enemy);
-                }
-            }
-        }
-
-        protected virtual void ApplyEffect(Enemy enemy)
+        protected override void ApplyEffect(Enemy enemy)
         {
             enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
         }
@@ -228,14 +259,16 @@ namespace RogueTower
         {
         }
 
-        protected override void OnCollision(IHit hit)
+        protected override void UpdateDiscrete()
         {
-            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
-                return;
-            if (hit.Box.Data is Enemy enemy)
-            {
-                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
-            }
+            base.UpdateDiscrete();
+
+            HandleDamage();
+        }
+
+        protected override void ApplyEffect(Enemy enemy)
+        {
+            enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
         }
 
         public override void Draw(SceneGame scene)
@@ -245,7 +278,7 @@ namespace RogueTower
         }
     }
 
-    class Knife : Bullet
+    class Knife : BulletSolid
     {
         double knifeDamage = 15.0;
 
@@ -290,7 +323,7 @@ namespace RogueTower
         }
     }
 
-    class Shockwave : Bullet
+    class Shockwave : BulletSolid
     {
         public float ShockwaveForce;
         public float ScalingFactor = 0;

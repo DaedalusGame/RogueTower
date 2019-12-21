@@ -530,10 +530,16 @@ namespace RogueTower
                 }
                 if(obj is Hydra hydra)
                 {
+                    Vector2 truePos = Vector2.Transform(hydra.Position, WorldTransform);
+                    if (!drawZone.Contains(truePos))
+                        continue;
                     DrawSprite(hydraBody, Frame / 20, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                 }
                 if (obj is Cannon cannon)
                 {
+                    Vector2 truePos = Vector2.Transform(cannon.Position, WorldTransform);
+                    if (!drawZone.Contains(truePos))
+                        continue;
                     DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
                 }
             }
@@ -1012,11 +1018,11 @@ namespace RogueTower
             SpriteBatch.End();
 
             Matrix testMatrix = new Matrix(
-              -1, 0, 0, 0,
-              0, -1, 0, 0,
-              0, 0, -1, 0,
+              0.5f, 0.5f, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 1, 0,
               0, 0, 0, 1);
-            Vector4 testAdd = new Vector4(1, 1, 1, 0);
+            Vector4 testAdd = new Vector4(0, 0, 0, 0);
 
             ColorMatrix identity = new ColorMatrix(Matrix.Identity, Vector4.Zero);
             ColorMatrix test = new ColorMatrix(testMatrix, testAdd);
