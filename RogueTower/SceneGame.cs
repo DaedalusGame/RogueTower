@@ -538,40 +538,18 @@ namespace RogueTower
                 }
             }
 
-            var knife = SpriteLoader.Instance.AddSprite("content/knife");
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
             var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
             var punchStraight = SpriteLoader.Instance.AddSprite("content/punch");
-            var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
-            var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
-            var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
+
+            var knife = SpriteLoader.Instance.AddSprite("content/knife");
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
-            var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
             foreach (Bullet bullet in World.Bullets)
             {
-                if (bullet is Knife)
-                {
-                    DrawSpriteExt(knife, 0, bullet.Position - knife.Middle, knife.Middle, (float)Math.Atan2(bullet.Velocity.Y, bullet.Velocity.X), SpriteEffects.None, 0);
-                }
-                if (bullet is Fireball)
-                {
-                    DrawSpriteExt(fireball, 0, bullet.Position - fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(bullet.Frame * 0.5) , SpriteEffects.None, 0);
-                }
-                if (bullet is SpellOrange spellOrange)
-                {
-                    DrawSprite(magicOrange, Frame, bullet.Position - magicOrange.Middle, SpriteEffects.None, 0);
-                }
-                if (bullet is Explosion explosion)
-                {
-                    DrawSprite(spriteExplosion, AnimationFrame(spriteExplosion,explosion.Frame,explosion.FrameEnd), explosion.Position - spriteExplosion.Middle, SpriteEffects.None, 0);
-                }
-                if(bullet is Shockwave shockwave)
-                {
-                    DrawSpriteExt(spriteShockwave, (int)shockwave.Frame, bullet.Position - new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height) + new Vector2(0,bullet.Box.Height / 2), new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (shockwave.ScalingFactor > 1) ? 1 + shockwave.ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
-                }
+                bullet.Draw(this);
             }
 
             foreach (VisualEffect effect in World.Effects)
@@ -1019,7 +997,7 @@ namespace RogueTower
             DrawPlayerState(state, position - new Vector2(8, 8), mirror);
         }
 
-        private int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
+        public int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
         {
             return (int)MathHelper.Clamp(sprite.SubImageCount * frame / frameEnd, 0, sprite.SubImageCount - 1);
         }

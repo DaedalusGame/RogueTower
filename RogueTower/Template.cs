@@ -173,8 +173,30 @@ namespace RogueTower
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
+                var cannon = new CannonPoisonBreath(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                cannon.DelayTime = delay;
+            }
+            if (type == "cannon_fire")
+            {
+                float rotation = entity["rotation"].ToObject<float>();
+                float delay = values["Delay"].ToObject<float>();
                 var cannon = new CannonFire(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
                 cannon.DelayTime = delay;
+            }
+            if (type == "cannon_poison")
+            {
+                float rotation = entity["rotation"].ToObject<float>();
+                float delay = values["Delay"].ToObject<float>();
+                var cannon = new CannonPoisonBreath(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                cannon.DelayTime = delay;
+            }
+            if (type == "snake")
+            {
+                var snake = new Snake(world, new Vector2(px * 16 + ox, py * 16 + oy));
+            }
+            if (type == "hydra")
+            {
+                var hydra = new Hydra(world, new Vector2(px * 16 + ox, py * 16 + oy));
             }
         }
 

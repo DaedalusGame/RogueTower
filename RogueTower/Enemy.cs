@@ -936,7 +936,7 @@ namespace RogueTower
 
         public class ActionSpit : Action
         {
-            public enum BiteState
+            public enum SpitState
             {
                 Start,
                 SpitStart,
@@ -944,10 +944,10 @@ namespace RogueTower
                 End,
             }
 
-            public override bool MouthOpen => State == BiteState.End || State == BiteState.Spit;
+            public override bool MouthOpen => State == SpitState.End || State == SpitState.Spit;
 
             public Enemy Target;
-            public BiteState State;
+            public SpitState State;
             public float StartTime;
             public float SpitStartTime;
             public float SpitTime;
@@ -968,34 +968,25 @@ namespace RogueTower
             {
                 switch (State)
                 {
-                    case (BiteState.Start):
+                    case (SpitState.Start):
                         StartTime -= delta;
                         if (StartTime < 0)
-                            State = BiteState.SpitStart;
+                            State = SpitState.SpitStart;
                         break;
-                    case (BiteState.SpitStart):
+                    case (SpitState.SpitStart):
                         SpitStartTime -= delta;
                         if (SpitStartTime < 0)
                         {
-                            Vector2 firePosition = Snake.Position + Snake.Head.Offset + GetFacingVector(Snake.Facing) * 8;
-                            var velocity = Target.HomingTarget - firePosition;
-                            velocity = Vector2.Normalize(velocity) * 3;
-                            new Fireball(Snake.World, firePosition)
-                            {
-                                Velocity = velocity,
-                                Shooter = Snake,
-                                FrameEnd = 80,
-                            };
-                            //Fire here
-                            State = BiteState.Spit;
+                            Fire();
+                            State = SpitState.Spit;
                         }
                         break;
-                    case (BiteState.Spit):
+                    case (SpitState.Spit):
                         SpitTime -= delta;
                         if (SpitTime < 0)
-                            State = BiteState.End;
+                            State = SpitState.End;
                         break;
-                    case (BiteState.End):
+                    case (SpitState.End):
                         EndTime -= delta;
                         if (EndTime < 0)
                             Snake.ResetState();
@@ -1003,20 +994,37 @@ namespace RogueTower
                 }
             }
 
+            private void Fire()
+            {
+                Vector2 firePosition = Snake.Position + Snake.Head.Offset + GetFacingVector(Snake.Facing) * 8;
+                int spits = 8;
+                for (int i = 0; i < spits; i++)
+                {
+                    var velocity = Target.HomingTarget + new Vector2(0,-32) - firePosition;
+                    velocity = Vector2.Normalize(velocity) * (2 + i);
+                    new SnakeSpit(Snake.World, firePosition)
+                    {
+                        Velocity = velocity,
+                        Shooter = Snake,
+                        FrameEnd = 80,
+                    };
+                }
+            }
+
             public override void UpdateDiscrete()
             {
                 switch (State)
                 {
-                    case (BiteState.Start):
+                    case (SpitState.Start):
                         Snake.Move(Offset - GetFacingVector(Snake.Facing) * 16, 0.3f);
                         break;
-                    case (BiteState.SpitStart):
+                    case (SpitState.SpitStart):
                         var spitOffset = Offset + new Vector2(0, 12) + GetFacingVector(Snake.Facing) * 20;
                         Snake.Move(spitOffset, 0.5f);
                         Snake.Move(spitOffset, 0.5f);
                         Snake.Move(spitOffset, 0.5f);
                         break;
-                    case (BiteState.End):
+                    case (SpitState.End):
                         Snake.Move(Offset, 0.1f);
                         break;
                 }
@@ -1025,16 +1033,16 @@ namespace RogueTower
 
         public class ActionBreath : Action
         {
-            public enum BiteState
+            public enum BreathState
             {
                 Start,
                 Breath,
                 End,
             }
 
-            public override bool MouthOpen => State == BiteState.Breath || State == BiteState.End;
+            public override bool MouthOpen => State == BreathState.Breath || State == BreathState.End;
 
-            public BiteState State;
+            public BreathState State;
             public float StartTime;
             public float BiteTime;
             public float EndTime;
@@ -1053,17 +1061,17 @@ namespace RogueTower
             {
                 switch (State)
                 {
-                    case (BiteState.Start):
+                    case (BreathState.Start):
                         StartTime -= delta;
                         if (StartTime < 0)
-                            State = BiteState.Breath;
+                            State = BreathState.Breath;
                         break;
-                    case (BiteState.Breath):
+                    case (BreathState.Breath):
                         BiteTime -= delta;
                         if (BiteTime < 0)
-                            State = BiteState.End;
+                            State = BreathState.End;
                         break;
-                    case (BiteState.End):
+                    case (BreathState.End):
                         EndTime -= delta;
                         if (EndTime < 0)
                             Snake.ResetState();
@@ -1075,7 +1083,7 @@ namespace RogueTower
             {
                 switch (State)
                 {
-                    case (BiteState.Start):
+                    case (BreathState.Start):
                         if (Math.Sign(Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
                         {
                             FindTarget();
@@ -1086,7 +1094,7 @@ namespace RogueTower
                         }
                         Snake.Move(Offset, 0.5f);
                         break;
-                    case (BiteState.Breath):
+                    case (BreathState.Breath):
                         Snake.Move(Offset, 0.1f);
                         Snake.Move(Offset, 0.1f);
                         if (Math.Sign(Target.Position.X - Snake.Position.X) == GetFacingVector(Snake.Facing).X)
@@ -1094,19 +1102,25 @@ namespace RogueTower
                             FindTarget();
                         }
                         var offset = GetFacingVector(Snake.Facing);
-                        if ((int)BiteTime % 3 == 0)
+                        if ((int)BiteTime % 5 == 0)
                         {
                             float angle = Snake.Random.NextFloat() * MathHelper.TwoPi;
                             float distance = Snake.Random.NextFloat() * 3;
-                            new Fireball(Snake.World, Snake.Position + Snake.Head.Offset + offset * 8 + distance * new Vector2((float)Math.Sin(angle),(float)Math.Cos(angle)))
+                            new PoisonBreath(Snake.World, Snake.Position + Snake.Head.Offset + offset * 8 + distance * new Vector2((float)Math.Sin(angle), (float)Math.Cos(angle)))
+                            {
+                                Velocity = offset * 3.0f,
+                                FrameEnd = 40,
+                                Shooter = Snake,
+                            };
+                            /*new Fireball(Snake.World, Snake.Position + Snake.Head.Offset + offset * 8 + distance * new Vector2((float)Math.Sin(angle),(float)Math.Cos(angle)))
                             {
                                 Velocity = offset * (Snake.Random.NextFloat() * 1.5f + 0.5f) + new Vector2(Snake.Velocity.X,0),
                                 FrameEnd = 40,
                                 Shooter = Snake,
-                            };
+                            };*/
                         }
                         break;
-                    case (BiteState.End):
+                    case (BreathState.End):
                         Snake.Move(Offset, 0.1f);
                         break;
                 }
@@ -1431,6 +1445,8 @@ namespace RogueTower
         {
             public float Time;
 
+            public virtual float MinDistance => 90;
+            public virtual float MaxDistance => 100;
             public override bool MouthOpen => true;
 
             public ActionIdle(Hydra hydra) : base(hydra)
@@ -1446,6 +1462,16 @@ namespace RogueTower
             public override void UpdateDiscrete()
             {
                 //NOOP
+            }
+        }
+
+        public class ActionAggressive : ActionIdle
+        {
+            public override float MinDistance => 60;
+            public override float MaxDistance => 90;
+
+            public ActionAggressive(Hydra hydra) : base(hydra)
+            {
             }
         }
 
@@ -1554,7 +1580,7 @@ namespace RogueTower
 
         private void UpdateAI()
         {
-            var viewSize = new Vector2(200, 50);
+            var viewSize = new Vector2(500, 50);
             RectangleF viewArea = new RectangleF(Position - viewSize / 2, viewSize);
 
             if (viewArea.Contains(World.Player.Position))
@@ -1583,8 +1609,20 @@ namespace RogueTower
                 {
 
                 }
-                else
+                else if(CurrentAction is ActionIdle idle)
                 {
+                    if(idle.Time > 120)
+                    {
+                        if(Random.NextDouble() > 0.5)
+                        {
+                            CurrentAction = new ActionAggressive(this);
+                        }
+                        else
+                        {
+                            CurrentAction = new ActionIdle(this);
+                        }
+                    }
+
                     if (dx < 0)
                         Facing = HorizontalFacing.Left;
                     else if (dx > 0)
@@ -1593,7 +1631,7 @@ namespace RogueTower
                     foreach(var head in Heads)
                     {
                         head.Facing = Facing;
-                        if (head.CurrentAction is Snake.ActionIdle idle && idle.Time > 80)
+                        if (head.CurrentAction is Snake.ActionIdle headIdle && headIdle.Time > 80)
                         {
                             SelectAttack(head);
                         }
@@ -1629,9 +1667,9 @@ namespace RogueTower
             if(Heads.Count(x => x.CurrentAction is Snake.ActionBite) < 2)
                 weightedList.Add(new Snake.ActionBite(head, 60 + Random.Next(60), 20, 60 + Random.Next(60)), 50);
             if (Heads.Count(x => x.CurrentAction is Snake.ActionSpit) < 1)
-                weightedList.Add(new Snake.ActionSpit(head, Target, new Vector2(0, -70), 60, 20, 20, 20), 10);
+                weightedList.Add(new Snake.ActionSpit(head, Target, new Vector2(0, -70), 60, 20, 20, 20), 30);
             if (Heads.Count(x => x.CurrentAction is Snake.ActionBreath) < 1)
-                weightedList.Add(new Snake.ActionBreath(head, Target, 80, 120, 60), 10);
+                weightedList.Add(new Snake.ActionBreath(head, Target, 80, 120, 60), 30);
             head.CurrentAction = weightedList.GetWeighted(Random);
         }
 
@@ -1784,6 +1822,40 @@ namespace RogueTower
                 FrameEnd = 80,
                 Shooter = this,
             };
+        }
+
+        protected override void ShootEnd()
+        {
+
+        }
+    }
+
+    class CannonPoisonBreath : Cannon
+    {
+        public CannonPoisonBreath(GameWorld world, Vector2 position, float angle) : base(world, position, angle)
+        {
+        }
+
+        protected override void Reset()
+        {
+            IdleTime = 50;
+            ChargeTime = 30;
+            FireTime = 60;
+        }
+
+        protected override void ShootStart()
+        {
+        }
+
+        protected override void ShootTick()
+        {
+            if ((int)FireTime % 5 == 0)
+                new PoisonBreath(World, Position + FacingVector * 8)
+                {
+                    Velocity = FacingVector * 3.0f,
+                    FrameEnd = 40,
+                    Shooter = this,
+                };
         }
 
         protected override void ShootEnd()

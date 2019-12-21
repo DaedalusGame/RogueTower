@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Humper.Base;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueTower
 {
@@ -76,6 +77,8 @@ namespace RogueTower
             if (Frame >= FrameEnd)
                 Destroy();
         }
+
+        public abstract void Draw(SceneGame scene);
     }
 
     class SpellOrange : Bullet
@@ -108,6 +111,52 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
+            scene.DrawSprite(magicOrange, (int)Frame, Position - magicOrange.Middle, SpriteEffects.None, 0);
+        }
+    }
+
+    class SnakeSpit : Bullet
+    {
+        public SnakeSpit(GameWorld world, Vector2 position) : base(world, position, new Vector2(8, 8))
+        {
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+
+            if (Velocity.Y < 10)
+                Velocity.Y = Math.Min(Velocity.Y + 0.2f, 10);
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
+                return;
+            bool explode = false;
+            if (hit.Box.Data is Enemy enemy)
+            {
+                explode = true;
+            }
+            if (hit.Box.Data is Tile tile)
+            {
+                explode = true;
+            }
+            if (explode)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var snakeSpit = SpriteLoader.Instance.AddSprite("content/snake_poison");
+            scene.DrawSprite(snakeSpit, 0, Position - snakeSpit.Middle, SpriteEffects.None, 0);
+        }
     }
 
     class Explosion : Bullet
@@ -138,9 +187,38 @@ namespace RogueTower
                     return;
                 if (box.Data is Enemy enemy)
                 {
-                    enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
+                    ApplyEffect(enemy);
                 }
             }
+        }
+
+        protected virtual void ApplyEffect(Enemy enemy)
+        {
+            enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
+            scene.DrawSprite(spriteExplosion, scene.AnimationFrame(spriteExplosion, Frame, FrameEnd), Position - spriteExplosion.Middle, SpriteEffects.None, 0);
+        }
+    }
+
+    class PoisonBreath : Explosion
+    {
+        public PoisonBreath(GameWorld world, Vector2 position) : base(world, position)
+        {
+        }
+
+        protected override void ApplyEffect(Enemy enemy)
+        {
+            enemy.Health = Math.Max(enemy.Health - 1, 1);
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var breathPoison = SpriteLoader.Instance.AddSprite("content/breath_poison");
+            scene.DrawSpriteExt(breathPoison, scene.AnimationFrame(breathPoison, Frame, FrameEnd), Position - breathPoison.Middle, breathPoison.Middle, (float)Math.Atan2(Velocity.X, Velocity.Y), SpriteEffects.None, 0);
         }
     }
 
@@ -158,6 +236,12 @@ namespace RogueTower
             {
                 enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
             }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
+            scene.DrawSpriteExt(fireball, 0, Position - fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(Frame * 0.5), SpriteEffects.None, 0);
         }
     }
 
@@ -197,6 +281,12 @@ namespace RogueTower
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.3f);
             }
             Destroy();
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var knife = SpriteLoader.Instance.AddSprite("content/knife");
+            scene.DrawSpriteExt(knife, 0, Position - knife.Middle, knife.Middle, (float)Math.Atan2(Velocity.Y, Velocity.X), SpriteEffects.None, 0);
         }
     }
 
@@ -263,6 +353,12 @@ namespace RogueTower
             {
                 Destroy();
             }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
+            scene.DrawSpriteExt(spriteShockwave, (int)Frame, Position - new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height) + new Vector2(0, Box.Height / 2), new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (ScalingFactor > 1) ? 1 + ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
         }
     }
 }
