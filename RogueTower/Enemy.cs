@@ -1019,6 +1019,10 @@ namespace RogueTower
                 for (int i = 0; i < spits; i++)
                 {
                     var velocity = Target.HomingTarget + new Vector2(0,-32) - firePosition;
+                    if (Snake.Facing == HorizontalFacing.Left && velocity.X > -3)
+                        velocity.X = -3;
+                    if (Snake.Facing == HorizontalFacing.Right && velocity.X < 3)
+                        velocity.X = 3;
                     velocity = Vector2.Normalize(velocity) * (2 + i);
                     new SnakeSpit(Snake.World, firePosition)
                     {
