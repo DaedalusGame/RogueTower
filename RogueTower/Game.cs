@@ -22,6 +22,8 @@ namespace RogueTower
         public Effect Shader;
 
         public static Sound bgm_title_theme;
+        public static Sound bgm_title_theme_epiano_accompaniment;
+        public static SoundChannel Accompaniment1;
         public static Sound sfx_explosion1;
         public static Sound sfx_impact_blunt;
         public static Sound sfx_knife_throw;
@@ -119,6 +121,7 @@ namespace RogueTower
 
             AudioMgr.Init("content");
             bgm_title_theme =  AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme.ogg");
+            bgm_title_theme_epiano_accompaniment = AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme_for_roguetower_epiano_accompaniment.ogg");
             sfx_player_charging = AudioMgr.LoadStreamedSound("sounds/sfx/player_charge.wav");
 
             sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
@@ -137,6 +140,10 @@ namespace RogueTower
 
             var musicChannel = bgm_title_theme.Play();
             musicChannel.Looping = true;
+
+            Accompaniment1 = bgm_title_theme_epiano_accompaniment.Play();
+            Accompaniment1.Volume = 0;
+            Accompaniment1.Looping = true;
             //MediaPlayer.Play(bgm_title_theme);
             //MediaPlayer.IsRepeating = true;
             // TODO: use this.Content to load your game content here

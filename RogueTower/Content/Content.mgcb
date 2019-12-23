@@ -22,6 +22,9 @@
 #begin sounds/bgm/generic_theme.ogg
 /copy:sounds/bgm/generic_theme.ogg
 
+#begin sounds/bgm/generic_theme_for_roguetower_epiano_accompaniment.ogg
+/copy:sounds/bgm/generic_theme_for_roguetower_epiano_accompaniment.ogg
+
 #begin sounds/sfx/fx_explosion1.wav
 /copy:sounds/sfx/fx_explosion1.wav
 
