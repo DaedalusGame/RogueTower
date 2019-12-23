@@ -414,7 +414,11 @@ namespace RogueTower
 
             if(HeightTraversed >= 200)
             {
-                Accompaniment1.Volume = MathHelper.Clamp(HeightTraversed % 200, 0, 0.7f);
+                Accompaniment1.Volume = MathHelper.Clamp(HeightTraversed % 200, 0, 1);
+            }
+            else
+            {
+                Accompaniment1.Volume = MathHelper.Clamp(Accompaniment1.Volume - 0.01f, 0, 1);
             }
 
             UpdateCamera();
