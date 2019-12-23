@@ -927,7 +927,18 @@ namespace RogueTower
             var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).ToLookup(tile => GetPass(tile));
             DrawMapPass(passes[0]);
             SpriteBatch.End();
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, transformMatrix: WorldTransform, effect: Shader);
+            Matrix testMatrix = new Matrix(
+              1.2f, 0, 0, 0,
+              0, 1.2f, 0, 0,
+              0, 0, 1.2f, 0,
+              0, 0, 0, 1);
+            Vector4 testAdd = new Vector4(-0.8f * 0.7f, -0.3f * 0.7f, -0.1f * 0.7f, 0);
+            ColorMatrix test = new ColorMatrix(testMatrix, testAdd);
+            Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
+            Shader.Parameters["color_matrix"].SetValue(test.Matrix);
+            Shader.Parameters["color_add"].SetValue(test.Add);
+            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform * Projection);
             DrawMapPass(passes[1]);
             SpriteBatch.End();
             StartNormalBatch();
