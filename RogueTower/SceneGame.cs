@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ChaiFoxes.FMODAudio;
 using Humper.Base;
+using static RogueTower.Game;
 using static RogueTower.Util;
 
 namespace RogueTower
@@ -350,7 +352,6 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 0), new Vector2(-0.2f, 0.4f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
 
-
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, 0), new Vector2(-1.0f, -1.0f)) { XLooping = true, YLooping = false });
 
         }
@@ -410,6 +411,11 @@ namespace RogueTower
             Health.Update(1.0f);
             HealthShadow.Update(1.0f);
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
+
+            if(HeightTraversed >= 200)
+            {
+                Accompaniment1.Volume = MathHelper.Clamp(HeightTraversed % 200, 0, 0.7f);
+            }
 
             UpdateCamera();
         }
