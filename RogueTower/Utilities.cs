@@ -252,6 +252,26 @@ namespace RogueTower
             }
         }
 
+        public static Connectivity Rotate(this Connectivity connectivity, int halfTurns)
+        {
+            return (Connectivity)(ShiftWrap((int)connectivity,PositiveMod(halfTurns,8),8) & 255);
+        }
+
+        private static int Shift(int a, int b)
+        {
+            if (b > 0)
+                return a >> b;
+            else
+                return a << -b;
+        }
+
+        private static int ShiftWrap(int a, int b, int size)
+        {
+            int left = Shift(a, b);
+            int right = Shift(a, -(size - b));
+            return left | right;
+        }
+
         /// <summary>
         /// Convert HSV to RGB
         /// h is from 0-360

@@ -882,7 +882,48 @@ namespace RogueTower
             }
         }
 
+        private IEnumerable<Tile> EnumerateCloseTiles(Map map, int drawX, int drawY, int drawRadius)
+        {
+            Rectangle drawZone = GetDrawZone();
+
+            for (int x = MathHelper.Clamp(drawX - drawRadius, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + drawRadius, 0, map.Width - 1); x++)
+            {
+                for (int y = MathHelper.Clamp(drawY - drawRadius, 0, map.Height - 1); y <= MathHelper.Clamp(drawY + drawRadius, 0, map.Height - 1); y++)
+                {
+                    Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
+
+                    if (!drawZone.Contains(truePos))
+                        continue;
+
+                    yield return map.Tiles[x, y];
+                }
+            }
+        }
+
+        private int GetPass(Tile tile)
+        {
+            if (tile is WallIce)
+                return 1;
+            return 0;
+        }
+
         private void DrawMap(Map map)
+        {
+            Rectangle drawZone = GetDrawZone();
+            int drawX = (int)(Camera.X / 16);
+            int drawY = (int)(Camera.Y / 16);
+            int drawRadius = 30;
+
+            var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).ToLookup(tile => GetPass(tile));
+            DrawMapPass(passes[0]);
+            SpriteBatch.End();
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, transformMatrix: WorldTransform);
+            DrawMapPass(passes[1]);
+            SpriteBatch.End();
+            StartNormalBatch();
+        }
+
+        private void DrawMapPass(IEnumerable<Tile> tiles)
         {
             var wall = SpriteLoader.Instance.AddSprite("content/wall");
             var wallTop = SpriteLoader.Instance.AddSprite("content/wall_top");
@@ -890,6 +931,7 @@ namespace RogueTower
             var wallBottomTop = SpriteLoader.Instance.AddSprite("content/wall_bottom_top");
             var wallBlock = SpriteLoader.Instance.AddSprite("content/wall_block");
             var wallIce = SpriteLoader.Instance.AddSprite("content/wall_ice");
+            var wallIceConnected = SpriteLoader.Instance.AddSprite("content/wall_ice_connected");
             var wallPressure = SpriteLoader.Instance.AddSprite("content/wall_pressure");
             var wallPressureBottom = SpriteLoader.Instance.AddSprite("content/wall_pressure_bottom");
             var wallTrap = SpriteLoader.Instance.AddSprite("content/wall_trap");
@@ -900,89 +942,80 @@ namespace RogueTower
             var spikeDeath = SpriteLoader.Instance.AddSprite("content/wall_spike_death");
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
 
-            Rectangle drawZone = GetDrawZone();
-            int drawX = (int)(Camera.X / 16);
-            int drawY = (int)(Camera.Y / 16);
-            int drawRadius = 30;
-
-            for (int x = MathHelper.Clamp(drawX - drawRadius, 0, map.Width - 1); x <= MathHelper.Clamp(drawX + drawRadius, 0, map.Width - 1); x++)
+            foreach (Tile tile in tiles)
             {
-                for (int y = MathHelper.Clamp(drawY - drawRadius, 0,map.Height-1); y <= MathHelper.Clamp(drawY + drawRadius, 0, map.Height - 1); y++)
+                int x = tile.X;
+                int y = tile.Y;
+                Color color = tile.Color;
+
+                //TODO: move tile draw code into a method on Tile
+                if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
                 {
-                    Vector2 truePos = Vector2.Transform(new Vector2(x * 16, y * 16), WorldTransform);
-
-                    if (!drawZone.Contains(truePos))
-                        continue;
-
-                    Tile tile = map.Tiles[x, y];
-                    Color color = tile.Color;
-
-                    //TODO: move tile draw code into a method on Tile
-                    if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
-                    {
-                        SpriteBatch.Draw(wallBlock.Texture, new Vector2(x * 16, y * 16), color);
-                    }
-                    else if (tile is WallIce)
-                    {
-                        SpriteBatch.Draw(wallIce.Texture, new Vector2(x * 16, y * 16), Color.White);
-                    }
-                    else if (tile is LadderExtend ladderExtendTile)
-                    {
-                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
-                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16) + Util.GetFacingVector(ladderExtendTile.Facing) * -2, ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
-                    }
-                    else if (tile is Ladder ladderTile)
-                    {
-                        SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
-                    }
-                    else if (tile is SpikeDeath)
-                    {
-                        SpriteBatch.Draw(spikeDeath.Texture, new Vector2(x * 16, y * 16), color);
-                    }
-                    else if (tile is Spike)
-                    {
-                        SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), color);
-                    }
-                    else if (tile is Trap trap)
-                    {
-                        switch (trap.Facing)
-                        {
-                            case (Wall.WallFacing.Top):
-                            case (Wall.WallFacing.Normal):
-                                SpriteBatch.Draw(wallTrap.Texture, new Vector2(x * 16, y * 16 - 16), wallTrap.GetFrameRect(trap.Triggered ? 1 : 0), color);
-                                break;
-                            case (Wall.WallFacing.Bottom):
-                            case (Wall.WallFacing.BottomTop):
-                                SpriteBatch.Draw(wallTrapBottom.Texture, new Vector2(x * 16, y * 16 - 16), wallTrapBottom.GetFrameRect(trap.Triggered ? 1 : 0), color);
-                                break;
-                        }
-                       
-                    }
-                    else if (tile is Wall wallTile)
-                    {
-                        switch(wallTile.Facing)
-                        {
-                            case (Wall.WallFacing.Normal):
-                                SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), color);
-                                break;
-                            case (Wall.WallFacing.Bottom):
-                                SpriteBatch.Draw(wallBottom.Texture, new Vector2(x * 16, y * 16), color);
-                                break;
-                            case (Wall.WallFacing.Top):
-                                SpriteBatch.Draw(wallTop.Texture, new Vector2(x * 16, y * 16), color);
-                                break;
-                            case (Wall.WallFacing.BottomTop):
-                                SpriteBatch.Draw(wallBottomTop.Texture, new Vector2(x * 16, y * 16), color);
-                                break;
-                        }
-                        
-                    }
-                    else if (tile is Grass)
-                        SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);
-
-                    if (tile.Health < tile.MaxHealth)
-                        SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));
+                    SpriteBatch.Draw(wallBlock.Texture, new Vector2(x * 16, y * 16), color);
                 }
+                else if (tile is WallIce)
+                {
+                    //SpriteBatch.Draw(wallIce.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    int ix = tile.BlobIndex % 7;
+                    int iy = tile.BlobIndex / 7;
+                    SpriteBatch.Draw(wallIceConnected.Texture, new Vector2(x * 16, y * 16), new Rectangle(ix * 16, iy * 16, 16, 16), Color.White);
+                }
+                else if (tile is LadderExtend ladderExtendTile)
+                {
+                    SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                    SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16) + Util.GetFacingVector(ladderExtendTile.Facing) * -2, ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderExtendTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                }
+                else if (tile is Ladder ladderTile)
+                {
+                    SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                }
+                else if (tile is SpikeDeath)
+                {
+                    SpriteBatch.Draw(spikeDeath.Texture, new Vector2(x * 16, y * 16), color);
+                }
+                else if (tile is Spike)
+                {
+                    SpriteBatch.Draw(spike.Texture, new Vector2(x * 16, y * 16), color);
+                }
+                else if (tile is Trap trap)
+                {
+                    switch (trap.Facing)
+                    {
+                        case (Wall.WallFacing.Top):
+                        case (Wall.WallFacing.Normal):
+                            SpriteBatch.Draw(wallTrap.Texture, new Vector2(x * 16, y * 16 - 16), wallTrap.GetFrameRect(trap.Triggered ? 1 : 0), color);
+                            break;
+                        case (Wall.WallFacing.Bottom):
+                        case (Wall.WallFacing.BottomTop):
+                            SpriteBatch.Draw(wallTrapBottom.Texture, new Vector2(x * 16, y * 16 - 16), wallTrapBottom.GetFrameRect(trap.Triggered ? 1 : 0), color);
+                            break;
+                    }
+
+                }
+                else if (tile is Wall wallTile)
+                {
+                    switch (wallTile.Facing)
+                    {
+                        case (Wall.WallFacing.Normal):
+                            SpriteBatch.Draw(wall.Texture, new Vector2(x * 16, y * 16), color);
+                            break;
+                        case (Wall.WallFacing.Bottom):
+                            SpriteBatch.Draw(wallBottom.Texture, new Vector2(x * 16, y * 16), color);
+                            break;
+                        case (Wall.WallFacing.Top):
+                            SpriteBatch.Draw(wallTop.Texture, new Vector2(x * 16, y * 16), color);
+                            break;
+                        case (Wall.WallFacing.BottomTop):
+                            SpriteBatch.Draw(wallBottomTop.Texture, new Vector2(x * 16, y * 16), color);
+                            break;
+                    }
+
+                }
+                else if (tile is Grass)
+                    SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);
+
+                if (tile.Health < tile.MaxHealth)
+                    SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));
             }
         }
 

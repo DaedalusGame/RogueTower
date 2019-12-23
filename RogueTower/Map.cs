@@ -144,6 +144,8 @@ namespace RogueTower
 
                 new Hydra(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
             }*/
+
+            UpdateConnectivity();
         }
 
         public void BuildLadder(int ladderx, int laddery, int ladderheight, HorizontalFacing ladderfacing)
@@ -237,6 +239,54 @@ namespace RogueTower
                 World.Remove(box);
                 CollisionTiles.Remove(box);
             }
+        }
+
+        public void UpdateConnectivity()
+        {
+            foreach (Tile tile in EnumerateTiles())
+            {
+                tile.Connectivity = Connectivity.None;
+            }
+
+            foreach (Tile tile in EnumerateTiles())
+            {
+                bool doEast = tile.X < Width - 1;
+                bool doSouth = tile.Y < Height - 1;
+                Tile south = tile.GetNeighbor(0, 1);
+                Tile east = tile.GetNeighbor(1, 0);
+                Tile southeast = tile.GetNeighbor(1, 1);
+
+                if (doEast && (tile.Connects(east) || east.Connects(tile)))
+                    Connect(tile, east, Connectivity.East);
+                if (doSouth && (tile.Connects(south) || south.Connects(tile)))
+                    Connect(tile, south, Connectivity.South);
+                if (doEast && doSouth)
+                {
+                    if (tile.Connects(southeast) || southeast.Connects(tile))
+                        Connect(tile, southeast, Connectivity.SouthEast);
+                    if (east.Connects(south) || south.Connects(east))
+                        Connect(east, south, Connectivity.SouthWest);
+                }
+            }
+
+            foreach (Tile tile in EnumerateTiles())
+            {
+                if (!tile.Connectivity.HasFlag(Connectivity.North))
+                    tile.Connectivity &= Connectivity.KillNorth;
+                if (!tile.Connectivity.HasFlag(Connectivity.East))
+                    tile.Connectivity &= Connectivity.KillEast;
+                if (!tile.Connectivity.HasFlag(Connectivity.South))
+                    tile.Connectivity &= Connectivity.KillSouth;
+                if (!tile.Connectivity.HasFlag(Connectivity.West))
+                    tile.Connectivity &= Connectivity.KillWest;
+            }
+        }
+
+        public void Connect(Tile a, Tile b, Connectivity connection)
+        {
+            Connectivity rotated = connection.Rotate(4);
+            a.Connectivity |= connection;
+            b.Connectivity |= rotated;
         }
     }
 }

@@ -11,8 +11,81 @@ using Humper;
 
 namespace RogueTower
 {
+    [Flags]
+    enum Connectivity
+    {
+        None        = 0,
+        //Directions
+        North       = 1,
+        NorthEast   = 2,
+        East        = 4,
+        SouthEast   = 8,
+        South       = 16,
+        SouthWest   = 32,
+        West        = 64,
+        NorthWest   = 128,
+        //Kill Flags
+        KillNorth = ~(North | NorthEast | NorthWest),
+        KillEast = ~(East | NorthEast | SouthEast),
+        KillSouth = ~(South | SouthEast | SouthWest),
+        KillWest = ~(West | NorthWest | SouthWest),
+    }
+
     abstract class Tile
     {
+        static Dictionary<int, int> BlobTileMap = new Dictionary<int, int>() //Mapper for the minimal tileset, index in memory -> index in image
+        {
+            {0, 0},
+            {4, 1},
+            {92, 2},
+            {124, 3},
+            {116, 4},
+            {80, 5},
+            //{0, 6},
+            {16, 7},
+            {20, 8},
+            {87, 9},
+            {223, 10},
+            {241, 11},
+            {21, 12},
+            {64, 13},
+            {29, 14},
+            {117, 15},
+            {85, 16},
+            {71, 17},
+            {221, 18},
+            {125, 19},
+            {112, 20},
+            {31, 21},
+            {253, 22},
+            {113, 23},
+            {28, 24},
+            {127, 25},
+            {247, 26},
+            {209, 27},
+            {23, 28},
+            {199, 29},
+            {213, 30},
+            {95, 31},
+            {255, 32},
+            {245, 33},
+            {81, 34},
+            {5, 35},
+            {84, 36},
+            {93, 37},
+            {119, 38},
+            {215, 39},
+            {193, 40},
+            {17, 41},
+            //{0, 42},
+            {1, 43},
+            {7, 44},
+            {197, 45},
+            {69, 46},
+            {68, 47},
+            {65, 48},
+        };
+
         public GameWorld World => Map.World;
         public Map Map;
         public int X, Y;
@@ -24,6 +97,9 @@ namespace RogueTower
         public virtual Sound breakSound => sfx_tile_break;
         public Color Color = Color.White;
         public List<Box> Boxes = new List<Box>();
+
+        public Connectivity Connectivity;
+        public int BlobIndex => BlobTileMap[(int)Connectivity];
 
         public Tile(Map map, int x, int y, bool passable, double health)
         {
@@ -60,6 +136,11 @@ namespace RogueTower
         public void ReplaceEmpty()
         {
             Replace(new EmptySpace(Map, X, Y));
+        }
+
+        public virtual bool Connects(Tile other)
+        {
+            return false;
         }
 
         public virtual void HandleTileDamage(double damagein)
@@ -144,12 +225,18 @@ namespace RogueTower
 
     class WallIce : Wall
     {
+        public override Sound breakSound => sfx_tile_icebreak;
+
         public WallIce(Map map, int x, int y) : base(map, x, y, 25)
         {
             CanDamage = true;
             Friction = 0.3f;
         }
-        public override Sound breakSound => sfx_tile_icebreak;
+
+        public override bool Connects(Tile other)
+        {
+            return other is Wall;
+        }
     }
 
     class WallBlock : Wall
