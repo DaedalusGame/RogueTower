@@ -1339,8 +1339,8 @@ namespace RogueTower
         public override bool Incorporeal => CurrentAction.Hidden;
         public override Vector2 HomingTarget => Position + Head.Offset;
         public override bool Dead => CurrentAction is ActionDeath;
-        public override bool CanDamage => CurrentAction.Hidden;
-        public override bool CanHit => CurrentAction.Hidden;
+        public override bool CanDamage => !CurrentAction.Hidden;
+        public override bool CanHit => !CurrentAction.Hidden;
 
         public virtual Vector2 IdleOffset => -10 * GetFacingVector(Facing) + new Vector2(0, InCombat ? -30 : -15);
         public virtual Vector2 IdleCircle => InCombat ? new Vector2(20 * GetFacingVector(Facing).X, 10) : new Vector2(10 * GetFacingVector(Facing).X, 5);

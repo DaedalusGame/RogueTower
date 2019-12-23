@@ -328,10 +328,6 @@ namespace RogueTower
         {
         }
 
-        public Trap(Map map, int x, int y, WallFacing facing) : base(map, x, y, facing)
-        {
-        }
-
         public abstract void Trigger(EnemyHuman human);
 
         public override void StepOn(EnemyHuman human)
@@ -352,15 +348,29 @@ namespace RogueTower
         {
         }
 
-        public BumpTrap(Map map, int x, int y, WallFacing facing) : base(map, x, y, facing)
-        {
-        }
-
         public override void Trigger(EnemyHuman human)
         {
             if (human is MoaiMan)
                 return;
             PlaySFX(sfx_player_hurt, 0.4f, 0.3f, 0.3f);
+        }
+    }
+
+    class PoisonTrap : Trap
+    {
+        public override float RetriggerTime => 30;
+
+        public PoisonTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            new PoisonBreath(World, new Vector2(X * 16 + 8, Y * 16))
+            {
+                Velocity = new Vector2(0, -1),
+                FrameEnd = 20,
+            };
         }
     }
 

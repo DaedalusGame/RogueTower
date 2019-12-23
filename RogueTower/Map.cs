@@ -11,6 +11,12 @@ namespace RogueTower
 {
     class Map
     {
+        public WeightedList<Func<Map, int, int, Trap>> PossibleTraps = new WeightedList<Func<Map, int, int, Trap>>()
+        {
+            { (map,x,y) => new BumpTrap(map, x, y), 1 },
+            { (map,x,y) => new PoisonTrap(map, x, y), 5 },
+        };
+
         public int Width, Height;
         public Tile[,] Tiles;
         public TileBG[,] Background;
@@ -157,6 +163,13 @@ namespace RogueTower
                 Tiles[ladderx, laddery + y] = new Ladder(this, ladderx, laddery + y, ladderfacing);
                 Tiles[ladderx + facingOffset, laddery + y] = new Wall(this, ladderx + facingOffset, laddery + y);
             }
+        }
+
+        public Trap BuildTrap(int x, int y, Random random)
+        {
+            Tile tile = GetTile(x, y);
+            var generator = PossibleTraps.GetWeighted(random);
+            return generator(this,x,y);
         }
 
         public Tile GetTile(int x, int y)

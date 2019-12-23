@@ -49,11 +49,16 @@ namespace RogueTower
                 Destroy();
         }
 
+        public bool CheckFriendlyFire(object hit)
+        {
+            return Shooter != null && Shooter.NoFriendlyFire(hit);
+        }
+
         protected void HandleDamage()
         {
             foreach (var box in World.FindBoxes(new RectangleF(Position - BulletSize / 2, BulletSize)))
             {
-                if (Destroyed || Shooter.NoFriendlyFire(box.Data))
+                if (Destroyed || CheckFriendlyFire(box.Data))
                     return;
                 if (box.Data is Enemy enemy && enemy.CanHit)
                 {
@@ -131,7 +136,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data))
                 return;
             bool explode = false;
             if (hit.Box.Data is Enemy enemy && enemy.CanHit)
@@ -177,7 +182,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data))
                 return;
             bool explode = false;
             if (hit.Box.Data is Enemy enemy && enemy.CanHit)
@@ -249,7 +254,7 @@ namespace RogueTower
         public override void Draw(SceneGame scene)
         {
             var breathPoison = SpriteLoader.Instance.AddSprite("content/breath_poison");
-            scene.DrawSpriteExt(breathPoison, scene.AnimationFrame(breathPoison, Frame, FrameEnd), Position - breathPoison.Middle, breathPoison.Middle, (float)Math.Atan2(Velocity.X, Velocity.Y), SpriteEffects.None, 0);
+            scene.DrawSpriteExt(breathPoison, scene.AnimationFrame(breathPoison, Frame, FrameEnd), Position - breathPoison.Middle, breathPoison.Middle, (float)Math.Atan2(Velocity.X, Velocity.Y)+MathHelper.Pi, SpriteEffects.None, 0);
         }
     }
 
@@ -288,7 +293,7 @@ namespace RogueTower
 
         protected override ICollisionResponse GetCollision(ICollision collision)
         {
-            if (Shooter.NoFriendlyFire(collision.Hit.Box.Data))
+            if (CheckFriendlyFire(collision.Hit.Box.Data))
                 return null;
                 //return new CrossResponse(collision);
             return new TouchResponse(collision);
@@ -296,7 +301,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data))
                 return;
             bool bounced = true;
             
@@ -358,7 +363,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
                 return;
             bool hitwall = true;
 
