@@ -1417,7 +1417,7 @@ namespace RogueTower
 
                 if (CurrentAction is ActionHidden)
                 {
-                    CurrentAction = new ActionUnhide(this, 300);
+                    CurrentAction = new ActionUnhide(this, 30);
                 }
                 else if (CurrentAction is ActionHide)
                 {

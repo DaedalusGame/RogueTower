@@ -99,7 +99,15 @@ namespace RogueTower
         public List<Box> Boxes = new List<Box>();
 
         public Connectivity Connectivity;
-        public int BlobIndex => BlobTileMap[(int)Connectivity];
+        public bool ConnectionDirty = true;
+        public int BlobIndex
+        {
+            get
+            {
+                Connectivity connectivity = CullDiagonals();
+                return BlobTileMap.ContainsKey((int)connectivity) ? BlobTileMap[(int)connectivity] : BlobTileMap[0];
+            }
+        }
 
         public Tile(Map map, int x, int y, bool passable, double health)
         {
@@ -130,6 +138,7 @@ namespace RogueTower
             Map.RemoveTileCollisions(this);
             Map.Tiles[X, Y] = tile;
             Map.AddTileCollisions(tile);
+            ClearConnection();
             CopyTo(tile);
         }
 
@@ -141,6 +150,41 @@ namespace RogueTower
         public virtual bool Connects(Tile other)
         {
             return false;
+        }
+
+        private Connectivity CullDiagonals()
+        {
+            Connectivity connectivity = Connectivity;
+            if (!connectivity.HasFlag(Connectivity.North))
+                connectivity &= Connectivity.KillNorth;
+            if (!connectivity.HasFlag(Connectivity.East))
+                connectivity &= Connectivity.KillEast;
+            if (!connectivity.HasFlag(Connectivity.South))
+                connectivity &= Connectivity.KillSouth;
+            if (!connectivity.HasFlag(Connectivity.West))
+                connectivity &= Connectivity.KillWest;
+            return connectivity;
+        }
+
+        public void ClearConnection() //Bulky?
+        {
+            Tile north = GetNeighbor(0, -1);
+            Tile west = GetNeighbor(-1, 0);
+            Tile northwest = GetNeighbor(-1, -1);
+
+            Map.ConnectionDirty = true;
+            Map.Disconnect(this, north, Connectivity.North);
+            Map.Disconnect(this, west, Connectivity.West);
+            Map.Disconnect(this, northwest, Connectivity.NorthWest);
+            Map.Disconnect(this, GetNeighbor(1, -1), Connectivity.NorthEast);
+            Map.Disconnect(this, GetNeighbor(1, 0), Connectivity.East);
+            Map.Disconnect(this, GetNeighbor(1, 1), Connectivity.SouthEast);
+            Map.Disconnect(this, GetNeighbor(0, 1), Connectivity.South);
+            Map.Disconnect(this, GetNeighbor(-1, 1), Connectivity.SouthWest);
+            ConnectionDirty = true;
+            north.ConnectionDirty = true;
+            west.ConnectionDirty = true;
+            northwest.ConnectionDirty = true;
         }
 
         public virtual void HandleTileDamage(double damagein)

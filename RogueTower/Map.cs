@@ -18,6 +18,7 @@ namespace RogueTower
         public GameWorld World;
         public List<IBox> CollisionTiles = new List<IBox>();
         public bool CollisionDirty = true;
+        public bool ConnectionDirty = true;
 
         public Map(GameWorld world, int width, int height)
         {
@@ -196,6 +197,12 @@ namespace RogueTower
                 UpdateCollisions();
                 CollisionDirty = false;
             }
+
+            if(ConnectionDirty)
+            {
+                UpdateConnectivity();
+                ConnectionDirty = false;
+            }
         }
 
         public void UpdateCollisions()
@@ -243,18 +250,15 @@ namespace RogueTower
 
         public void UpdateConnectivity()
         {
-            foreach (Tile tile in EnumerateTiles())
-            {
-                tile.Connectivity = Connectivity.None;
-            }
+            IEnumerable<Tile> dirtyTiles = EnumerateTiles().Where(tile => tile.ConnectionDirty).ToList();
 
-            foreach (Tile tile in EnumerateTiles())
+            foreach (Tile tile in dirtyTiles)
             {
-                bool doEast = tile.X < Width - 1;
-                bool doSouth = tile.Y < Height - 1;
                 Tile south = tile.GetNeighbor(0, 1);
                 Tile east = tile.GetNeighbor(1, 0);
                 Tile southeast = tile.GetNeighbor(1, 1);
+                bool doEast = tile.X < Width - 1;
+                bool doSouth = tile.Y < Height - 1;
 
                 if (doEast && (tile.Connects(east) || east.Connects(tile)))
                     Connect(tile, east, Connectivity.East);
@@ -267,18 +271,8 @@ namespace RogueTower
                     if (east.Connects(south) || south.Connects(east))
                         Connect(east, south, Connectivity.SouthWest);
                 }
-            }
 
-            foreach (Tile tile in EnumerateTiles())
-            {
-                if (!tile.Connectivity.HasFlag(Connectivity.North))
-                    tile.Connectivity &= Connectivity.KillNorth;
-                if (!tile.Connectivity.HasFlag(Connectivity.East))
-                    tile.Connectivity &= Connectivity.KillEast;
-                if (!tile.Connectivity.HasFlag(Connectivity.South))
-                    tile.Connectivity &= Connectivity.KillSouth;
-                if (!tile.Connectivity.HasFlag(Connectivity.West))
-                    tile.Connectivity &= Connectivity.KillWest;
+                tile.ConnectionDirty = false;
             }
         }
 
@@ -287,6 +281,13 @@ namespace RogueTower
             Connectivity rotated = connection.Rotate(4);
             a.Connectivity |= connection;
             b.Connectivity |= rotated;
+        }
+
+        public void Disconnect(Tile a, Tile b, Connectivity connection)
+        {
+            Connectivity rotated = connection.Rotate(4);
+            a.Connectivity &= ~connection;
+            b.Connectivity &= ~rotated;
         }
     }
 }
