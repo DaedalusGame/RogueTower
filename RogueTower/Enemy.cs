@@ -1480,8 +1480,8 @@ namespace RogueTower
         {
             public float Time;
 
-            public virtual float MinDistance => 90;
-            public virtual float MaxDistance => 100;
+            public virtual float MinDistance => 160;
+            public virtual float MaxDistance => 240;
             public override bool MouthOpen => true;
 
             public ActionIdle(Hydra hydra) : base(hydra)
@@ -1532,7 +1532,8 @@ namespace RogueTower
                     Hydra.Destroy();
                 }
                 var size = Hydra.Box.Bounds.Size;
-                new BigFireEffect(Hydra.World, Hydra.Position - size / 2 + new Vector2(Hydra.Random.NextFloat() * size.X, Hydra.Random.NextFloat() * size.Y), 0, 5);
+                if(Time % 3 == 0)
+                    new BigFireEffect(Hydra.World, Hydra.Position - size / 2 + new Vector2(Hydra.Random.NextFloat() * size.X, Hydra.Random.NextFloat() * size.Y), 0, 10);
             }
         }
 
@@ -1541,6 +1542,7 @@ namespace RogueTower
         public List<SnakeHydra> Heads = new List<SnakeHydra>();
         public Action CurrentAction;
 
+        public float WalkFrame;
         public HorizontalFacing Facing;
 
         public override bool Attacking => false;
@@ -1600,6 +1602,8 @@ namespace RogueTower
                 Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
             if (Math.Sign(dx) == Math.Sign(Velocity.X))
                 AppliedFriction = 1;
+
+            WalkFrame += Velocity.X * 0.25f;
         }
 
         private void WalkConstrained(float dx, float speedLimit) //Same as walk but don't jump off cliffs
@@ -1675,8 +1679,8 @@ namespace RogueTower
                     }
 
                     float moveOffset = -Math.Sign(dx) * Target.Velocity.X * 32;
-                    float preferredDistanceMin = 60 + moveOffset;
-                    float preferredDistanceMax = 90 + moveOffset;
+                    float preferredDistanceMin = idle.MinDistance + moveOffset;
+                    float preferredDistanceMax = idle.MaxDistance + moveOffset;
                     if(Math.Abs(dx) > preferredDistanceMax * 1.5f)
                     {
                         WalkConstrained(dx, 1.0f);
@@ -1701,11 +1705,12 @@ namespace RogueTower
         {
             var weightedList = new WeightedList<Snake.Action>();
             weightedList.Add(new Snake.ActionIdle(head), 30);
-            if(Heads.Count(x => x.CurrentAction is Snake.ActionBite) < 2)
+            Vector2 dist = Target.Position - Position;
+            if(Heads.Count(x => x.CurrentAction is Snake.ActionBite) < 2 && dist.LengthSquared() < 90*90)
                 weightedList.Add(new Snake.ActionBite(head, 60 + Random.Next(60), 20, 60 + Random.Next(60)), 50);
             if (Heads.Count(x => x.CurrentAction is Snake.ActionSpit) < 1)
                 weightedList.Add(new Snake.ActionSpit(head, Target, new Vector2(0, -70), 60, 20, 20, 20), 30);
-            if (Heads.Count(x => x.CurrentAction is Snake.ActionBreath) < 1)
+            if (Heads.Count(x => x.CurrentAction is Snake.ActionBreath) < 1 && Math.Abs(dist.X) < 100)
                 weightedList.Add(new Snake.ActionBreath(head, Target, 80, 120, 60), 30);
             head.CurrentAction = weightedList.GetWeighted(Random);
         }
@@ -1742,7 +1747,7 @@ namespace RogueTower
         public override void Death()
         {
             if(!(CurrentAction is ActionDeath))
-                CurrentAction = new ActionDeath(this,100);
+                CurrentAction = new ActionDeath(this,50);
         }
     }
 

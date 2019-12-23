@@ -540,7 +540,7 @@ namespace RogueTower
                     Vector2 truePos = Vector2.Transform(hydra.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawSprite(hydraBody, Frame / 20, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                 }
                 if (obj is Cannon cannon)
                 {
