@@ -55,7 +55,7 @@ namespace RogueTower
             {
                 if (Destroyed || Shooter.NoFriendlyFire(box.Data))
                     return;
-                if (box.Data is Enemy enemy)
+                if (box.Data is Enemy enemy && enemy.CanHit)
                 {
                     ApplyEffect(enemy);
                 }
@@ -134,7 +134,7 @@ namespace RogueTower
             if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
                 return;
             bool explode = false;
-            if (hit.Box.Data is Enemy enemy)
+            if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
                 explode = true;
             }
@@ -180,7 +180,7 @@ namespace RogueTower
             if (Destroyed || Shooter.NoFriendlyFire(hit.Box.Data))
                 return;
             bool explode = false;
-            if (hit.Box.Data is Enemy enemy)
+            if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
                 explode = true;
             }
@@ -302,7 +302,7 @@ namespace RogueTower
             
             if (hit.Box.Data is Tile tile)
                 tile.HandleTileDamage(knifeDamage);
-            if (hit.Box.Data is Enemy enemy)
+            if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
                 if (enemy.CanDamage)
                     bounced = false;
@@ -371,7 +371,7 @@ namespace RogueTower
                 }
                 ShockwaveForce -= 20;
             }
-            if (hit.Box.Data is Enemy enemy)
+            if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
                 if (enemy.CanDamage)
                     hitwall = false;

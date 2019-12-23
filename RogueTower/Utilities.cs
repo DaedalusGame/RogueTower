@@ -64,6 +64,25 @@ namespace RogueTower
             return new Vector2((float)Math.Sin(angle), (float)Math.Cos(angle));
         }
 
+        private static T PickInternal<T>(List<T> enumerable, Random random, bool remove)
+        {
+            int select = random.Next(enumerable.Count());
+            T pick = enumerable[select];
+            if(remove)
+                enumerable.RemoveAt(select);
+            return pick;
+        }
+
+        public static T Pick<T>(this List<T> enumerable,Random random)
+        {
+            return PickInternal(enumerable, random, false);
+        }
+
+        public static T PickAndRemove<T>(this List<T> enumerable, Random random)
+        {
+            return PickInternal(enumerable, random, true);
+        }
+
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable)
         {
             return new HashSet<T>(enumerable);

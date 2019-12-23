@@ -30,11 +30,11 @@ namespace RogueTower
         public abstract bool Dead
         {
             get;
-        } 
+        }
+        public virtual bool CanHit => true;
+        public virtual bool CanDamage => false;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
-
-        public bool CanDamage = false;
         public double Health;
         public double HealthMax;
 
@@ -276,6 +276,7 @@ namespace RogueTower
         public int ExtraJumps = 0;
         public int Invincibility = 0;
         public float Lifetime;
+        public override bool CanDamage => true;
 
         public Weapon Weapon;
 
@@ -437,7 +438,7 @@ namespace RogueTower
             {
                 if (Box.Data == this)
                     continue;
-                if (Box.Data is Enemy enemy)
+                if (Box.Data is Enemy enemy && enemy.CanHit)
                 {
                     enemy.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
                 }
@@ -523,7 +524,6 @@ namespace RogueTower
             Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
-            CanDamage = true;
         }
 
         public override void Create(float x, float y)
@@ -812,7 +812,8 @@ namespace RogueTower
             public Snake Snake;
 
             public virtual bool MouthOpen => false;
-            public virtual int HeadIndex => Snake.Segments.Count - 1;
+            public virtual float HeadIndex => Snake.Segments.Count - 1;
+            public virtual bool Hidden => false;
 
             public Action(Snake snake)
             {
@@ -852,6 +853,82 @@ namespace RogueTower
                 Vector2 idleCircle = Snake.IdleCircle;
                 Vector2 wantedPosition = Snake.IdleOffset + new Vector2((float)Math.Sin(frame / 20f) * idleCircle.X, (float)Math.Cos(frame / 20f) * idleCircle.Y);
                 Snake.Move(wantedPosition, 0.2f);
+            }
+        }
+
+        public class ActionHide : ActionIdle
+        {
+            public float HideTime;
+
+            public override bool Hidden => true;
+            public override float HeadIndex => MathHelper.Clamp(Snake.Segments.Count * (1 - Time / HideTime), 0, Snake.Segments.Count-1);
+
+            public ActionHide(Snake snake, float hideTime) : base(snake)
+            {
+                HideTime = hideTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                base.UpdateDelta(delta);
+
+                if(Time > 1)
+                {
+
+                }
+
+                if(Time >= HideTime)
+                {
+                    Snake.CurrentAction = new ActionHidden(Snake);
+                }
+            }
+        }
+
+        public class ActionHidden : Action
+        {
+            public float Time;
+            public override bool Hidden => true;
+
+            public ActionHidden(Snake snake) : base(snake)
+            {
+            }
+
+            public override SegmentRender GetRenderSegment(SnakeSegment segment)
+            {
+                return SegmentRender.Invisible;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                Time += delta;
+            }
+
+            public override void UpdateDiscrete()
+            {
+                //NOOP
+            }
+        }
+
+        public class ActionUnhide : ActionIdle
+        {
+            public float HideTime;
+
+            public override bool Hidden => true;
+            public override float HeadIndex => MathHelper.Clamp(Snake.Segments.Count * (Time / HideTime), 0, Snake.Segments.Count - 1);
+
+            public ActionUnhide(Snake snake, float hideTime) : base(snake)
+            {
+                HideTime = hideTime;
+            }
+
+            public override void UpdateDelta(float delta)
+            {
+                base.UpdateDelta(delta);
+
+                if (Time >= HideTime)
+                {
+                    Snake.ResetState();
+                }
             }
         }
 
@@ -1247,7 +1324,9 @@ namespace RogueTower
 
         public IBox Box;
         public List<SnakeSegment> Segments = new List<SnakeSegment>();
-        public SnakeSegment Head => Segments[CurrentAction.HeadIndex];
+        public SnakeSegment Head => Segments[(int)CurrentAction.HeadIndex];
+        public Vector2 HeadOffset => GetHeadOffset();
+        public Vector2 HeadPosition => Position + HeadOffset;
         public Vector2 PositionLast;
         public Vector2 Velocity => Position - PositionLast;
 
@@ -1257,12 +1336,17 @@ namespace RogueTower
         public int Invincibility = 0;
 
         public override bool Attacking => false;
-        public override bool Incorporeal => false;
+        public override bool Incorporeal => CurrentAction.Hidden;
         public override Vector2 HomingTarget => Position + Head.Offset;
         public override bool Dead => CurrentAction is ActionDeath;
+        public override bool CanDamage => CurrentAction.Hidden;
+        public override bool CanHit => CurrentAction.Hidden;
 
         public virtual Vector2 IdleOffset => -10 * GetFacingVector(Facing) + new Vector2(0, InCombat ? -30 : -15);
         public virtual Vector2 IdleCircle => InCombat ? new Vector2(20 * GetFacingVector(Facing).X, 10) : new Vector2(10 * GetFacingVector(Facing).X, 5);
+
+        public Vector2 HomePosition;
+        public HorizontalFacing HomeFacing;
 
         public HorizontalFacing Facing;
         public float MoveDelta;
@@ -1275,7 +1359,6 @@ namespace RogueTower
         {
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
-            CanDamage = true;
         }
 
         public override void Create(float x, float y)
@@ -1302,6 +1385,15 @@ namespace RogueTower
             CurrentAction = new ActionIdle(this);
         }
 
+        private Vector2 GetHeadOffset()
+        {
+            int i = (int)Math.Floor(CurrentAction.HeadIndex);
+            int e = (int)Math.Ceiling(CurrentAction.HeadIndex);
+            float slide = CurrentAction.HeadIndex % 1;
+
+            return Vector2.Lerp(Segments[i].Offset, Segments[e].Offset, slide);
+        }
+
         public virtual void UpdateAI()
         {
             var viewSize = new Vector2(200, 100);
@@ -1323,7 +1415,19 @@ namespace RogueTower
             {
                 float dx = Target.Position.X - Position.X;
 
-                if (CurrentAction is ActionIdle idle)
+                if (CurrentAction is ActionHidden)
+                {
+                    CurrentAction = new ActionUnhide(this, 300);
+                }
+                else if (CurrentAction is ActionHide)
+                {
+
+                }
+                else if (CurrentAction is ActionUnhide)
+                {
+
+                }
+                else if (CurrentAction is ActionIdle idle)
                 {
                     if (dx < 0)
                     {
@@ -1345,7 +1449,18 @@ namespace RogueTower
             }
             else
             {
+                if(CurrentAction is ActionHide)
+                {
 
+                }
+                else if (CurrentAction is ActionUnhide)
+                {
+
+                }
+                else if(CurrentAction is ActionIdle)
+                {
+                    CurrentAction = new ActionHide(this, 80);
+                }
             }
         }
 
@@ -1933,7 +2048,6 @@ namespace RogueTower
             Angle = angle;
             Speed = speed;
             Distance = distance;
-            CanDamage = false;
             InitHealth(240); //If we ever do want to make these destroyable, this is the value I propose for health.
         }
 

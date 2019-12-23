@@ -16,6 +16,7 @@ namespace RogueTower
         public GameWorld World => Map.World;
         public Map Map;
         public int X, Y;
+        public TileBG Background => Map.Background[X,Y];
         public bool Passable;
         public bool CanDamage = false;
         public float Friction = 1.0f;

@@ -136,7 +136,6 @@ namespace RogueTower
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
             InitHealth(100);
-            CanDamage = true;
             Controls = new InputQueue(this);
             //Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
         }

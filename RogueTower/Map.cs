@@ -118,14 +118,12 @@ namespace RogueTower
                 }
             }*/
 
-            for (int i = 0; i < 70; i++)
+            List<Tile> holes = EnumerateTiles().Where(tile => tile is EmptySpace && tile.Background == TileBG.Black).ToList();
+            for (int i = 0; i < Math.Min(70,holes.Count); i++)
             {
-                int select = random.Next(walls.Count);
-                Tile pickWall = walls[select];
-                walls.RemoveAt(select);
+                Tile pick = holes.PickAndRemove(random);
 
-                new Snake(World, new Vector2(pickWall.X * 16 + 8, pickWall.Y * 16 + 8));
-                
+                new Snake(World, new Vector2(pick.X * 16 + 8, pick.Y * 16 + 8));
             }
 
                 List<Tile> floors = EnumerateTiles().Where(tile => tile is EmptySpace && tile.GetNeighbor(0,1) is Wall).ToList();

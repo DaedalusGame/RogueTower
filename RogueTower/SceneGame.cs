@@ -522,7 +522,7 @@ namespace RogueTower
                                 sprite = snakeHeadOpen;
                             else
                                 sprite = snakeHeadClosed;
-                            DrawSprite(sprite, 0, snake.Position + segment.Offset - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                             break;
                         }
                         else if(render == Snake.SegmentRender.Normal)
@@ -784,6 +784,8 @@ namespace RogueTower
             var window = SpriteLoader.Instance.AddSprite("content/bg_window");
             var window_big_left = SpriteLoader.Instance.AddSprite("content/bg_window_big_left");
             var window_big_right = SpriteLoader.Instance.AddSprite("content/bg_window_big_right");
+            var black = SpriteLoader.Instance.AddSprite("content/bg_black");
+            var hole = SpriteLoader.Instance.AddSprite("content/bg_hole");
 
             int ChosenBG;
             WeightedList<SpriteReference> TextureList = new WeightedList<SpriteReference>();
@@ -863,6 +865,12 @@ namespace RogueTower
                             break;
                         case (TileBG.Statue):
                             SpriteBatch.Draw(statue.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.Black):
+                            SpriteBatch.Draw(black.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.BrickHole):
+                            SpriteBatch.Draw(hole.Texture, new Vector2(x * 16, y * 16), Color.White);
                             break;
                     }
                     /*if(tile == TileBG.Brick)

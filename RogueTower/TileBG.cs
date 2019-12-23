@@ -14,6 +14,7 @@ namespace RogueTower
         BrickMiss2,
         BrickOpening,
         BrickPlatform,
+        BrickHole,
         Tile4,
         TileDetail,
         Statue,
@@ -26,5 +27,6 @@ namespace RogueTower
         Window,
         WindowBigLeft,
         WindowBigRight,
+        Black,
     }
 }

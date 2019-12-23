@@ -791,6 +791,10 @@ namespace RogueTower
                     return TileBG.PillarTop;
                 case (12):
                     return TileBG.BrickPlatform;
+                case (13):
+                    return TileBG.Black;
+                case (14):
+                    return TileBG.BrickHole;
                 case (16):
                     return TileBG.Window;
                 case (17):
