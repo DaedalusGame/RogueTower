@@ -768,6 +768,13 @@ namespace RogueTower
 
     class Snake : Enemy
     {
+        public enum SegmentRender
+        {
+            Invisible,
+            Normal,
+            Fat,
+        }
+
         public class SnakeSegment
         {
             public Vector2 Offset => new Vector2((float)Math.Sin(Angle), (float)Math.Cos(Angle)) * Distance * ((float)(Index + 1) / Parent.Segments.Count);
@@ -805,15 +812,16 @@ namespace RogueTower
             public Snake Snake;
 
             public virtual bool MouthOpen => false;
+            public virtual int HeadIndex => Snake.Segments.Count - 1;
 
             public Action(Snake snake)
             {
                 Snake = snake;
             }
 
-            public virtual bool ShouldRenderSegment(SnakeSegment segment)
+            public virtual SegmentRender GetRenderSegment(SnakeSegment segment)
             {
-                return true;
+                return SegmentRender.Normal;
             }
 
             public abstract void UpdateDelta(float delta);
@@ -836,8 +844,6 @@ namespace RogueTower
             public override void UpdateDelta(float delta)
             {
                 Time += delta;
-
-                
             }
 
             public override void UpdateDiscrete()
@@ -967,6 +973,15 @@ namespace RogueTower
                 EndTime = endTime;
             }
 
+            public override SegmentRender GetRenderSegment(SnakeSegment segment)
+            {
+                int i = Snake.Segments.Count - (int)Math.Round(StartTime);
+                if (segment.Index == i)
+                    return SegmentRender.Fat;
+                else
+                    return SegmentRender.Normal;
+            }
+
             public override void UpdateDelta(float delta)
             {
                 switch (State)
@@ -1059,6 +1074,23 @@ namespace RogueTower
                 EndTime = endTime;
                 Target = target;
             }
+
+            public override SegmentRender GetRenderSegment(SnakeSegment segment)
+            {
+                int bulgeLength = 8;
+                float bulgeSpeed = 0.3f;
+                switch (State)
+                {
+                    case (BreathState.Start):
+                        int index = Snake.Segments.Count - (int)Math.Round(StartTime * bulgeSpeed);
+                        return segment.Index < index && segment.Index > index - bulgeLength ? SegmentRender.Fat : SegmentRender.Normal;
+                    case (BreathState.Breath):
+                        return segment.Index > Snake.Segments.Count - (int)Math.Round(BiteTime * bulgeSpeed) && segment.Index > Snake.Segments.Count - bulgeLength ? SegmentRender.Fat : SegmentRender.Normal;
+                    default:
+                        return SegmentRender.Normal;
+                }
+            }
+
 
             public override void UpdateDelta(float delta)
             {
@@ -1182,9 +1214,9 @@ namespace RogueTower
                 SegmentCut = 1;
             }
 
-            public override bool ShouldRenderSegment(SnakeSegment segment)
+            public override SegmentRender GetRenderSegment(SnakeSegment segment)
             {
-                return segment.Index < SegmentCut * Snake.Segments.Count;
+                return segment.Index < SegmentCut * Snake.Segments.Count ? SegmentRender.Normal : SegmentRender.Invisible;
             }
 
             public override void UpdateDelta(float delta)
@@ -1211,7 +1243,7 @@ namespace RogueTower
 
         public IBox Box;
         public List<SnakeSegment> Segments = new List<SnakeSegment>();
-        public SnakeSegment Head => Segments.Last();
+        public SnakeSegment Head => Segments[CurrentAction.HeadIndex];
         public Vector2 PositionLast;
         public Vector2 Velocity => Position - PositionLast;
 
@@ -1633,10 +1665,12 @@ namespace RogueTower
 
                     foreach(var head in Heads)
                     {
-                        head.Facing = Facing;
                         if (head.CurrentAction is Snake.ActionIdle headIdle && headIdle.Time > 80)
                         {
-                            SelectAttack(head);
+                            head.Facing = Facing;
+                            int attackingHeads = Heads.Count(x => !(x.CurrentAction is Snake.ActionIdle || x.CurrentAction is Snake.ActionDeath));
+                            if (attackingHeads < 2)
+                                SelectAttack(head);
                         }
                     }
 

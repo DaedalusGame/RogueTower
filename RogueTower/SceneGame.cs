@@ -478,6 +478,7 @@ namespace RogueTower
             var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
             var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
             var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
+            var snakeBodyBig = SpriteLoader.Instance.AddSprite("content/snake_belly");
             var hydraBody = SpriteLoader.Instance.AddSprite("content/hydra_body");
             var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
             var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
@@ -511,7 +512,8 @@ namespace RogueTower
                         continue;
                     foreach (var segment in snake.Segments)
                     {
-                        if (!snake.CurrentAction.ShouldRenderSegment(segment))
+                        var render = snake.CurrentAction.GetRenderSegment(segment);
+                        if (render == Snake.SegmentRender.Invisible)
                             continue;
                         if (segment == snake.Head)
                         {
@@ -521,10 +523,15 @@ namespace RogueTower
                             else
                                 sprite = snakeHeadClosed;
                             DrawSprite(sprite, 0, snake.Position + segment.Offset - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                            break;
                         }
-                        else
+                        else if(render == Snake.SegmentRender.Normal)
                         {
                             DrawSprite(snakeBody, 0, snake.Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 0);
+                        }
+                        else if (render == Snake.SegmentRender.Fat)
+                        {
+                            DrawSprite(snakeBodyBig, 0, snake.Position + segment.Offset - snakeBodyBig.Middle, SpriteEffects.None, 0);
                         }
                     } 
                 }
