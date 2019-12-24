@@ -366,6 +366,17 @@ namespace RogueTower
 
         public override void Trigger(EnemyHuman human)
         {
+            if (human is Player)
+            {
+                World.Hitstop = 10;
+            }
+            Scheduler.Instance.Run(new Coroutine(PoisonBlast()));
+        }
+
+        public IEnumerable<Wait> PoisonBlast()
+        {
+            yield return new WaitDelta(World, 1);
+
             new PoisonBreath(World, new Vector2(X * 16 + 8, Y * 16))
             {
                 Velocity = new Vector2(0, -1),
