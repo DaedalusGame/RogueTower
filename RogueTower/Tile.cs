@@ -385,6 +385,31 @@ namespace RogueTower
         }
     }
 
+    class SlowTrap : Trap
+    {
+        public override float RetriggerTime => 30;
+
+        public SlowTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            if (human is Player)
+            {
+                World.Hitstop = 10;
+            }
+            Scheduler.Instance.Run(new Coroutine(SlowBlast(human)));
+        }
+
+        public IEnumerable<Wait> SlowBlast(EnemyHuman human)
+        {
+            yield return new WaitDelta(World, 1);
+
+            human.AddStatusEffect(new Slow(human, 0.6f, 1000));
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;

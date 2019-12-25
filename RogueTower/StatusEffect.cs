@@ -134,4 +134,45 @@ namespace RogueTower
             //NOOP
         }
     }
+
+    class Slow : StatusEffect
+    {
+        public float SpeedModifier;
+
+        public Slow(Enemy enemy, float speedModifier, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+            SpeedModifier = speedModifier;
+        }
+
+        public override bool CanCombine(StatusEffect other)
+        {
+            if(base.CanCombine(other))
+            {
+                Slow slowA = this;
+                Slow slowB = (Slow)other;
+                return slowA.SpeedModifier == slowB.SpeedModifier;
+            }
+            return false;
+        }
+
+        protected override void OnAdd()
+        {
+            //You slow down!
+        }
+
+        protected override void OnRemove()
+        {
+            //You're no longer slow
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+    }
 }

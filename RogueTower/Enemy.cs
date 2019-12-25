@@ -87,7 +87,10 @@ namespace RogueTower
 
         public override void Update(float delta)
         {
-            base.Update(delta);
+            float adjustedDelta = delta;
+            if (StatusEffects.Any(effect => effect is Slow))
+                adjustedDelta *= StatusEffects.OfType<Slow>().Min(effect => effect.SpeedModifier);
+            base.Update(adjustedDelta);
             HandleStatusEffects(delta);
         }
 
