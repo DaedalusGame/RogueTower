@@ -248,7 +248,8 @@ namespace RogueTower
 
         protected override void ApplyEffect(Enemy enemy)
         {
-            enemy.Health = Math.Max(enemy.Health - 1, 1);
+            enemy.AddStatusEffect(new Poison(enemy, 1000));
+            //enemy.Health = Math.Max(enemy.Health - 1, 1);
         }
 
         public override void Draw(SceneGame scene)

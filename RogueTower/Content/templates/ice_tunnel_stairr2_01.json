@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "ladderleft", "ConnectionDown": "none", "ConnectionLeft": "icetunnel", "ConnectionRight": "icetunnel", "Weight": 100, "Direction": "Any"},
+  "values": {"ConnectionUp": "icetunnelstairr2_0", "ConnectionDown": "none", "ConnectionLeft": "none", "ConnectionRight": "icetunnelstairr2_1", "Weight": 100, "Direction": "Any"},
   "layers": [
     {
       "name": "Foreground",
@@ -16,7 +16,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Foreground",
-      "data": [2, 2, 10, -1, -1, -1, 2, 2, 9, 9, 10, -1, -1, -1, 9, 9, -1, 19, 10, -1, -1, -1, 19, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 9, 9, 9, 9, 9, 9, 9, 1, 1, 1, 1, 1, 1, 1, 1],
+      "data": [0, 0, 9, 9, 19, -1, -1, -1, 0, 0, 9, 9, 19, -1, -1, -1, 0, 0, 9, 19, -1, -1, -1, -1, 0, 0, 9, 19, -1, -1, 9, -1, 0, 0, 9, 19, -1, -1, -1, -1, 0, 0, 9, 19, -1, -1, -1, -1, 0, 0, 9, 9, 9, 9, 9, 9, 0, 0, 1, 1, 1, 1, 1, 1],
       "exportMode": 0,
       "arrayMode": 0
     },
@@ -30,7 +30,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Background",
-      "data": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, -1, 18, 11, 17, -1, 18, 11, 17, -1, -1, 27, -1, -1, -1, 27, -1, -1, -1, 19, -1, -1, -1, 19, -1, -1, -1, 27, -1, -1, -1, 27, -1, -1, -1, 27, -1, -1, -1, 27, -1, 0, 0, 0, 0, 0, 0, 0, 0],
+      "data": [0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 19, -1, -1, -1, 19, -1, 0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 27, -1, -1, -1, 27, -1, 0, 0, 0, 0, 0, 0, 0, 0],
       "exportMode": 0,
       "arrayMode": 0
     },

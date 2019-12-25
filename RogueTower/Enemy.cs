@@ -37,6 +37,7 @@ namespace RogueTower
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
         public double Health;
         public double HealthMax;
+        public List<StatusEffect> StatusEffects = new List<StatusEffect>();
 
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
@@ -58,6 +59,41 @@ namespace RogueTower
         {
             Health = health;
             HealthMax = health;
+        }
+
+        public void AddStatusEffect(StatusEffect effect)
+        {
+            if (StatusEffects.Any(x => x.CanCombine(effect)))
+                CombineStatusEffect(effect);
+            else
+                StatusEffects.Add(effect);
+        }
+
+        private void CombineStatusEffect(StatusEffect effect)
+        {
+            var combineable = StatusEffects.Where(x => x.CanCombine(effect)).ToList();
+            var combined = combineable.SelectMany(x => x.Combine(effect)).Distinct().ToList();
+            foreach (var added in combined.Except(combineable))
+            {
+                StatusEffects.Add(effect);
+            }
+            foreach (var removed in combineable.Except(combined))
+            {
+                removed.Remove();
+            }
+        }
+
+        public override void Update(float delta)
+        {
+            base.Update(delta);
+            HandleStatusEffects(delta);
+        }
+
+        private void HandleStatusEffects(float delta)
+        {
+            foreach (StatusEffect effect in StatusEffects)
+                effect.Update(delta);
+            StatusEffects.RemoveAll(effect => effect.Removed);
         }
 
         public virtual void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
