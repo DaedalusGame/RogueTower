@@ -63,6 +63,12 @@ namespace RogueTower
             HealthMax = health;
         }
 
+        public void Resurrect()
+        {
+            Health = HealthMax;
+            StatusEffects.Clear();
+        }
+
         public void AddStatusEffect(StatusEffect effect)
         {
             if (StatusEffects.Any(x => x.CanCombine(effect)))

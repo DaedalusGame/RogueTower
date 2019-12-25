@@ -346,7 +346,7 @@ namespace RogueTower
             Human.Position = new Vector2(50, Human.World.Height - 50);
             Human.Velocity = Vector2.Zero;
             Human.ResetState();
-            Human.Health = Human.HealthMax;
+            Human.Resurrect();
         }
     }
 
