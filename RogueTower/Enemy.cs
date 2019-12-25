@@ -39,6 +39,8 @@ namespace RogueTower
         public double HealthMax;
         public List<StatusEffect> StatusEffects = new List<StatusEffect>();
 
+        public bool Stunned => StatusEffects.Any(effect => effect is Stun);
+
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
             Create(position.X, position.Y);
@@ -411,8 +413,11 @@ namespace RogueTower
 
             HandleDamage();
 
-            CurrentAction.UpdateDiscrete();
-            HandleInput(); //For implementors
+            if (!Stunned)
+            {
+                CurrentAction.UpdateDiscrete();
+                HandleInput(); //For implementors
+            }
 
             HandlePhysicsLate();
 

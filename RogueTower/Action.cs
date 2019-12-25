@@ -254,11 +254,11 @@ namespace RogueTower
 
     class ActionHit : Action
     {
-        int Time;
+        float Time;
 
         public override float Drag => 1;
 
-        public ActionHit(EnemyHuman player, int time) : base(player)
+        public ActionHit(EnemyHuman player, float time) : base(player)
         {
             Time = time;
         }
@@ -277,12 +277,11 @@ namespace RogueTower
 
         public override void UpdateDelta(float delta)
         {
-            //NOOP
+            Time -= delta;
         }
 
         public override void UpdateDiscrete()
         {
-            Time--;
             if (Time <= 0)
             {
                 Human.ResetState();

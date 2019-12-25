@@ -187,6 +187,8 @@ namespace RogueTower
             bool explode = false;
             if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
+                enemy.Hit(Vector2.Zero, 1, 0, 0);
+                enemy.AddStatusEffect(new Stun(enemy, 30));
                 explode = true;
             }
             if (hit.Box.Data is Tile tile)

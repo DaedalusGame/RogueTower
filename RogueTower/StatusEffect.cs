@@ -55,9 +55,10 @@ namespace RogueTower
             Removed = true;
         }
 
+        //Default behavior is keep existing if we apply the same type of state
         public virtual bool CanCombine(StatusEffect other)
         {
-            return false;
+            return GetType() == other.GetType();
         }
 
         public virtual StatusEffect[] Combine(StatusEffect other)
@@ -92,16 +93,6 @@ namespace RogueTower
             //You're no longer poisoned
         }
 
-        public override bool CanCombine(StatusEffect other)
-        {
-            return GetType() == other.GetType();
-        }
-
-        public override StatusEffect[] Combine(StatusEffect other)
-        {
-            return new[] { this };
-        }
-
         protected override void UpdateDelta(float delta)
         {
             PoisonTick += delta;
@@ -114,6 +105,33 @@ namespace RogueTower
                 Enemy.Health = Math.Max(Enemy.Health - 5, 1);
                 PoisonTick -= 120;
             }
+        }
+    }
+
+    class Stun : StatusEffect
+    {
+        public Stun(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+        }
+
+        protected override void OnAdd()
+        {
+            //You're stunned!
+        }
+
+        protected override void OnRemove()
+        {
+            //You're no longer stunned
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            //NOOP
         }
     }
 }
