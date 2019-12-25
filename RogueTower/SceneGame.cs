@@ -412,15 +412,7 @@ namespace RogueTower
             HealthShadow.Update(1.0f);
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
 
-            if(HeightTraversed >= 200)
-            {
-                Accompaniment1.Volume = MathHelper.Clamp(HeightTraversed % 200, 0, 1);
-            }
-            else
-            {
-                Accompaniment1.Volume = MathHelper.Clamp(Accompaniment1.Volume - 0.01f, 0, 1);
-            }
-
+            Accompaniment1.Volume = CalculateHeightSlide(700 * 16, 600 * 16, World.Player, true);
             UpdateCamera();
         }
 
@@ -1144,6 +1136,14 @@ namespace RogueTower
         public void StartNormalBatch()
         {
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState:BlendState.NonPremultiplied, transformMatrix: WorldTransform);
+        }
+
+        public float CalculateHeightSlide(float transitionStart, float transitionEnd, Player player, bool clamp = false)
+        {
+            var transitionSize = transitionStart - transitionEnd;
+            var yRelative = player.Position.Y - transitionEnd;
+            return clamp? MathHelper.Clamp(1 - (yRelative / transitionSize), 0, 1) : 1 - (yRelative / transitionSize);
+
         }
     }
 }
