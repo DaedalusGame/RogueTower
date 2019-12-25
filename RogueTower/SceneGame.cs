@@ -72,6 +72,41 @@ namespace RogueTower
             Right,
         }
 
+        static Vector2 CenterLeft = new Vector2(12, 7);
+        static Vector2 CenterRight = new Vector2(5, 7);
+        static Vector2[] HoldOffsetAngularLeft = new[] {
+            new Vector2(15, 7),
+            new Vector2(15, 9),
+            new Vector2(15, 10),
+            new Vector2(14, 11),
+            new Vector2(10, 11),
+            new Vector2(9, 10),
+            new Vector2(8, 9),
+            new Vector2(8, 7),
+            new Vector2(8, 5),
+            new Vector2(9, 4),
+            new Vector2(10, 3),
+            new Vector2(14, 3),
+            new Vector2(15, 4),
+            new Vector2(15, 5),
+        };
+        static Vector2[] HoldOffsetAngularRight = new[] {
+            new Vector2(9,7),
+            new Vector2(9,9),
+            new Vector2(8,10),
+            new Vector2(7,11),
+            new Vector2(3,11),
+            new Vector2(2,10),
+            new Vector2(1,9),
+            new Vector2(1,7),
+            new Vector2(1,5),
+            new Vector2(2,4),
+            new Vector2(3,3),
+            new Vector2(7,3),
+            new Vector2(8,4),
+            new Vector2(9,5),
+        };
+
         public string Pose;
         public string PhenoType = "char";
         public int Frame;
@@ -108,6 +143,16 @@ namespace RogueTower
             }
         }
 
+        public Vector2 GetHoldDirection(Type type)
+        {
+            return GetHoldOffset(type) - (type == Type.Left ? CenterLeft : CenterRight);
+        }
+
+        public float GetHoldAngle(Type type)
+        {
+            return VectorToAngle(GetHoldDirection(type));
+        }
+
         private string GetTypeString(Type type)
         {
             switch (type)
@@ -118,6 +163,11 @@ namespace RogueTower
                 case Type.Right:
                     return "r";
             }
+        }
+
+        private static int GetFrameFromAngle(float angle)
+        {
+            return Enumerable.Range(0,HoldOffsetAngularLeft.Length).WithMin(i => Math.Abs(GetAngleDistance(VectorToAngle(HoldOffsetAngularLeft[i] - CenterLeft),angle)));
         }
 
         public virtual void Draw(SceneGame game, Type type, Vector2 position, SpriteEffects mirror, float depth)
@@ -133,37 +183,8 @@ namespace RogueTower
         public static ArmState Up => new ArmState("up", 0, new Vector2(13, 2), new Vector2(4, 2));
         public static ArmState Low => new ArmState("low", 0, new Vector2(), new Vector2(7, 10));
         public static ArmState Shield => new ShieldState();
-        public static ArmState Angular(int frame) => new ArmState("angular", frame, new[] {
-            new Vector2(15, 7),
-            new Vector2(15, 9),
-            new Vector2(15, 10),
-            new Vector2(14, 11),
-            new Vector2(10, 11),
-            new Vector2(9, 10),
-            new Vector2(8, 9),
-            new Vector2(8, 7),
-            new Vector2(8, 5),
-            new Vector2(9, 4),
-            new Vector2(10, 3),
-            new Vector2(14, 3),
-            new Vector2(15, 4),
-            new Vector2(15, 5),
-        }, new[] {
-            new Vector2(9,7),
-            new Vector2(9,9),
-            new Vector2(8,10),
-            new Vector2(7,11),
-            new Vector2(3,11),
-            new Vector2(2,10),
-            new Vector2(1,9),
-            new Vector2(1,7),
-            new Vector2(1,5),
-            new Vector2(2,4),
-            new Vector2(3,3),
-            new Vector2(7,3),
-            new Vector2(8,4),
-            new Vector2(9,5),
-        });
+        public static ArmState Angular(int frame) => new ArmState("angular", frame, HoldOffsetAngularLeft, HoldOffsetAngularRight);
+        public static ArmState Angular(float angle) => Angular(GetFrameFromAngle(angle));
 
         public class ShieldState : ArmState
         {
