@@ -696,7 +696,7 @@ namespace RogueTower
                 var hpBarBlipShadow = SpriteLoader.Instance.AddSprite("content/hpbar_blip_shadow");
                 var HUDBar = SpriteLoader.Instance.AddSprite("content/hud_bar_frame");
                 Vector2 HealthBarPos = new Vector2(GraphicsDevice.Viewport.X + 1, GraphicsDevice.Viewport.Height - (HUDBar.Height + 1));
-                int HealthWidth = (int)LerpHelper.Linear(0, HUDBar.Width - 4, MathHelper.Clamp((float)World.Player.Health, 0, 100))/100;
+                int HealthWidth = (int)LerpHelper.Linear(0, HUDBar.Width - 4, MathHelper.Clamp((float)World.Player.Health, 0, 100)) / 100;
 
                 //HealthBar Drawing
                 DrawText(Game.ConvertToPixelText("HP"), new Vector2(HealthBarPos.X, HealthBarPos.Y - 16), Alignment.Left, new TextParameters().SetColor(HSVA2RGBA(MathHelper.Clamp((float)World.Player.Health, 0, 330), 1, 1, 192), Color.Black));
@@ -740,7 +740,12 @@ namespace RogueTower
                 DrawHealthbar(hpBarBlipFill, hpBarFill, HealthBarPos, parameters.GetBlips(hp), parameters.GetExtra(hp) / parameters.HPPerBlip, 100);
                 //DrawHealthbar(hpBarBlipFill, hpBarFill, HealthBarPos, parameters.GetBlips(hp), parameters.GetExtra(hp) / parameters.HPPerBlip, 100);
 
-                DrawText($"Tiles Ascended: {HeightTraversed}\nVelocityX: {World.Player.Velocity.X}\nVelocityY: {World.Player.Velocity.Y}\nOnGround: {World.Player.OnGround}\nOnWall: {World.Player.OnWall}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+                DrawText($"Tiles Ascended: {HeightTraversed}\n" +
+                    $"VelocityX: {World.Player.Velocity.X}\n" +
+                    $"VelocityY: {World.Player.Velocity.Y}\n" +
+                    $"OnGround: {World.Player.OnGround}\n" +
+                    $"OnWall: {World.Player.OnWall}\n" + 
+                    $"Room: {(int)(World.Player.Position.X / 8 / 16)},{(int)(World.Player.Position.Y / 8 / 16)}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
                 SpriteBatch.End();
             }
             else

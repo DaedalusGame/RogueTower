@@ -70,22 +70,30 @@ namespace RogueTower
         public int X, Y;
         public RoomType Type;
         public double Weight;
-        public Template SelectedTemplate => PossibleTemplates.Count(x => !x.Forbidden) == 1 ? PossibleTemplates.First(x => !x.Forbidden).Template : null;
+        public Template LockedTemplate;
+        public Template SelectedTemplate => LockedTemplate ?? (PossibleTemplates.Count(x => !x.Forbidden) == 1 ? PossibleTemplates.First(x => !x.Forbidden).Template : null);
         public List<PossibleTemplate> PossibleTemplates = new List<PossibleTemplate>();
         public double Entropy => GetEntropy();
 
         public bool KVisited;
         public KComponent KComponent;
 
+        public int Counter;
+
         public string ConnectUp => string.Join(", ", GetNeighbor(0, -1).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down).Distinct());
         public string ConnectDown => string.Join(", ", GetNeighbor(0, 1).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up).Distinct());
         public string ConnectLeft => string.Join(", ", GetNeighbor(-1, 0).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left).Distinct());
         public string ConnectRight => string.Join(", ", GetNeighbor(1, 0).PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right).Distinct());
 
-        public IEnumerable<string> EdgeLeft => X >= Generator.Width ? new[] { "outside" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left);
+        public IEnumerable<string> EdgeLeft => X >= Generator.Width ? (Y == Generator.Height - 1 ? new[] { "entrance" } : new[] { "outside" }) : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left);
         public IEnumerable<string> EdgeRight => X < 0 ? (Y == Generator.Height - 1 ? new[] { "entrance" } : new[] { "outside" }) : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right);
         public IEnumerable<string> EdgeUp => Y >= Generator.Height ? new[] { "none" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up);
         public IEnumerable<string> EdgeDown => Y < 0 ? new[] { "none", "exit" } : PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Down);
+
+        public IEnumerable<string> InEdgeLeft => GetNeighbor(-1, 0).EdgeRight;
+        public IEnumerable<string> InEdgeRight => GetNeighbor(1, 0).EdgeLeft;
+        public IEnumerable<string> InEdgeUp => GetNeighbor(0, -1).EdgeDown;
+        public IEnumerable<string> InEdgeDown => GetNeighbor(0, 1).EdgeUp;
 
         public RoomTile(MapGenerator generator, int x, int y)
         {
@@ -96,27 +104,23 @@ namespace RogueTower
 
         public void InitWave()
         {
+            PossibleTemplates.Clear();
+
             foreach (Template template in Template.Templates)
             {
                 PossibleTemplate possibleTemplate = new PossibleTemplate(template);
                 PossibleTemplates.Add(possibleTemplate);
             }
 
-            if (Type == RoomType.Entrance)
-            {
+            LockedTemplate = null;
+        }
 
-            }
-            if (Type == RoomType.Horizontal)
+        private void CheckDead(string pass)
+        {
+            if(Generator.EnumerateTiles().Any(x => x.Entropy<0))
             {
-
-            }
-            if (Type == RoomType.HubVertical)
-            {
-
-            }
-            if (Type == RoomType.HubUp)
-            {
-
+                Console.WriteLine($"Suffocation at {X},{Y}. Pass: {pass}");                
+                throw new Exception();
             }
         }
 
@@ -131,11 +135,13 @@ namespace RogueTower
             Forbid(Direction.Right, connection => !right.Contains(connection));
             Forbid(Direction.Up, connection => !up.Contains(connection));
             Forbid(Direction.Down, connection => !down.Contains(connection));
+            //CheckDead("base");
 
             if (Type != RoomType.Empty)
             {
                 Forbid(template => template.GetConnections() < 2);
             }
+            //CheckDead("open path");
 
             //var topology = Generator.DebugPrint((x) => Generator.GetChar(x.Type));
             switch (Type)
@@ -190,6 +196,7 @@ namespace RogueTower
                         Forbid(template => template.Connections > 0);
                         break;*/
             }
+            //CheckDead("special room");
         }
 
         /*public bool PropagateWave()
@@ -251,6 +258,9 @@ namespace RogueTower
         private IEnumerable<_internal> ForbidInternal(Func<Template, bool> check)
         {
             bool verboten = false;
+            Template previousBest = null;
+            if (PossibleTemplates.Count(x => !x.Forbidden) == 1)
+                previousBest = PossibleTemplates.First(x => !x.Forbidden).Template;
 
             foreach (var template in PossibleTemplates)
             {
@@ -263,6 +273,9 @@ namespace RogueTower
 
             if (verboten)
             {
+                if (!PossibleTemplates.Any(x => !x.Forbidden))
+                    LockedTemplate = previousBest;
+
                 var left = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Left).ToHashSet();
                 var right = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Right).ToHashSet();
                 var up = PossibleTemplates.Where(x => !x.Forbidden).Select(x => x.Template.Up).ToHashSet();
@@ -405,6 +418,12 @@ namespace RogueTower
             var tiles = EnumerateTiles().ToList();
             var topology = DebugPrint((x) => GetChar(x.Type));
 
+            if(tiles.Any(x => x.Entropy < 0))
+            {
+                Console.WriteLine("DOA");
+                return false;
+            }
+
             Console.WriteLine("started");
             int i = 0;
             while (true)
@@ -412,17 +431,21 @@ namespace RogueTower
                 i++;
                 IEnumerable<RoomTile> nonZeroEntropy = tiles.Where(x => x.Entropy > 0).Shuffle();
                 if (!nonZeroEntropy.Any())
+                {
                     break;
+                }
                 //var tile = nonZeroEntropy.WithMin(x => x.Entropy);
-                var tile = nonZeroEntropy.First();
+                var tile = nonZeroEntropy.WithMax(x => x.Type != RoomType.Empty);
+                //var tile = nonZeroEntropy.First();
                 //var entropies = DebugPrint((x) => (char)('1' + (int)x.Entropy));
 
                 tile.Collapse();
+                tile.Counter = i;
 
                 var dead = tiles.Where(x => x.Entropy < 0);
                 if (dead.Any())
                 {
-                    Console.WriteLine($"extinct {i} iterations");
+                    Console.WriteLine($"extinct {i} iterations at {tile.X},{tile.Y}");
                     return false;
                 }
             }
@@ -507,7 +530,7 @@ namespace RogueTower
             var path = dijkstra.FindPath(new Point(Random.Next(Width), 0)).ToList();
 
             var lastPos = new Point(0, Height - 1);
-            var lastHorizontal = 0;
+            var lastHorizontal = 1;
             var lastVertical = 0;
             GetRoom(lastPos.X, lastPos.Y).Type = RoomType.Entrance;
             foreach (var pos in path)
@@ -560,6 +583,9 @@ namespace RogueTower
                 lastPos = pos;
             }
             GetRoom(lastPos.X, lastPos.Y).Type = RoomType.Exit;
+            
+            var topology = DebugPrint((x) => GetChar(x.Type));
+            Console.WriteLine(topology);
 
             Console.WriteLine("Generate Wave");
             for (int x = 0; x < Width; x++)
@@ -579,10 +605,8 @@ namespace RogueTower
                 }
             }
 
-            var topology = DebugPrint((x) => GetChar(x.Type));
-            var entropies = DebugPrint((x) => (char)('1' + (int)x.Entropy));
 
-            Console.WriteLine(topology);
+            var entropies = DebugPrint((x) => (char)('1' + (int)x.Entropy));
 
             if (EnumerateTiles().Any(x => x.Entropy < 0))
             {
@@ -645,7 +669,8 @@ namespace RogueTower
                 for (int y = 0; y < Height; y++)
                 {
                     var room = Rooms[x, y];
-                    Color color = room.KComponent.Color;
+                    Color counterColor = room.Counter > 0 ? Color.Red.RotateHue(room.Counter * 0.01) : Color.Gray;
+                    Color color = room.KComponent?.Color ?? counterColor;
                     switch (room.Type)
                     {
                         case (RoomType.Horizontal):
@@ -669,8 +694,8 @@ namespace RogueTower
                             BuildHubUp(map, origin + x * 8, y * 8);
                             break;
                     }
-                    if (room.PossibleTemplates.Count(temp => !temp.Forbidden) == 1)
-                        BuildTemplate(map, origin + x * 8, y * 8, room.PossibleTemplates.First(temp => !temp.Forbidden).Template, color);
+                    if (room.SelectedTemplate != null)
+                        BuildTemplate(map, origin + x * 8, y * 8, room.SelectedTemplate, color);
                 }
             }
         }
