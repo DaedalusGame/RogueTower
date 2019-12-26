@@ -22,7 +22,7 @@ namespace RogueTower
 
         public void Update(float delta)
         {
-            if(Added)
+            if(!Added)
             {
                 OnAdd();
                 Added = true;
