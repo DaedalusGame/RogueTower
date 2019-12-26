@@ -252,12 +252,16 @@ namespace RogueTower
     {
         public float FrameEnd;
         public string Text;
+        public Color FontColor;
+        public Color BorderColor;
         public Vector2 Offset => new Vector2(0,-16) * (float)LerpHelper.QuadraticOut(0,1,Frame/FrameEnd);
 
-        public DamagePopup(GameWorld world, Vector2 position, string text, float time) : base(world, position)
+        public DamagePopup(GameWorld world, Vector2 position, string text, float time, Color? fontColor = null, Color? borderColor = null) : base(world, position)
         {
             Text = text;
             FrameEnd = time;
+            FontColor = fontColor ?? Color.White;
+            BorderColor = borderColor ?? Color.Black;
         }
 
         protected override void UpdateDiscrete()
@@ -345,6 +349,25 @@ namespace RogueTower
         {
             base.UpdateDelta(delta);
             Sound.Pitch = (float)LerpHelper.CircularOut(0f, 2f, Frame / FrameEnd);
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
+
+   class StatusPoisonEffect : Particle
+    {
+        public float Angle;
+        public float FrameEnd;
+        public StatusPoisonEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        {
+            Angle = angle;
+            FrameEnd = time;
         }
 
         protected override void UpdateDiscrete()

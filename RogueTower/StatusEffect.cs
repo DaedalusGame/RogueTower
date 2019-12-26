@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace RogueTower
 {
@@ -78,23 +79,30 @@ namespace RogueTower
     class Poison : StatusEffect
     {
         public float PoisonTick;
+        public StatusPoisonEffect PoisonFX;
 
         public Poison(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
-        {
+        { 
         }
 
         protected override void OnAdd()
         {
+            PoisonFX = new StatusPoisonEffect(Enemy.World, Enemy.Position + new Vector2(0, 10), 0, DurationMax);
             //You're poisoned!
         }
 
         protected override void OnRemove()
         {
+            if (PoisonFX != null)
+                PoisonFX.Destroy();
             //You're no longer poisoned
         }
 
         protected override void UpdateDelta(float delta)
         {
+            if(PoisonFX != null)
+                PoisonFX.Position = Enemy.Position + new Vector2(0, 10);
+
             PoisonTick += delta;
         }
 
@@ -102,7 +110,9 @@ namespace RogueTower
         {
             if(PoisonTick > 120)
             {
-                Enemy.Health = Math.Max(Enemy.Health - 5, 1);
+                var HealthLoss = Math.Max(Enemy.Health - 5, 1);
+                new DamagePopup(Enemy.World, Enemy.Position, $"{Enemy.Health - HealthLoss}", 30, new Color(212, 1, 254));
+                Enemy.Health = HealthLoss;
                 PoisonTick -= 120;
             }
         }
@@ -126,7 +136,6 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
-            //NOOP
         }
 
         protected override void UpdateDiscrete()
@@ -168,6 +177,7 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             //NOOP
+            //new DamagePopup(Enemy.World, Enemy.Position + new Vector2(0, 10), "Slowed", 1, Util.HSVA2RGBA(Duration % 360, 1, 1, 255));
         }
 
         protected override void UpdateDiscrete()

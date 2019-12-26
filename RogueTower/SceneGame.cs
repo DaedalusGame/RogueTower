@@ -562,6 +562,8 @@ namespace RogueTower
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
+
+            var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
             foreach (Bullet bullet in World.Bullets)
             {
                 bullet.Draw(this);
@@ -616,11 +618,11 @@ namespace RogueTower
                 }
                 if (effect is DamagePopup damagePopup)
                 {
-                    var calcParams = new TextParameters().SetColor(Color.White, Color.Black).SetConstraints(128, 64);
+                    var calcParams = new TextParameters().SetColor(damagePopup.FontColor, damagePopup.BorderColor).SetConstraints(128, 64);
                     string fit = FontUtil.FitString(Game.ConvertToSmallPixelText(damagePopup.Text), calcParams);
                     var width = FontUtil.GetStringWidth(fit, calcParams);
                     var height = FontUtil.GetStringHeight(fit);
-                    DrawText(fit, damagePopup.Position + damagePopup.Offset - new Vector2(128,height) / 2, Alignment.Center, new TextParameters().SetColor(Color.White,Color.Black).SetConstraints(128, height + 64));
+                    DrawText(fit, damagePopup.Position + damagePopup.Offset - new Vector2(128,height) / 2, Alignment.Center, new TextParameters().SetColor(damagePopup.FontColor,damagePopup.BorderColor).SetConstraints(128, height + 64));
                 }
                 if(effect is RectangleDebug rectDebug)
                 {
@@ -629,6 +631,10 @@ namespace RogueTower
                 if(effect is ChargeEffect chargeEffect)
                 {
                     DrawSpriteExt(charge, (int)-chargeEffect.Frame, chargeEffect.Position - charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
+                }
+                if(effect is StatusPoisonEffect poisonEffect)
+                {
+                    DrawSpriteExt(statusPoisoned, (int)poisonEffect.Frame, poisonEffect.Position - statusPoisoned.Middle, statusPoisoned.Middle,  poisonEffect.Angle, SpriteEffects.None, 0);
                 }
             }
 
