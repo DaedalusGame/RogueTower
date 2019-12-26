@@ -675,7 +675,13 @@ namespace RogueTower
                 }
                 if (effect is StatusSlowEffect slowEffect)
                 {
-                    DrawSpriteExt(statusSlowed, 0, slowEffect.Position - statusSlowed.Middle, statusSlowed.Middle, slowEffect.Frame * 0.025f, SpriteEffects.None, 0);
+                    float slide = (slowEffect.Frame * 0.01f) % 1;
+                    float angle = 0;
+                    if(slide < 0.1f)
+                    {
+                        angle = MathHelper.Lerp(0, MathHelper.Pi, slide / 0.1f);
+                    }
+                    DrawSpriteExt(statusSlowed, 0, slowEffect.Position - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
                 }
             }
 
