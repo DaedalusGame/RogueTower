@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace RogueTower
 {
@@ -81,14 +80,16 @@ namespace RogueTower
     {
         public float PoisonTick;
         public StatusPoisonEffect PoisonFX;
+        public Vector2 Offset;
 
         public Poison(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
-        { 
+        {
+            Offset = Enemy.Position + new Vector2(0, 16);
         }
 
         protected override void OnAdd()
         {
-            PoisonFX = new StatusPoisonEffect(Enemy.World, Enemy.Position + new Vector2(0, 10), 0, DurationMax);
+            PoisonFX = new StatusPoisonEffect(Enemy.World, Offset, 0, DurationMax);
             //You're poisoned!
         }
 
@@ -102,7 +103,7 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             if(PoisonFX != null)
-                PoisonFX.Position = Enemy.Position + new Vector2(0, 10);
+                PoisonFX.Position = Enemy.Position + new Vector2(0, 16);
 
             PoisonTick += delta;
         }
@@ -111,15 +112,15 @@ namespace RogueTower
         {
             if(PoisonTick > 120)
             {
-                if(Enemy.Health > 1)
-                    Enemy.Health = Math.Max(Enemy.Health - 5, 1);
-
+                if (Enemy.Health > 1)
+                {
+                    var HealthLoss = Math.Max(Enemy.Health - 5, 1);
+                    new DamagePopup(Enemy.World, Enemy.Position, $"{Enemy.Health - HealthLoss}", 30, new Color(212, 1, 254));
+                    Enemy.Health = HealthLoss;
+                }
                 Enemy.Hitstop = 6;
                 Enemy.VisualOffset = Enemy.OffsetHitStun(6);
                 new ScreenShakeJerk(Enemy.World, Util.AngleToVector(Enemy.Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
-                var HealthLoss = Math.Max(Enemy.Health - 5, 1);
-                new DamagePopup(Enemy.World, Enemy.Position, $"{Enemy.Health - HealthLoss}", 30, new Color(212, 1, 254));
-                Enemy.Health = HealthLoss;
                 PoisonTick -= 120;
             }
         }
@@ -154,10 +155,13 @@ namespace RogueTower
     class Slow : StatusEffect
     {
         public float SpeedModifier;
+        public StatusSlowEffect SlowFX;
+        public Vector2 Offset;
 
         public Slow(Enemy enemy, float speedModifier, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
             SpeedModifier = speedModifier;
+            Offset = Enemy.Position - new Vector2(0, 20);
         }
 
         public override bool CanCombine(StatusEffect other)
@@ -173,16 +177,22 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
+            SlowFX = new StatusSlowEffect(Enemy.World, Offset, 0, DurationMax);
             //You slow down!
         }
 
         protected override void OnRemove()
         {
+            if (SlowFX != null)
+                SlowFX.Destroy();
             //You're no longer slow
         }
 
         protected override void UpdateDelta(float delta)
         {
+            if (SlowFX != null)
+                SlowFX.Position = Enemy.Position - new Vector2(0, 20);
+
             //NOOP
             //new DamagePopup(Enemy.World, Enemy.Position + new Vector2(0, 10), "Slowed", 1, Util.HSVA2RGBA(Duration % 360, 1, 1, 255));
         }

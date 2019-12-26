@@ -445,4 +445,23 @@ namespace RogueTower
             }
         }
     }
+
+    class StatusSlowEffect : Particle
+    {
+        public float Angle;
+        public float FrameEnd;
+        public StatusSlowEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        {
+            Angle = angle;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
 }

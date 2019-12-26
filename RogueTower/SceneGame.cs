@@ -591,9 +591,11 @@ namespace RogueTower
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
-
             var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
+
             var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
+            var statusSlowed = SpriteLoader.Instance.AddSprite("content/status_slowed");
+
             foreach (Bullet bullet in World.Bullets)
             {
                 bullet.Draw(this);
@@ -669,7 +671,11 @@ namespace RogueTower
                 }
                 if(effect is StatusPoisonEffect poisonEffect)
                 {
-                    DrawSpriteExt(statusPoisoned, (int)poisonEffect.Frame, poisonEffect.Position - statusPoisoned.Middle, statusPoisoned.Middle,  poisonEffect.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(statusPoisoned, (int)(poisonEffect.Frame * 0.25f), poisonEffect.Position - statusPoisoned.Middle, statusPoisoned.Middle,  poisonEffect.Angle, SpriteEffects.None, 0);
+                }
+                if (effect is StatusSlowEffect slowEffect)
+                {
+                    DrawSpriteExt(statusSlowed, 0, slowEffect.Position - statusSlowed.Middle, statusSlowed.Middle, slowEffect.Frame * 0.025f, SpriteEffects.None, 0);
                 }
             }
 
