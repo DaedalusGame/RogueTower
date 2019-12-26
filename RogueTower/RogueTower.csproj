@@ -46,6 +46,7 @@
     <Compile Include="Coroutine.cs" />
     <Compile Include="Healthbar.cs" />
     <Compile Include="Scheduler.cs" />
+    <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="TileBG.cs" />

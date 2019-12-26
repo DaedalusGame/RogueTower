@@ -546,14 +546,17 @@ namespace RogueTower
             }
             if (Invincibility > 0 || Dead)
                 return;
-            if (CurrentAction is ActionClimb)
-                Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
-            else
-                Velocity = velocity;
-            OnWall = false;
-            OnGround = false;
             Invincibility = invincibility;
-            CurrentAction = new ActionHit(this, hurttime);
+            if (Random.NextDouble() < 1.0) //Poise?
+            {
+                if (CurrentAction is ActionClimb)
+                    Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
+                else
+                    Velocity = velocity;
+                OnWall = false;
+                OnGround = false;
+                CurrentAction = new ActionHit(this, hurttime);
+            }
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
             World.Hitstop = 6;

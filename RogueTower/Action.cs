@@ -1324,6 +1324,77 @@ namespace RogueTower
         }
     }
 
+    class ActionWandSwing : Action
+    {
+        enum SwingAction
+        {
+            Start,
+            Swing,
+            End,
+        }
+
+        SwingAction State;
+        Slider StartTime;
+        Slider SwingTime;
+        Slider EndTime;
+
+        public ActionWandSwing(EnemyHuman player, float startTime, float swingTime, float endTime) : base(player)
+        {
+            StartTime = new Slider(startTime,startTime);
+            SwingTime = new Slider(swingTime,swingTime);
+            EndTime = new Slider(endTime,endTime);
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            float startAngle = 180+45;
+            float endAngle = 0;
+            switch (State)
+            {
+                case (SwingAction.Start):
+                    basePose.LeftArm = ArmState.Angular(MathHelper.ToRadians(startAngle));
+                    break;
+                case (SwingAction.Swing):
+                    basePose.LeftArm = ArmState.Angular(MathHelper.Lerp(MathHelper.ToRadians(startAngle), MathHelper.ToRadians(endAngle), 1-SwingTime.Slide));
+                    break;
+                case (SwingAction.End):
+                    basePose.LeftArm = ArmState.Angular(MathHelper.ToRadians(endAngle));
+                    break;
+            }
+            basePose.WeaponHold = WeaponHold.Left;
+            basePose.Weapon.Angle = -basePose.LeftArm.GetHoldAngle(ArmState.Type.Left) + MathHelper.PiOver2;
+        }
+
+        public override void OnInput()
+        {
+            //NOOP
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            switch(State)
+            {
+                case (SwingAction.Start):
+                    if (StartTime - delta <= 0)
+                        State = SwingAction.Swing;
+                    break;
+                case (SwingAction.Swing):
+                    if (SwingTime - delta <= 0)
+                        State = SwingAction.End;
+                    break;
+                case (SwingAction.End):
+                    if (EndTime - delta <= 0)
+                        Human.ResetState();
+                    break;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+    }
+
     class ActionCharge : Action
     {
         public float ChargeTime;

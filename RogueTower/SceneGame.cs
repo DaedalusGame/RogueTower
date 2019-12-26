@@ -13,6 +13,13 @@ using static RogueTower.Util;
 
 namespace RogueTower
 {
+    enum WeaponHold
+    {
+        Left,
+        Right,
+        TwoHand,
+    }
+
     class WeaponState
     {
         public string Sprite;
@@ -275,6 +282,7 @@ namespace RogueTower
         public ArmState LeftArm;
         public ArmState RightArm;
         public WeaponState Weapon;
+        public WeaponHold WeaponHold = WeaponHold.Right;
 
         public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon)
         {
@@ -1135,11 +1143,28 @@ namespace RogueTower
             state.LeftArm.Draw(this, ArmState.Type.Left, position + offset, mirror, 0.6f);
             state.RightArm.Draw(this, ArmState.Type.Right, position + offset, mirror, 0.8f);
 
-            var weaponHold = state.RightArm.GetHoldOffset(ArmState.Type.Right);
+            Vector2 weaponHold;
+            float weaponDepth;
+            switch(state.WeaponHold)
+            {
+                default:
+                case (WeaponHold.Left):
+                    weaponHold = state.LeftArm.GetHoldOffset(ArmState.Type.Left);
+                    weaponDepth = 0.55f;
+                    break;
+                case (WeaponHold.Right):
+                    weaponHold = state.RightArm.GetHoldOffset(ArmState.Type.Right);
+                    weaponDepth = 0.9f;
+                    break;
+                case (WeaponHold.TwoHand):
+                    weaponHold = (state.LeftArm.GetHoldOffset(ArmState.Type.Left) + state.RightArm.GetHoldOffset(ArmState.Type.Right)) / 2;
+                    weaponDepth = (0.9f + 0.55f) / 2;
+                    break;
+            }
 
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
                 weaponHold.X = 16 - weaponHold.X;
-            state.Weapon.Draw(this, position + offset + weaponHold, mirror, 0.9f);
+            state.Weapon.Draw(this, position + offset + weaponHold, mirror, weaponDepth);
 
             SpriteBatch.End();
             StartNormalBatch();

@@ -335,10 +335,15 @@ namespace RogueTower
     class WeaponWandOrange : Weapon
     {
 
-        bool SuccessOrFail = false;
         public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
+        }
+
+        public override void GetPose(PlayerState pose)
+        {
+            pose.Weapon = GetWeaponState(MathHelper.ToRadians(-45));
+            pose.WeaponHold = WeaponHold.Left;
         }
 
         public override WeaponState GetWeaponState(float angle)
@@ -350,11 +355,12 @@ namespace RogueTower
         {
             if (player.Controls.Attack)
             {
-                TwoHandSlash(player, 3, 12);
+                //TwoHandSlash(player, 3, 12);
+                player.CurrentAction = new ActionWandSwing(player, 10, 5, 20);
             }
             else if (player.Controls.AltAttack)
             {
-                SuccessOrFail = false;
+                var SuccessOrFail = false;
                 Vector2 ScanBox = new Vector2(96, 96);
                 //new RectangleDebug(player.World, new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox), Color.Red, 10);
                 foreach (var Box in player.World.FindBoxes(new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox)))
