@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Humper.Base;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,6 +46,11 @@ namespace RogueTower
                         + (.114 + .886 * U - .203 * W) * color.B;
 
             return new Color((int)r, (int)g, (int)b, color.A);
+        }
+
+        public static Vector2 GetRandomPosition(RectangleF area, Random random)
+        {
+            return new Vector2(area.X + random.NextFloat() * area.Width, area.Y + random.NextFloat() * area.Height);
         }
 
         public static float GetAngleDistance(float a0, float a1)

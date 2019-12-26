@@ -518,7 +518,7 @@ namespace RogueTower
                     {
                         DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
                     }
-                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle, SpriteEffects.None, 0);
+                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle + ballAndChain.VisualOffset(), SpriteEffects.None, 0);
                 }
                 if(obj is MoaiMan moaiMan)
                 {
@@ -545,7 +545,7 @@ namespace RogueTower
                                 sprite = snakeHeadOpen;
                             else
                                 sprite = snakeHeadClosed;
-                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle + snake.VisualOffset(), snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                             break;
                         }
                         else if(render == Snake.SegmentRender.Normal)
@@ -563,14 +563,14 @@ namespace RogueTower
                     Vector2 truePos = Vector2.Transform(hydra.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4) + hydra.VisualOffset(), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                 }
                 if (obj is Cannon cannon)
                 {
                     Vector2 truePos = Vector2.Transform(cannon.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle + cannon.VisualOffset(), wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
                 }
             }
 
@@ -583,6 +583,7 @@ namespace RogueTower
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
+            var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
             foreach (Bullet bullet in World.Bullets)
             {
                 bullet.Draw(this);
@@ -625,15 +626,20 @@ namespace RogueTower
                 {
                     DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position - crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
                 }
-                if (effect is FireEffect fireEffect)
-                {
-                    var middle = new Vector2(8, 12);
-                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
-                }
                 if (effect is BigFireEffect bigFireEffect)
                 {
                     var middle = new Vector2(8, 12);
                     DrawSpriteExt(fireBig, AnimationFrame(fireBig, bigFireEffect.Frame, bigFireEffect.FrameEnd), bigFireEffect.Position - middle, middle, bigFireEffect.Angle, SpriteEffects.None, 0);
+                }
+                else if (effect is BloodSpatterEffect bloodSpatterEffect)
+                {
+                    var middle = bloodSpatter.Middle;
+                    DrawSpriteExt(bloodSpatter, AnimationFrame(bloodSpatter, bloodSpatterEffect.Frame, bloodSpatterEffect.FrameEnd), bloodSpatterEffect.Position - middle, middle, bloodSpatterEffect.Angle, SpriteEffects.None, 0);
+                }
+                else if (effect is FireEffect fireEffect)
+                {
+                    var middle = new Vector2(8, 12);
+                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {
@@ -799,6 +805,7 @@ namespace RogueTower
             var pillar = SpriteLoader.Instance.AddSprite("content/bg_pillar");
             var pillar_detail = SpriteLoader.Instance.AddSprite("content/bg_pillar_detail");
             var pillar_top = SpriteLoader.Instance.AddSprite("content/bg_pillar_top");
+            var pillar_bottom_broken = SpriteLoader.Instance.AddSprite("content/bg_pillar_bottom_broken");
             var rail_left = SpriteLoader.Instance.AddSprite("content/bg_rail_left");
             var rail_middle = SpriteLoader.Instance.AddSprite("content/bg_rail_middle");
             var rail_right = SpriteLoader.Instance.AddSprite("content/bg_rail_right");
@@ -876,6 +883,9 @@ namespace RogueTower
                             break;
                         case (TileBG.PillarTop):
                             SpriteBatch.Draw(pillar_top.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.PillarBottomBroken):
+                            SpriteBatch.Draw(pillar_bottom_broken.Texture, new Vector2(x * 16, y * 16), Color.White);
                             break;
                         case (TileBG.Window):
                             SpriteBatch.Draw(window.Texture, new Vector2(x * 16, y * 16), Color.White);
@@ -1082,7 +1092,7 @@ namespace RogueTower
             {
                 return;
             }
-            DrawPlayerState(state, position - new Vector2(8, 8), mirror);
+            DrawPlayerState(state, position - new Vector2(8, 8) + human.VisualOffset(), mirror);
         }
 
         public int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)

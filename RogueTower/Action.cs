@@ -325,7 +325,7 @@ namespace RogueTower
             {
                 Cleanup();
             }
-            Vector2 pos = new Vector2(Human.Box.X + Human.Random.NextFloat() * Human.Box.Width, Human.Box.Y + Human.Random.NextFloat() * Human.Box.Height);
+            Vector2 pos = GetRandomPosition(Human.Box.Bounds,Human.Random);
             new FireEffect(Human.World, pos, 0, 5);
         }
 

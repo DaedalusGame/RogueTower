@@ -71,6 +71,32 @@ namespace RogueTower
         }
     }
 
+    class ScreenShakeJerk : ScreenShake
+    {
+        Vector2 Jerk;
+
+        public ScreenShakeJerk(GameWorld world, Vector2 jerk, float time) : base(world, time)
+        {
+            Jerk = jerk;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+
+            float amount = (1 - Frame / FrameEnd);
+            Offset = Jerk * amount;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+    }
+
     class SlashEffectRound : Particle
     {
         public Func<Vector2> Anchor;
@@ -185,6 +211,47 @@ namespace RogueTower
     {
         public BigFireEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, angle, time)
         {
+        }
+    }
+
+    class BloodSpatterEffect : FireEffect
+    {
+        public BloodSpatterEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, angle, time)
+        {
+        }
+
+        public override void Update(float delta)
+        {
+            base.Update(1.0f);
+        }
+    }
+
+    class BloodDrop : Particle
+    {
+        public Vector2 Velocity;
+        public float FrameEnd;
+        public float Rotation;
+
+        public BloodDrop(GameWorld world, Vector2 position, Vector2 velocity, float rotation, float time) : base(world, position)
+        {
+            Velocity = velocity;
+            Rotation = rotation;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+            Position += Velocity * delta;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+            Velocity += new Vector2(0, 0.4f);
         }
     }
 
