@@ -1005,7 +1005,7 @@ namespace RogueTower
             if (Human.OnGround)
             {
                 PlungeFinished = true;
-                double damageIn = Weapon.Damage * 1.5;
+                double damageIn = Math.Floor(Weapon.Damage * 1.5);
                 float? floorY = null;
                 foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
                 {
@@ -1672,4 +1672,12 @@ namespace RogueTower
         {
         }
     }
+/*
+    class ActionBoomerangThrow : Action
+    {
+        public ActionBoomerangThrow(EnemyHuman player, ) : base(player)
+        {
+
+        }
+    }*/
 }

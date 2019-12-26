@@ -339,7 +339,7 @@ namespace RogueTower
         public Shockwave(GameWorld world, Vector2 position, float velocityDown) : base(world, position, new Vector2(8, (int)(16 * velocityDown / 5)))
         {
             ScalingFactor = velocityDown;
-            ShockwaveForce = (velocityDown >= 1) ? 20 * velocityDown : 20;
+            ShockwaveForce = (velocityDown >= 1) ? (float)Math.Floor(20 * velocityDown) : 20;
         }
 
         protected override void UpdateDelta(float delta)
