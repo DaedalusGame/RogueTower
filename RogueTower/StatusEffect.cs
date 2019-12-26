@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,7 @@ namespace RogueTower
 
         public void Update(float delta)
         {
-            if(Added)
+            if(!Added)
             {
                 OnAdd();
                 Added = true;
@@ -110,6 +111,12 @@ namespace RogueTower
         {
             if(PoisonTick > 120)
             {
+                if(Enemy.Health > 1)
+                    Enemy.Health = Math.Max(Enemy.Health - 5, 1);
+
+                Enemy.Hitstop = 6;
+                Enemy.VisualOffset = Enemy.OffsetHitStun(6);
+                new ScreenShakeJerk(Enemy.World, Util.AngleToVector(Enemy.Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
                 var HealthLoss = Math.Max(Enemy.Health - 5, 1);
                 new DamagePopup(Enemy.World, Enemy.Position, $"{Enemy.Health - HealthLoss}", 30, new Color(212, 1, 254));
                 Enemy.Health = HealthLoss;

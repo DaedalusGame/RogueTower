@@ -819,6 +819,8 @@ namespace RogueTower
                     return TileBG.PillarDetail;
                 case (27):
                     return TileBG.Pillar;
+                case (43):
+                    return TileBG.PillarBottomBroken;
             }
         }
 

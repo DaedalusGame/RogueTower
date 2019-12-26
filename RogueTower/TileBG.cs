@@ -24,6 +24,7 @@ namespace RogueTower
         Pillar,
         PillarDetail,
         PillarTop,
+        PillarBottomBroken,
         Window,
         WindowBigLeft,
         WindowBigRight,

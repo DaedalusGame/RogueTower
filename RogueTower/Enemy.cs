@@ -34,7 +34,12 @@ namespace RogueTower
         public virtual bool CanHit => true;
         public virtual bool CanDamage => false;
 
+        public float Hitstop;
+        public Func<Vector2> VisualOffset = () => Vector2.Zero;
+
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
+
+        public float Lifetime;
         public double Health;
         public double HealthMax;
         public List<StatusEffect> StatusEffects = new List<StatusEffect>();
@@ -63,6 +68,12 @@ namespace RogueTower
             HealthMax = health;
         }
 
+        public void Resurrect()
+        {
+            Health = HealthMax;
+            StatusEffects.Clear();
+        }
+
         public void AddStatusEffect(StatusEffect effect)
         {
             if (StatusEffects.Any(x => x.CanCombine(effect)))
@@ -87,9 +98,12 @@ namespace RogueTower
 
         public override void Update(float delta)
         {
+            Hitstop -= delta;
             float adjustedDelta = delta;
             if (StatusEffects.Any(effect => effect is Slow))
                 adjustedDelta *= StatusEffects.OfType<Slow>().Min(effect => effect.SpeedModifier);
+            if (Hitstop > 0)
+                adjustedDelta = 0f;
             base.Update(adjustedDelta);
             HandleStatusEffects(delta);
         }
@@ -124,6 +138,24 @@ namespace RogueTower
         public virtual void Death()
         {
             //NOOP
+        }
+
+        public Func<Vector2> OffsetHitStun(float time)
+        {
+            float startTime = Lifetime;
+            float angle = Random.NextFloat() * MathHelper.TwoPi;
+            float dist = 4;
+            Vector2 stunOffset = AngleToVector(angle) * dist;
+            return () =>
+            {
+                float slide = (Lifetime - startTime) / time;
+                if (slide < 0.2f)
+                    return -stunOffset;
+                else if (slide < 1f)
+                    return stunOffset * (1-slide);
+                else
+                    return Vector2.Zero;
+            };
         }
     }
     
@@ -316,7 +348,6 @@ namespace RogueTower
         public virtual float SpeedLimit => 2;
         public int ExtraJumps = 0;
         public int Invincibility = 0;
-        public float Lifetime;
         public override bool CanDamage => true;
 
         public Weapon Weapon;
@@ -515,17 +546,25 @@ namespace RogueTower
             }
             if (Invincibility > 0 || Dead)
                 return;
-            if (CurrentAction is ActionClimb)
-                Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
-            else
-                Velocity = velocity;
-            OnWall = false;
-            OnGround = false;
             Invincibility = invincibility;
-            CurrentAction = new ActionHit(this, hurttime);
+            if (Random.NextDouble() < 1.0) //Poise?
+            {
+                if (CurrentAction is ActionClimb)
+                    Velocity = GetFacingVector(Facing) * -1 + new Vector2(0, 1);
+                else
+                    Velocity = velocity;
+                OnWall = false;
+                OnGround = false;
+                CurrentAction = new ActionHit(this, hurttime);
+            }
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
             World.Hitstop = 6;
+            Hitstop = 6;
+            VisualOffset = OffsetHitStun(6);
+            for(int i = 0; i < 3; i++)
+                new BloodSpatterEffect(World, GetRandomPosition(Box.Bounds, Random), Random.NextFloat() * MathHelper.TwoPi, 3 + Random.NextFloat() * 5);
+            new ScreenShakeJerk(World, AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
         }
 
         public override void ShowDamage(double damage)
@@ -1376,7 +1415,6 @@ namespace RogueTower
 
         public Action CurrentAction;
 
-        public float Lifetime;
         public int Invincibility = 0;
 
         public override bool Attacking => false;
@@ -1572,6 +1610,11 @@ namespace RogueTower
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
             World.Hitstop = 6;
+            Hitstop = 6;
+            VisualOffset = OffsetHitStun(6);
+            for (int i = 0; i < 3; i++)
+                new BloodSpatterEffect(World, GetRandomPosition(Box.Bounds, Random), Random.NextFloat() * MathHelper.TwoPi, 3 + Random.NextFloat() * 5);
+            new ScreenShakeJerk(World, AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
         }
 
         public override void ShowDamage(double damage)
@@ -1880,6 +1923,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            Lifetime += delta;
+
             if (Active)
             {
                 HandleMovement(delta);
@@ -1954,6 +1999,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            Lifetime += delta;
+
             DelayTime -= delta;
             if (DelayTime <= 0)
             {
@@ -2116,6 +2163,8 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
+            Lifetime += delta;
+
             Angle += Speed * delta;
         }
 

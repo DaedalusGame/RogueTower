@@ -13,6 +13,13 @@ using static RogueTower.Util;
 
 namespace RogueTower
 {
+    enum WeaponHold
+    {
+        Left,
+        Right,
+        TwoHand,
+    }
+
     class WeaponState
     {
         public string Sprite;
@@ -72,6 +79,41 @@ namespace RogueTower
             Right,
         }
 
+        static Vector2 CenterLeft = new Vector2(12, 7);
+        static Vector2 CenterRight = new Vector2(5, 7);
+        static Vector2[] HoldOffsetAngularLeft = new[] {
+            new Vector2(15, 7),
+            new Vector2(15, 9),
+            new Vector2(15, 10),
+            new Vector2(14, 11),
+            new Vector2(10, 11),
+            new Vector2(9, 10),
+            new Vector2(8, 9),
+            new Vector2(8, 7),
+            new Vector2(8, 5),
+            new Vector2(9, 4),
+            new Vector2(10, 3),
+            new Vector2(14, 3),
+            new Vector2(15, 4),
+            new Vector2(15, 5),
+        };
+        static Vector2[] HoldOffsetAngularRight = new[] {
+            new Vector2(9,7),
+            new Vector2(9,9),
+            new Vector2(8,10),
+            new Vector2(7,11),
+            new Vector2(3,11),
+            new Vector2(2,10),
+            new Vector2(1,9),
+            new Vector2(1,7),
+            new Vector2(1,5),
+            new Vector2(2,4),
+            new Vector2(3,3),
+            new Vector2(7,3),
+            new Vector2(8,4),
+            new Vector2(9,5),
+        };
+
         public string Pose;
         public string PhenoType = "char";
         public int Frame;
@@ -108,6 +150,16 @@ namespace RogueTower
             }
         }
 
+        public Vector2 GetHoldDirection(Type type)
+        {
+            return GetHoldOffset(type) - (type == Type.Left ? CenterLeft : CenterRight);
+        }
+
+        public float GetHoldAngle(Type type)
+        {
+            return VectorToAngle(GetHoldDirection(type));
+        }
+
         private string GetTypeString(Type type)
         {
             switch (type)
@@ -118,6 +170,11 @@ namespace RogueTower
                 case Type.Right:
                     return "r";
             }
+        }
+
+        private static int GetFrameFromAngle(float angle)
+        {
+            return Enumerable.Range(0,HoldOffsetAngularLeft.Length).WithMin(i => Math.Abs(GetAngleDistance(VectorToAngle(HoldOffsetAngularLeft[i] - CenterLeft),angle)));
         }
 
         public virtual void Draw(SceneGame game, Type type, Vector2 position, SpriteEffects mirror, float depth)
@@ -133,37 +190,8 @@ namespace RogueTower
         public static ArmState Up => new ArmState("up", 0, new Vector2(13, 2), new Vector2(4, 2));
         public static ArmState Low => new ArmState("low", 0, new Vector2(), new Vector2(7, 10));
         public static ArmState Shield => new ShieldState();
-        public static ArmState Angular(int frame) => new ArmState("angular", frame, new[] {
-            new Vector2(15, 7),
-            new Vector2(15, 9),
-            new Vector2(15, 10),
-            new Vector2(14, 11),
-            new Vector2(10, 11),
-            new Vector2(9, 10),
-            new Vector2(8, 9),
-            new Vector2(8, 7),
-            new Vector2(8, 5),
-            new Vector2(9, 4),
-            new Vector2(10, 3),
-            new Vector2(14, 3),
-            new Vector2(15, 4),
-            new Vector2(15, 5),
-        }, new[] {
-            new Vector2(9,7),
-            new Vector2(9,9),
-            new Vector2(8,10),
-            new Vector2(7,11),
-            new Vector2(3,11),
-            new Vector2(2,10),
-            new Vector2(1,9),
-            new Vector2(1,7),
-            new Vector2(1,5),
-            new Vector2(2,4),
-            new Vector2(3,3),
-            new Vector2(7,3),
-            new Vector2(8,4),
-            new Vector2(9,5),
-        });
+        public static ArmState Angular(int frame) => new ArmState("angular", frame, HoldOffsetAngularLeft, HoldOffsetAngularRight);
+        public static ArmState Angular(float angle) => Angular(GetFrameFromAngle(angle));
 
         public class ShieldState : ArmState
         {
@@ -254,6 +282,7 @@ namespace RogueTower
         public ArmState LeftArm;
         public ArmState RightArm;
         public WeaponState Weapon;
+        public WeaponHold WeaponHold = WeaponHold.Right;
 
         public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon)
         {
@@ -497,7 +526,7 @@ namespace RogueTower
                     {
                         DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
                     }
-                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle, SpriteEffects.None, 0);
+                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle + ballAndChain.VisualOffset(), SpriteEffects.None, 0);
                 }
                 if(obj is MoaiMan moaiMan)
                 {
@@ -524,7 +553,7 @@ namespace RogueTower
                                 sprite = snakeHeadOpen;
                             else
                                 sprite = snakeHeadClosed;
-                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle, snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle + snake.VisualOffset(), snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                             break;
                         }
                         else if(render == Snake.SegmentRender.Normal)
@@ -542,14 +571,14 @@ namespace RogueTower
                     Vector2 truePos = Vector2.Transform(hydra.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4) + hydra.VisualOffset(), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
                 }
                 if (obj is Cannon cannon)
                 {
                     Vector2 truePos = Vector2.Transform(cannon.Position, WorldTransform);
                     if (!drawZone.Contains(truePos))
                         continue;
-                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle, wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
+                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle + cannon.VisualOffset(), wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
                 }
             }
 
@@ -563,6 +592,7 @@ namespace RogueTower
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
 
+            var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
             var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
             foreach (Bullet bullet in World.Bullets)
             {
@@ -606,15 +636,20 @@ namespace RogueTower
                 {
                     DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position - crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
                 }
-                if (effect is FireEffect fireEffect)
-                {
-                    var middle = new Vector2(8, 12);
-                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
-                }
                 if (effect is BigFireEffect bigFireEffect)
                 {
                     var middle = new Vector2(8, 12);
                     DrawSpriteExt(fireBig, AnimationFrame(fireBig, bigFireEffect.Frame, bigFireEffect.FrameEnd), bigFireEffect.Position - middle, middle, bigFireEffect.Angle, SpriteEffects.None, 0);
+                }
+                else if (effect is BloodSpatterEffect bloodSpatterEffect)
+                {
+                    var middle = bloodSpatter.Middle;
+                    DrawSpriteExt(bloodSpatter, AnimationFrame(bloodSpatter, bloodSpatterEffect.Frame, bloodSpatterEffect.FrameEnd), bloodSpatterEffect.Position - middle, middle, bloodSpatterEffect.Angle, SpriteEffects.None, 0);
+                }
+                else if (effect is FireEffect fireEffect)
+                {
+                    var middle = new Vector2(8, 12);
+                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
                 }
                 if (effect is DamagePopup damagePopup)
                 {
@@ -784,6 +819,7 @@ namespace RogueTower
             var pillar = SpriteLoader.Instance.AddSprite("content/bg_pillar");
             var pillar_detail = SpriteLoader.Instance.AddSprite("content/bg_pillar_detail");
             var pillar_top = SpriteLoader.Instance.AddSprite("content/bg_pillar_top");
+            var pillar_bottom_broken = SpriteLoader.Instance.AddSprite("content/bg_pillar_bottom_broken");
             var rail_left = SpriteLoader.Instance.AddSprite("content/bg_rail_left");
             var rail_middle = SpriteLoader.Instance.AddSprite("content/bg_rail_middle");
             var rail_right = SpriteLoader.Instance.AddSprite("content/bg_rail_right");
@@ -861,6 +897,9 @@ namespace RogueTower
                             break;
                         case (TileBG.PillarTop):
                             SpriteBatch.Draw(pillar_top.Texture, new Vector2(x * 16, y * 16), Color.White);
+                            break;
+                        case (TileBG.PillarBottomBroken):
+                            SpriteBatch.Draw(pillar_bottom_broken.Texture, new Vector2(x * 16, y * 16), Color.White);
                             break;
                         case (TileBG.Window):
                             SpriteBatch.Draw(window.Texture, new Vector2(x * 16, y * 16), Color.White);
@@ -1067,7 +1106,7 @@ namespace RogueTower
             {
                 return;
             }
-            DrawPlayerState(state, position - new Vector2(8, 8), mirror);
+            DrawPlayerState(state, position - new Vector2(8, 8) + human.VisualOffset(), mirror);
         }
 
         public int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
@@ -1110,11 +1149,28 @@ namespace RogueTower
             state.LeftArm.Draw(this, ArmState.Type.Left, position + offset, mirror, 0.6f);
             state.RightArm.Draw(this, ArmState.Type.Right, position + offset, mirror, 0.8f);
 
-            var weaponHold = state.RightArm.GetHoldOffset(ArmState.Type.Right);
+            Vector2 weaponHold;
+            float weaponDepth;
+            switch(state.WeaponHold)
+            {
+                default:
+                case (WeaponHold.Left):
+                    weaponHold = state.LeftArm.GetHoldOffset(ArmState.Type.Left);
+                    weaponDepth = 0.55f;
+                    break;
+                case (WeaponHold.Right):
+                    weaponHold = state.RightArm.GetHoldOffset(ArmState.Type.Right);
+                    weaponDepth = 0.9f;
+                    break;
+                case (WeaponHold.TwoHand):
+                    weaponHold = (state.LeftArm.GetHoldOffset(ArmState.Type.Left) + state.RightArm.GetHoldOffset(ArmState.Type.Right)) / 2;
+                    weaponDepth = (0.9f + 0.55f) / 2;
+                    break;
+            }
 
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
                 weaponHold.X = 16 - weaponHold.X;
-            state.Weapon.Draw(this, position + offset + weaponHold, mirror, 0.9f);
+            state.Weapon.Draw(this, position + offset + weaponHold, mirror, weaponDepth);
 
             SpriteBatch.End();
             StartNormalBatch();

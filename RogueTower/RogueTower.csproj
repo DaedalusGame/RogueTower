@@ -46,6 +46,7 @@
     <Compile Include="Coroutine.cs" />
     <Compile Include="Healthbar.cs" />
     <Compile Include="Scheduler.cs" />
+    <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="TileBG.cs" />
@@ -176,6 +177,9 @@
     <Content Include="Content\bg_pillar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\bg_pillar_bottom_broken.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\bg_pillar_detail.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -207,6 +211,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\bg_window_big_right.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\blood.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\breath_poison_strip6.png">
@@ -624,6 +631,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\spikeball.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\blood_spatter_strip4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\statue.png">
