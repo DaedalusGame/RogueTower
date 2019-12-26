@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -102,7 +103,12 @@ namespace RogueTower
         {
             if(PoisonTick > 120)
             {
-                Enemy.Health = Math.Max(Enemy.Health - 5, 1);
+                if(Enemy.Health > 1)
+                    Enemy.Health = Math.Max(Enemy.Health - 5, 1);
+
+                Enemy.Hitstop = 6;
+                Enemy.VisualOffset = Enemy.OffsetHitStun(6);
+                new ScreenShakeJerk(Enemy.World, Util.AngleToVector(Enemy.Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
                 PoisonTick -= 120;
             }
         }

@@ -149,10 +149,10 @@ namespace RogueTower
             return () =>
             {
                 float slide = (Lifetime - startTime) / time;
-                if (slide < 0.5f)
+                if (slide < 0.2f)
                     return -stunOffset;
                 else if (slide < 1f)
-                    return stunOffset;
+                    return stunOffset * (1-slide);
                 else
                     return Vector2.Zero;
             };
