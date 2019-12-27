@@ -1004,7 +1004,15 @@ namespace RogueTower
             {
                 return;
             }
-            DrawPlayerState(state, position - new Vector2(8, 8) + human.VisualOffset(), mirror);
+
+            ColorMatrix color = ColorMatrix.Identity;
+            foreach(var statusEffect in human.StatusEffects)
+            {
+                color *= statusEffect.ColorMatrix;
+            }
+            color *= human.VisualFlash();
+
+            DrawPlayerState(state, position - new Vector2(8, 8) + human.VisualOffset(), mirror, color);
         }
 
         public int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
@@ -1012,7 +1020,7 @@ namespace RogueTower
             return (int)MathHelper.Clamp(sprite.SubImageCount * frame / frameEnd, 0, sprite.SubImageCount - 1);
         }
 
-        public void DrawPlayerState(PlayerState state, Vector2 position, SpriteEffects mirror)
+        public void DrawPlayerState(PlayerState state, Vector2 position, SpriteEffects mirror, ColorMatrix color)
         {
             var origin = Vector2.Transform(position, WorldTransform);
             var transform = WorldTransform;
@@ -1021,19 +1029,9 @@ namespace RogueTower
 
             SpriteBatch.End();
 
-            Matrix testMatrix = new Matrix(
-              0.5f, 0.5f, 0, 0,
-              0, 1, 0, 0,
-              0, 0, 1, 0,
-              0, 0, 0, 1);
-            Vector4 testAdd = new Vector4(0, 0, 0, 0);
-
-            ColorMatrix identity = new ColorMatrix(Matrix.Identity, Vector4.Zero);
-            ColorMatrix test = new ColorMatrix(testMatrix, testAdd);
-
             Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
-            Shader.Parameters["color_matrix"].SetValue(test.Matrix);
-            Shader.Parameters["color_add"].SetValue(test.Add);
+            Shader.Parameters["color_matrix"].SetValue(color.Matrix);
+            Shader.Parameters["color_add"].SetValue(color.Add);
             Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
 
             SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: transform, effect: Shader);

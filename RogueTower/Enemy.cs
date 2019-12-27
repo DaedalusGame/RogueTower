@@ -36,6 +36,7 @@ namespace RogueTower
 
         public float Hitstop;
         public Func<Vector2> VisualOffset = () => Vector2.Zero;
+        public Func<ColorMatrix> VisualFlash = () => ColorMatrix.Identity;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -155,6 +156,25 @@ namespace RogueTower
                     return stunOffset * (1-slide);
                 else
                     return Vector2.Zero;
+            };
+        }
+
+        public Func<ColorMatrix> Flash(Color color, float time)
+        {
+            float startTime = Lifetime;
+            ColorMatrix flash = new ColorMatrix(new Matrix(
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, color.A / 255f),
+              new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 0));
+            return () =>
+            {
+                float slide = (Lifetime - startTime) / time;
+                if (slide < 1f)
+                    return flash;
+                else
+                    return ColorMatrix.Identity;
             };
         }
 
@@ -574,6 +594,7 @@ namespace RogueTower
             World.Hitstop = 6;
             Hitstop = 6;
             VisualOffset = OffsetHitStun(6);
+            VisualFlash = Flash(Color.White, 4);
             for(int i = 0; i < 3; i++)
                 new BloodSpatterEffect(World, GetRandomPosition(Box.Bounds, Random), Random.NextFloat() * MathHelper.TwoPi, 3 + Random.NextFloat() * 5);
             new ScreenShakeJerk(World, AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 4, 3);

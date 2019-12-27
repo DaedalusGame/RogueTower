@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,8 @@ namespace RogueTower
         public float Duration, DurationMax;
         public bool Added;
         public bool Removed;
-
+        public virtual ColorMatrix ColorMatrix => ColorMatrix.Identity;
+ 
         public StatusEffect(Enemy enemy, float duration = float.PositiveInfinity)
         {
             Enemy = enemy;
@@ -81,6 +83,13 @@ namespace RogueTower
         public float PoisonTick;
         public StatusPoisonEffect PoisonFX;
         public Vector2 Offset;
+        private ColorMatrix PoisonSkin = new ColorMatrix(new Matrix(
+              0.5f, 0.5f, 0.5f, 0,
+              0.5f, 0.5f, 0.5f, 0,
+              0.5f, 0.5f, 0.5f, 0,
+              0, 0, 0, 1),
+              new Vector4(-0.6f, -1.2f, 0, 0)) * ColorMatrix.Saturate(0.5f);
+        public override ColorMatrix ColorMatrix => ColorMatrix.Lerp(ColorMatrix.Identity, PoisonSkin, MathHelper.Lerp(0.0f,0.5f,(float)Math.Sin(Duration / 10f) * 0.5f + 0.5f));
 
         public Poison(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
