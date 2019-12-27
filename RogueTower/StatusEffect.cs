@@ -84,12 +84,11 @@ namespace RogueTower
 
         public Poison(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
-            Offset = Enemy.Position + new Vector2(0, 16);
         }
 
         protected override void OnAdd()
         {
-            PoisonFX = new StatusPoisonEffect(Enemy.World, Offset, 0, DurationMax);
+            PoisonFX = new StatusPoisonEffect(Enemy.World, Enemy.Position, 0, DurationMax);
             //You're poisoned!
         }
 
@@ -103,8 +102,16 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             if(PoisonFX != null)
-                PoisonFX.Position = Enemy.Position + new Vector2(0, 16);
+            {
+                if (Enemy is EnemyHuman enemy)
+                {
+                    Offset = new Vector2(enemy.Box.Bounds.Center.X, enemy.Box.Bounds.Top - 16);
+                }
+                else
+                    Offset = Enemy.Position - new Vector2(0, 16);
 
+                PoisonFX.Position = Offset;
+            }
             PoisonTick += delta;
         }
 
@@ -128,22 +135,40 @@ namespace RogueTower
 
     class Stun : StatusEffect
     {
+        public StatusStunEffect StunFX;
+        public Vector2 Offset;
+        public float Radius = 8;
+        public float CircleSpeed = 0.15f;
         public Stun(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
         }
 
         protected override void OnAdd()
         {
+            StunFX = new StatusStunEffect(Enemy.World, Enemy.Position, 0, DurationMax);
             //You're stunned!
         }
 
         protected override void OnRemove()
         {
+            if (StunFX != null)
+                StunFX.Destroy();
             //You're no longer stunned
         }
 
         protected override void UpdateDelta(float delta)
         {
+            if(StunFX != null)
+            {
+                if (Enemy is EnemyHuman enemy)
+                {
+                    Offset = new Vector2(enemy.Box.Bounds.Center.X, enemy.Box.Bounds.Top - 16) - new Vector2(Radius * (float)Math.Sin(StunFX.Frame * Math.PI * CircleSpeed), (Radius / 2) * (float)Math.Cos(StunFX.Frame * Math.PI * CircleSpeed));
+                }
+                else
+                    Offset = Enemy.Position - new Vector2(Radius * (float)Math.Sin(StunFX.Frame * Math.PI * CircleSpeed), (Radius / 2) * (float)Math.Cos(StunFX.Frame * Math.PI * CircleSpeed));
+
+                StunFX.Position = Offset;
+            }
         }
 
         protected override void UpdateDiscrete()
@@ -161,7 +186,6 @@ namespace RogueTower
         public Slow(Enemy enemy, float speedModifier, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
             SpeedModifier = speedModifier;
-            Offset = Enemy.Position - new Vector2(0, 20);
         }
 
         public override bool CanCombine(StatusEffect other)
@@ -177,7 +201,7 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
-            SlowFX = new StatusSlowEffect(Enemy.World, Offset, 0, DurationMax);
+            SlowFX = new StatusSlowEffect(Enemy.World, Enemy.Position, 0, DurationMax);
             //You slow down!
         }
 
@@ -191,8 +215,16 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             if (SlowFX != null)
-                SlowFX.Position = Enemy.Position - new Vector2(0, 20);
+            {
+                if(Enemy is EnemyHuman enemy)
+                {
+                    Offset = new Vector2(enemy.Box.Bounds.Center.X, enemy.Box.Bounds.Top - 16);
+                }
+                else
+                    Offset = Enemy.Position - new Vector2(0, 16);
 
+                SlowFX.Position = Offset;
+            }
             //NOOP
             //new DamagePopup(Enemy.World, Enemy.Position + new Vector2(0, 10), "Slowed", 1, Util.HSVA2RGBA(Duration % 360, 1, 1, 255));
         }

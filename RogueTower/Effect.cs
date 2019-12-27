@@ -587,4 +587,30 @@ namespace RogueTower
             scene.DrawSpriteExt(statusSlowed, 0, Position - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
         }
     }
+
+   class StatusStunEffect : Particle
+    {
+        public float Angle;
+        public float FrameEnd;
+
+        public StatusStunEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        {
+            Angle = angle;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var statusStunned = SpriteLoader.Instance.AddSprite("content/status_stunned");
+            scene.DrawSpriteExt(statusStunned, (int)(Frame * 0.3f), Position - statusStunned.Middle, statusStunned.Middle, Angle, SpriteEffects.None, 0);
+        }
+    }
 }
