@@ -157,6 +157,18 @@ namespace RogueTower
                     return Vector2.Zero;
             };
         }
+
+        public virtual IEnumerable<Vector2> GetDrawPoints()
+        {
+            yield return Position;
+        }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Foreground;
+        }
+
+        public abstract void Draw(SceneGame scene);
     }
     
     abstract class EnemyGravity : Enemy
@@ -570,6 +582,17 @@ namespace RogueTower
         public override void ShowDamage(double damage)
         {
             new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
+        }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Background;
+            yield return DrawPass.Foreground;
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            scene.DrawHuman(this);
         }
     }
 
@@ -1630,6 +1653,49 @@ namespace RogueTower
                 CurrentAction = new ActionDeath(this, GetFacingVector(Facing) * -24 + new Vector2(0, 0), 30);
             }
         }
+
+        public override IEnumerable<Vector2> GetDrawPoints()
+        {
+            yield return Position;
+            yield return Position + Head.Offset;
+        }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Foreground;
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
+            var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
+            var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
+            var snakeBodyBig = SpriteLoader.Instance.AddSprite("content/snake_belly");
+            foreach (var segment in Segments)
+            {
+                var render = CurrentAction.GetRenderSegment(segment);
+                if (render == SegmentRender.Invisible)
+                    continue;
+                if (segment == Head)
+                {
+                    SpriteReference sprite;
+                    if (CurrentAction.MouthOpen)
+                        sprite = snakeHeadOpen;
+                    else
+                        sprite = snakeHeadClosed;
+                    scene.DrawSprite(sprite, 0, HeadPosition - sprite.Middle + VisualOffset(), Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 1);
+                    break;
+                }
+                else if (render == SegmentRender.Normal)
+                {
+                    scene.DrawSprite(snakeBody, 0, Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 1);
+                }
+                else if (render == SegmentRender.Fat)
+                {
+                    scene.DrawSprite(snakeBodyBig, 0, Position + segment.Offset - snakeBodyBig.Middle, SpriteEffects.None, 1);
+                }
+            }
+        }
     }
 
     class SnakeHydra : Snake
@@ -1957,6 +2023,12 @@ namespace RogueTower
             if(!(CurrentAction is ActionDeath))
                 CurrentAction = new ActionDeath(this,50);
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var hydraBody = SpriteLoader.Instance.AddSprite("content/hydra_body");
+            scene.DrawSprite(hydraBody, (int)WalkFrame, Position - hydraBody.Middle + new Vector2(0, -4) + VisualOffset(), Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 1);
+        }
     }
 
     abstract class Cannon : Enemy
@@ -2045,6 +2117,13 @@ namespace RogueTower
         public override void ShowDamage(double damage)
         {
             //NOOP
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
+            var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
+            scene.DrawSpriteExt(wallGun, 0, Position - wallGun.Middle + VisualOffset(), wallGun.Middle, Angle, SpriteEffects.None, 1);
         }
     }
 
@@ -2201,6 +2280,23 @@ namespace RogueTower
         public override void ShowDamage(double damage)
         {
             new DamagePopup(World, Position + Offset + new Vector2(0,-16), damage.ToString(), 30);
+        }
+
+        public override IEnumerable<Vector2> GetDrawPoints()
+        {
+            yield return Position;
+            yield return Position + Offset;
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
+            var chain = SpriteLoader.Instance.AddSprite("content/chain");
+            for (float i = 0; i < Distance; i += 6f)
+            {
+                scene.DrawSprite(chain, 0, Position + OffsetUnit * i - chain.Middle, SpriteEffects.None, 1);
+            }
+            scene.DrawSprite(spikeball, 0, Position + Offset - spikeball.Middle + VisualOffset(), SpriteEffects.None, 1);
         }
     }
 }

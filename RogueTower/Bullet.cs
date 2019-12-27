@@ -72,6 +72,11 @@ namespace RogueTower
             //NOOP
         }
 
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Bullet;
+        }
+
         public abstract void Draw(SceneGame scene);
     }
 

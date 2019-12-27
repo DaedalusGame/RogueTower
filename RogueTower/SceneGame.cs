@@ -299,6 +299,8 @@ namespace RogueTower
         public double Lower, Upper;
 
         public static Shear All => new Shear(double.NegativeInfinity, double.PositiveInfinity);
+        public static Shear Below(double upper) => new Shear(double.NegativeInfinity, upper);
+        public static Shear Above(double lower) => new Shear(lower, double.PositiveInfinity);
 
         public Shear(double lower, double upper)
         {
@@ -495,106 +497,46 @@ namespace RogueTower
 
             Rectangle drawZone = GetDrawZone();
 
+            var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+
             DrawMapBackground(World.Map);
-            DepthShear = new Shear(double.NegativeInfinity, 0.75);
-            DrawHuman(World.Player);
+            DepthShear = Shear.Below(0.75);
+            //Pass lower enemy
+            foreach (GameObject obj in passes[DrawPass.Background])
+            {
+                DrawObject(obj, drawZone);
+            }
             DepthShear = Shear.All;
             DrawMap(World.Map);
-            DepthShear = new Shear(0.75, double.PositiveInfinity);
-            DrawHuman(World.Player);
+            DepthShear = Shear.Above(0.75);
+            //Pass upper enemy
+            foreach (GameObject obj in passes[DrawPass.Foreground])
+            {
+                DrawObject(obj, drawZone);
+            }
             DepthShear = Shear.All;
 
-            var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
-            var chain = SpriteLoader.Instance.AddSprite("content/chain");
-            var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
-            var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
-            var snakeBody = SpriteLoader.Instance.AddSprite("content/snake_tail");
-            var snakeBodyBig = SpriteLoader.Instance.AddSprite("content/snake_belly");
-            var hydraBody = SpriteLoader.Instance.AddSprite("content/hydra_body");
-            var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
-            var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
-
-            foreach (GameObject obj in World.Objects.OrderBy(x => x.DrawOrder))
+            foreach(GameObject obj in passes[DrawPass.Bullet])
             {
-                if(obj is BallAndChain ballAndChain)
-                {
-                    Vector2 truePosA = Vector2.Transform(ballAndChain.Position, WorldTransform);
-                    Vector2 truePosB = Vector2.Transform(ballAndChain.Position + ballAndChain.Offset, WorldTransform);
-                    if (!drawZone.Contains(truePosA) && !drawZone.Contains(truePosB))
-                        continue;
-                    for (float i = 0; i < ballAndChain.Distance; i += 6f)
-                    {
-                        DrawSprite(chain, 0, ballAndChain.Position + ballAndChain.OffsetUnit * i - chain.Middle, SpriteEffects.None, 0);
-                    }
-                    DrawSprite(spikeball, 0, ballAndChain.Position + ballAndChain.Offset - spikeball.Middle + ballAndChain.VisualOffset(), SpriteEffects.None, 0);
-                }
-                if(obj is MoaiMan moaiMan)
-                {
-                    Vector2 truePos = Vector2.Transform(moaiMan.Position, WorldTransform);
-                    if (!drawZone.Contains(truePos))
-                        continue;
-                    DrawHuman(moaiMan);
-                }
-                if(obj is Snake snake)
-                {
-                    Vector2 truePosA = Vector2.Transform(snake.Position, WorldTransform);
-                    Vector2 truePosB = Vector2.Transform(snake.Position + snake.Head.Offset, WorldTransform);
-                    if (!drawZone.Contains(truePosA) && !drawZone.Contains(truePosB))
-                        continue;
-                    foreach (var segment in snake.Segments)
-                    {
-                        var render = snake.CurrentAction.GetRenderSegment(segment);
-                        if (render == Snake.SegmentRender.Invisible)
-                            continue;
-                        if (segment == snake.Head)
-                        {
-                            SpriteReference sprite;
-                            if (snake.CurrentAction.MouthOpen)
-                                sprite = snakeHeadOpen;
-                            else
-                                sprite = snakeHeadClosed;
-                            DrawSprite(sprite, 0, snake.HeadPosition - sprite.Middle + snake.VisualOffset(), snake.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
-                            break;
-                        }
-                        else if(render == Snake.SegmentRender.Normal)
-                        {
-                            DrawSprite(snakeBody, 0, snake.Position + segment.Offset - snakeBody.Middle, SpriteEffects.None, 0);
-                        }
-                        else if (render == Snake.SegmentRender.Fat)
-                        {
-                            DrawSprite(snakeBodyBig, 0, snake.Position + segment.Offset - snakeBodyBig.Middle, SpriteEffects.None, 0);
-                        }
-                    } 
-                }
-                if(obj is Hydra hydra)
-                {
-                    Vector2 truePos = Vector2.Transform(hydra.Position, WorldTransform);
-                    if (!drawZone.Contains(truePos))
-                        continue;
-                    DrawSprite(hydraBody, (int)hydra.WalkFrame, hydra.Position - hydraBody.Middle + new Vector2(0,-4) + hydra.VisualOffset(), hydra.Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
-                }
-                if (obj is Cannon cannon)
-                {
-                    Vector2 truePos = Vector2.Transform(cannon.Position, WorldTransform);
-                    if (!drawZone.Contains(truePos))
-                        continue;
-                    DrawSpriteExt(wallGun, 0, cannon.Position - wallGun.Middle + cannon.VisualOffset(), wallGun.Middle, cannon.Angle, SpriteEffects.None, 0);
-                }
+                DrawObject(obj, drawZone);
             }
 
-            var crit = SpriteLoader.Instance.AddSprite("content/crit");
-            var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
-            var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
-            var punchStraight = SpriteLoader.Instance.AddSprite("content/punch");
+            foreach (GameObject obj in passes[DrawPass.Effect])
+            {
+                DrawObject(obj, drawZone);
+            }
 
-            var knife = SpriteLoader.Instance.AddSprite("content/knife");
-            var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
-            var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
-            var charge = SpriteLoader.Instance.AddSprite("content/charge");
-            var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
-
-            var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
-            var statusSlowed = SpriteLoader.Instance.AddSprite("content/status_slowed");
+            /*foreach (GameObject obj in World.Objects.OrderBy(x => x.DrawOrder))
+            {
+                if(obj is Enemy enemy)
+                {
+                    if(!enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
+                    {
+                        continue;
+                    }
+                    enemy.Draw(this);
+                }
+            }
 
             foreach (Bullet bullet in World.Bullets)
             {
@@ -603,89 +545,10 @@ namespace RogueTower
 
             foreach (VisualEffect effect in World.Effects)
             {
-                if (effect is SlashEffectStraight slashEffectStraight)
-                {
-                    var slashAngle = slashEffectStraight.Angle;
-                    if (slashEffectStraight.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
-                        slashAngle = -slashAngle;
-                    SpriteBatch.Draw(stab.Texture, slashEffectStraight.Position + new Vector2(8, 8) - new Vector2(8, 8), stab.GetFrameRect(Math.Min(stab.SubImageCount - 1, (int)(stab.SubImageCount * slashEffectStraight.Frame / slashEffectStraight.FrameEnd))), Color.White, slashAngle, stab.Middle, slashEffectStraight.Size, slashEffectStraight.Mirror, 0);
-                }
-                else if(effect is PunchEffectStraight punchEffectStraight)
-                {
-                    var punchAngle = punchEffectStraight.Angle;
-                    if (punchEffectStraight.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
-                        punchAngle = -punchAngle;
-                    DrawSpriteExt(punchStraight, AnimationFrame(punchStraight, punchEffectStraight.Frame, punchEffectStraight.FrameEnd), punchEffectStraight.Position - punchStraight.Middle, punchStraight.Middle, punchAngle, punchEffectStraight.Mirror, 0);
-                }
-                else if (effect is SlashEffectRound slashEffectRound)
-                {
-                    var slashAngle = slashEffectRound.Angle;
-                    if (slashEffectRound.Mirror.HasFlag(SpriteEffects.FlipHorizontally))
-                        slashAngle = -slashAngle;
-                    if (slashEffectRound.Size > 0.2)
-                        SpriteBatch.Draw(slash.Texture, slashEffectRound.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffectRound.Frame / slashEffectRound.FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, slashEffectRound.Size - 0.2f, slashEffectRound.Mirror, 0);
-                    SpriteBatch.Draw(slash.Texture, slashEffectRound.Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * slashEffectRound.Frame / slashEffectRound.FrameEnd))), Color.White, slashAngle, slash.Middle, slashEffectRound.Size, slashEffectRound.Mirror, 0);
-                }
-                if (effect is KnifeBounced knifeBounced)
-                {
-                    DrawSpriteExt(knife, 0, knifeBounced.Position - knife.Middle, knife.Middle, knifeBounced.Rotation * knifeBounced.Frame, SpriteEffects.None, 0);
-                }
-                if (effect is SnakeHead snakeHead)
-                {
-                    DrawSpriteExt(snakeHeadOpen, 0, snakeHead.Position - snakeHeadOpen.Middle, snakeHeadOpen.Middle, snakeHead.Rotation * snakeHead.Frame, snakeHead.Mirror, 0);
-                }
-                if (effect is ParryEffect parryEffect)
-                {
-                    DrawSpriteExt(crit, AnimationFrame(crit,parryEffect.Frame,parryEffect.FrameEnd), parryEffect.Position - crit.Middle, crit.Middle, parryEffect.Angle, SpriteEffects.None, 0);
-                }
-                if (effect is BigFireEffect bigFireEffect)
-                {
-                    var middle = new Vector2(8, 12);
-                    DrawSpriteExt(fireBig, AnimationFrame(fireBig, bigFireEffect.Frame, bigFireEffect.FrameEnd), bigFireEffect.Position - middle, middle, bigFireEffect.Angle, SpriteEffects.None, 0);
-                }
-                else if (effect is BloodSpatterEffect bloodSpatterEffect)
-                {
-                    var middle = bloodSpatter.Middle;
-                    DrawSpriteExt(bloodSpatter, AnimationFrame(bloodSpatter, bloodSpatterEffect.Frame, bloodSpatterEffect.FrameEnd), bloodSpatterEffect.Position - middle, middle, bloodSpatterEffect.Angle, SpriteEffects.None, 0);
-                }
-                else if (effect is FireEffect fireEffect)
-                {
-                    var middle = new Vector2(8, 12);
-                    DrawSpriteExt(fire, AnimationFrame(fire, fireEffect.Frame, fireEffect.FrameEnd), fireEffect.Position - middle, middle, fireEffect.Angle, SpriteEffects.None, 0);
-                }
-                if (effect is DamagePopup damagePopup)
-                {
-                    var calcParams = new TextParameters().SetColor(damagePopup.FontColor, damagePopup.BorderColor).SetConstraints(128, 64);
-                    string fit = FontUtil.FitString(Game.ConvertToSmallPixelText(damagePopup.Text), calcParams);
-                    var width = FontUtil.GetStringWidth(fit, calcParams);
-                    var height = FontUtil.GetStringHeight(fit);
-                    DrawText(fit, damagePopup.Position + damagePopup.Offset - new Vector2(128,height) / 2, Alignment.Center, new TextParameters().SetColor(damagePopup.FontColor,damagePopup.BorderColor).SetConstraints(128, height + 64));
-                }
-                if(effect is RectangleDebug rectDebug)
-                {
-                    SpriteBatch.Draw(Pixel, rectDebug.Rectangle.ToRectangle(), rectDebug.Color);
-                }
-                if(effect is ChargeEffect chargeEffect)
-                {
-                    DrawSpriteExt(charge, (int)-chargeEffect.Frame, chargeEffect.Position - charge.Middle, charge.Middle, chargeEffect.Angle, SpriteEffects.None, 0);
-                }
-                if(effect is StatusPoisonEffect poisonEffect)
-                {
-                    DrawSpriteExt(statusPoisoned, (int)(poisonEffect.Frame * 0.25f), poisonEffect.Position - statusPoisoned.Middle, statusPoisoned.Middle,  poisonEffect.Angle, SpriteEffects.None, 0);
-                }
-                if (effect is StatusSlowEffect slowEffect)
-                {
-                    float slide = (slowEffect.Frame * 0.01f) % 1;
-                    float angle = 0;
-                    if(slide < 0.1f)
-                    {
-                        angle = MathHelper.Lerp(0, MathHelper.Pi, slide / 0.1f);
-                    }
-                    DrawSpriteExt(statusSlowed, 0, slowEffect.Position - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
-                }
-            }
+                effect.Draw(this);
+            }*/
 
-            if(Keyboard.GetState().IsKeyDown(Keys.RightControl) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.LeftTrigger)) 
+            if (Keyboard.GetState().IsKeyDown(Keys.RightControl) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.LeftTrigger)) 
             { 
                 foreach(var box in World.Find(World.Bounds))
                 {
@@ -1101,7 +964,25 @@ namespace RogueTower
             return drawZone;
         }
 
-        private void DrawHuman(EnemyHuman human)
+        public void DrawObject(GameObject obj, Rectangle drawZone)
+        {
+            if (obj is Enemy enemy && enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
+            {
+                enemy.Draw(this);
+            }
+
+            if(obj is Bullet bullet)
+            { 
+                bullet.Draw(this);
+            }
+
+            if (obj is VisualEffect effect)
+            {
+                effect.Draw(this);
+            }
+        }
+
+        public void DrawHuman(EnemyHuman human)
         {
             SpriteEffects mirror = SpriteEffects.None;
 

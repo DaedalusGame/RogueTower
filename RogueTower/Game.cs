@@ -253,7 +253,7 @@ namespace RogueTower
         public const char FORMAT_SUBSCRIPT = (char)(FORMAT_CODES_BEGIN + 3);
         public const char FORMAT_SUPERSCRIPT = (char)(FORMAT_CODES_BEGIN + 4);
 
-        public string ConvertToPixelText(string text)
+        public static string ConvertToPixelText(string text)
         {
             StringBuilder convertedText = new StringBuilder();
 
@@ -270,7 +270,7 @@ namespace RogueTower
             return convertedText.ToString();
         }
 
-        public string ConvertToSmallPixelText(string text)
+        public static string ConvertToSmallPixelText(string text)
         {
             StringBuilder convertedText = new StringBuilder();
 

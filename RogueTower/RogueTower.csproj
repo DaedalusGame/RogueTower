@@ -44,6 +44,7 @@
     <Compile Include="Background.cs" />
     <Compile Include="ColorMatrix.cs" />
     <Compile Include="Coroutine.cs" />
+    <Compile Include="DrawPass.cs" />
     <Compile Include="Healthbar.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />

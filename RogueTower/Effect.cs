@@ -29,6 +29,13 @@ namespace RogueTower
         {
             //NOOP
         }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Effect;
+        }
+
+        public abstract void Draw(SceneGame scene);
     }
 
     class ScreenShake : VisualEffect
@@ -39,6 +46,11 @@ namespace RogueTower
         public ScreenShake(GameWorld world, float time) : base(world)
         {
             FrameEnd = time;
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            //NOOP
         }
     }
 
@@ -133,12 +145,32 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
+            var slashAngle = Angle;
+            if (Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                slashAngle = -slashAngle;
+            if (Size > 0.2)
+                scene.SpriteBatch.Draw(slash.Texture, Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * Frame / FrameEnd) - 1)), Color.LightGray, slashAngle, slash.Middle, Size - 0.2f, Mirror, 0);
+            scene.SpriteBatch.Draw(slash.Texture, Position + new Vector2(8, 8) - new Vector2(8, 8), slash.GetFrameRect(Math.Min(slash.SubImageCount - 1, (int)(slash.SubImageCount * Frame / FrameEnd))), Color.White, slashAngle, slash.Middle, Size, Mirror, 0);
+        }
     }
 
     class SlashEffectStraight : SlashEffectRound
     {
         public SlashEffectStraight(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, anchor, size, angle, mirror, time)
         {
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
+            var slashAngle = Angle;
+            if (Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                slashAngle = -slashAngle;
+            scene.SpriteBatch.Draw(stab.Texture, Position + new Vector2(8, 8) - new Vector2(8, 8), stab.GetFrameRect(Math.Min(stab.SubImageCount - 1, (int)(stab.SubImageCount * Frame / FrameEnd))), Color.White, slashAngle, stab.Middle, Size, Mirror, 0);
         }
     }
 
@@ -147,7 +179,17 @@ namespace RogueTower
         public PunchEffectStraight(GameWorld world, Func<Vector2> anchor, float size, float angle, SpriteEffects mirror, float time) : base(world, anchor, size, angle, mirror, time)
         {
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var punchStraight = SpriteLoader.Instance.AddSprite("content/punch");
+            var punchAngle = Angle;
+            if (Mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                punchAngle = -punchAngle;
+            scene.DrawSpriteExt(punchStraight, scene.AnimationFrame(punchStraight, Frame, FrameEnd), Position - punchStraight.Middle, punchStraight.Middle, punchAngle, Mirror, 0);
+        }
     }
+
     abstract class Particle : VisualEffect
     {
         public virtual Vector2 Position
@@ -185,6 +227,12 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var crit = SpriteLoader.Instance.AddSprite("content/crit");
+            scene.DrawSpriteExt(crit, scene.AnimationFrame(crit, Frame, FrameEnd), Position - crit.Middle, crit.Middle, Angle, SpriteEffects.None, 0);
+        }
     }
 
     class FireEffect : Particle
@@ -205,12 +253,26 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
+            var middle = new Vector2(8, 12);
+            scene.DrawSpriteExt(fire, scene.AnimationFrame(fire, Frame, FrameEnd), Position - middle, middle, Angle, SpriteEffects.None, 0);
+        }
     }
 
     class BigFireEffect : FireEffect
     {
         public BigFireEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position, angle, time)
         {
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
+            var middle = new Vector2(8, 12);
+            scene.DrawSpriteExt(fireBig, scene.AnimationFrame(fireBig, Frame, FrameEnd), Position - middle, middle, Angle, SpriteEffects.None, 0);
         }
     }
 
@@ -223,6 +285,12 @@ namespace RogueTower
         public override void Update(float delta)
         {
             base.Update(1.0f);
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
+            scene.DrawSpriteExt(bloodSpatter, scene.AnimationFrame(bloodSpatter, Frame, FrameEnd), Position - bloodSpatter.Middle, bloodSpatter.Middle, Angle, SpriteEffects.None, 0);
         }
     }
 
@@ -253,6 +321,11 @@ namespace RogueTower
             }
             Velocity += new Vector2(0, 0.4f);
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class KnifeBounced : Particle
@@ -281,6 +354,12 @@ namespace RogueTower
                 Destroy();
             }
             Velocity += new Vector2(0, 0.4f);
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var knife = SpriteLoader.Instance.AddSprite("content/knife");
+            scene.DrawSpriteExt(knife, 0, Position - knife.Middle, knife.Middle, Rotation * Frame, SpriteEffects.None, 0);
         }
     }
 
@@ -313,6 +392,12 @@ namespace RogueTower
             }
             Velocity += new Vector2(0, 0.4f);
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
+            scene.DrawSpriteExt(snakeHeadOpen, 0, Position - snakeHeadOpen.Middle, snakeHeadOpen.Middle, Rotation * Frame, Mirror, 0);
+        }
     }
 
     class DamagePopup : Particle
@@ -338,6 +423,15 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var calcParams = new TextParameters().SetColor(FontColor, BorderColor).SetConstraints(128, 64);
+            string fit = FontUtil.FitString(Game.ConvertToSmallPixelText(Text), calcParams);
+            var width = FontUtil.GetStringWidth(fit, calcParams);
+            var height = FontUtil.GetStringHeight(fit);
+            scene.DrawText(fit, Position + Offset - new Vector2(128, height) / 2, Alignment.Center, new TextParameters().SetColor(FontColor, BorderColor).SetConstraints(128, height + 64));
+        }
     }
 
     class RectangleDebug : VisualEffect
@@ -359,6 +453,11 @@ namespace RogueTower
             {
                 Destroy();
             }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            scene.SpriteBatch.Draw(scene.Pixel, Rectangle.ToRectangle(), Color);
         }
     }
 
@@ -425,6 +524,12 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var charge = SpriteLoader.Instance.AddSprite("content/charge");
+            scene.DrawSpriteExt(charge, (int)-Frame, Position - charge.Middle, charge.Middle, Angle, SpriteEffects.None, 0);
+        }
     }
 
    class StatusPoisonEffect : Particle
@@ -444,6 +549,12 @@ namespace RogueTower
                 Destroy();
             }
         }
+
+        public override void Draw(SceneGame scene)
+        {
+            var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
+            scene.DrawSpriteExt(statusPoisoned, (int)(Frame * 0.25f), Position - statusPoisoned.Middle, statusPoisoned.Middle, Angle, SpriteEffects.None, 0);
+        }
     }
 
     class StatusSlowEffect : Particle
@@ -462,6 +573,18 @@ namespace RogueTower
             {
                 Destroy();
             }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var statusSlowed = SpriteLoader.Instance.AddSprite("content/status_slowed");
+            float slide = (Frame * 0.01f) % 1;
+            float angle = 0;
+            if (slide < 0.1f)
+            {
+                angle = MathHelper.Lerp(0, MathHelper.Pi, slide / 0.1f);
+            }
+            scene.DrawSpriteExt(statusSlowed, 0, Position - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
         }
     }
 }

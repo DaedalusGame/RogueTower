@@ -63,5 +63,7 @@ namespace RogueTower
         protected abstract void UpdateDelta(float delta);
 
         protected abstract void UpdateDiscrete();
+
+        public abstract IEnumerable<DrawPass> GetDrawPasses();
     }
 }
