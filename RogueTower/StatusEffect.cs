@@ -191,6 +191,7 @@ namespace RogueTower
         public float SpeedModifier;
         public StatusSlowEffect SlowFX;
         public Vector2 Offset;
+        public override ColorMatrix ColorMatrix => ColorMatrix.Lerp(ColorMatrix.Identity, ColorMatrix.Greyscale() * ColorMatrix.Scale(0.25f), MathHelper.Lerp(0.0f, 1f, (float)Math.Sin(Duration / 50f) * 0.5f + 0.5f));
 
         public Slow(Enemy enemy, float speedModifier, float duration = float.PositiveInfinity) : base(enemy, duration)
         {
