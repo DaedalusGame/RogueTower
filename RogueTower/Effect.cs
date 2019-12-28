@@ -532,47 +532,52 @@ namespace RogueTower
         }
     }
 
-   class StatusPoisonEffect : Particle
+    abstract class StatusEffectVisual<T> : VisualEffect where T : StatusEffect
     {
-        public float Angle;
-        public float FrameEnd;
-        public StatusPoisonEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        protected T Effect;
+        protected Enemy Enemy => Effect.Enemy;
+        protected Vector2 Position
         {
-            Angle = angle;
-            FrameEnd = time;
+            get
+            {
+                if (Enemy is EnemyHuman enemy)
+                    return new Vector2(enemy.Box.Bounds.Center.X, enemy.Box.Bounds.Top - 16);
+                else
+                    return Enemy.Position - new Vector2(0, 16);
+            }
+        }
+
+        public StatusEffectVisual(GameWorld world, T effect) : base(world)
+        {
+            Effect = effect;
         }
 
         protected override void UpdateDiscrete()
         {
-            if (Frame >= FrameEnd)
+            if (Effect.Removed || Effect.Enemy.Destroyed)
             {
                 Destroy();
             }
+        }
+    }
+
+    class StatusPoisonEffect : StatusEffectVisual<Poison>
+    {
+        public StatusPoisonEffect(GameWorld world, Poison effect) : base(world, effect)
+        {
         }
 
         public override void Draw(SceneGame scene)
         {
             var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
-            scene.DrawSpriteExt(statusPoisoned, (int)(Frame * 0.25f), Position - statusPoisoned.Middle, statusPoisoned.Middle, Angle, SpriteEffects.None, 0);
+            scene.DrawSpriteExt(statusPoisoned, (int)(Frame * 0.25f), Position - statusPoisoned.Middle, statusPoisoned.Middle, 0, SpriteEffects.None, 0);
         }
     }
 
-    class StatusSlowEffect : Particle
+    class StatusSlowEffect : StatusEffectVisual<Slow>
     {
-        public float Angle;
-        public float FrameEnd;
-        public StatusSlowEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        public StatusSlowEffect(GameWorld world, Slow effect) : base(world, effect)
         {
-            Angle = angle;
-            FrameEnd = time;
-        }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
         }
 
         public override void Draw(SceneGame scene)
@@ -588,29 +593,19 @@ namespace RogueTower
         }
     }
 
-   class StatusStunEffect : Particle
+   class StatusStunEffect : StatusEffectVisual<Stun>
     {
-        public float Angle;
-        public float FrameEnd;
-
-        public StatusStunEffect(GameWorld world, Vector2 position, float angle, float time) : base(world, position)
+        public StatusStunEffect(GameWorld world, Stun effect) : base(world, effect)
         {
-            Angle = angle;
-            FrameEnd = time;
-        }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
         }
 
         public override void Draw(SceneGame scene)
         {
             var statusStunned = SpriteLoader.Instance.AddSprite("content/status_stunned");
-            scene.DrawSpriteExt(statusStunned, (int)(Frame * 0.3f), Position - statusStunned.Middle, statusStunned.Middle, Angle, SpriteEffects.None, 0);
+            float radius = 8;
+            float circleSpeed = 0.15f;
+            var offset = new Vector2(radius * (float)Math.Sin(Frame * Math.PI * circleSpeed), (radius / 2) * (float)Math.Cos(Frame * Math.PI * circleSpeed));
+            scene.DrawSpriteExt(statusStunned, (int)(Frame * 0.3f), Position + offset - statusStunned.Middle, statusStunned.Middle, 0, SpriteEffects.None, 0);
         }
     }
 }

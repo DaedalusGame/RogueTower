@@ -191,7 +191,8 @@ namespace RogueTower
 
         public override void Death()
         {
-            if (!(CurrentAction is ActionEnemyDeath))
+            base.Death();
+            if (!(CurrentAction is ActionPlayerDeath))
                 CurrentAction = new ActionPlayerDeath(this, 100);
         }
     }

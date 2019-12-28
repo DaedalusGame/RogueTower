@@ -72,7 +72,7 @@ namespace RogueTower
         public void Resurrect()
         {
             Health = HealthMax;
-            StatusEffects.Clear();
+            ClearStatusEffects();
         }
 
         public void AddStatusEffect(StatusEffect effect)
@@ -83,18 +83,20 @@ namespace RogueTower
                 StatusEffects.Add(effect);
         }
 
+        public void ClearStatusEffects()
+        {
+            foreach(var effect in StatusEffects)
+                effect.Remove();
+        }
+
         private void CombineStatusEffect(StatusEffect effect)
         {
             var combineable = StatusEffects.Where(x => x.CanCombine(effect)).ToList();
             var combined = combineable.SelectMany(x => x.Combine(effect)).Distinct().ToList();
             foreach (var added in combined.Except(combineable))
-            {
                 StatusEffects.Add(effect);
-            }
             foreach (var removed in combineable.Except(combined))
-            {
                 removed.Remove();
-            }
         }
 
         public override void Update(float delta)
@@ -130,7 +132,7 @@ namespace RogueTower
             Health = Math.Min(Math.Max(Health-damageIn, 0), HealthMax);
             if(Math.Abs(damageIn) >= 0.1)
                 ShowDamage(damageIn);
-            if (Health <= 0)
+            if (Health <= 0 && !Dead)
             {
                 Death();
             }
@@ -138,6 +140,7 @@ namespace RogueTower
 
         public virtual void Death()
         {
+            ClearStatusEffects();
             //NOOP
         }
 
@@ -883,6 +886,7 @@ namespace RogueTower
 
         public override void Death()
         {
+            base.Death();
             if (!(CurrentAction is ActionEnemyDeath))
                 CurrentAction = new ActionEnemyDeath(this, 20);
         }
@@ -1668,6 +1672,7 @@ namespace RogueTower
 
         public override void Death()
         {
+            base.Death();
             if (!(CurrentAction is ActionDeath))
             {
                 new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);
@@ -2041,7 +2046,8 @@ namespace RogueTower
 
         public override void Death()
         {
-            if(!(CurrentAction is ActionDeath))
+            base.Death();
+            if (!(CurrentAction is ActionDeath))
                 CurrentAction = new ActionDeath(this,50);
         }
 
