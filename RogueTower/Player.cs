@@ -131,7 +131,7 @@ namespace RogueTower
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;
 
-        SceneGame SceneGame;
+        public SceneGame SceneGame;
 
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -150,19 +150,6 @@ namespace RogueTower
         public void SetControl(SceneGame game)
         {
             SceneGame = game;
-        }
-
-        protected override void UpdateDelta(float delta)
-        {
-            Controls.Update(SceneGame);
-
-            base.UpdateDelta(delta);
-        }
-
-        protected override void UpdateDiscrete()
-        {
-            base.UpdateDiscrete();
-            //Health = Math.Max(0,Math.Min(Health+0.1, HealthMax));
         }
 
         protected override void HandleInput()

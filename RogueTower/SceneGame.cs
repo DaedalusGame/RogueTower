@@ -334,15 +334,14 @@ namespace RogueTower
 
         Shear DepthShear = Shear.All;
         
-        bool GameSpeedToggle = false;
-
         public int HeightTraversed;
 
         public GameState gameState = GameState.Game;
 
         Healthbar Health;
         Healthbar HealthShadow;
-        public int CurrentWeaponIndex = 0;
+
+        public InputAction InputAction;
 
         List<Background> Backgrounds;
 
@@ -369,7 +368,7 @@ namespace RogueTower
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
             World.Player.SetControl(this);
-            World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
+            World.Player.Weapon = Weapon.PresetWeaponList.First();
 
             Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
@@ -384,7 +383,7 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
 
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, 0), new Vector2(-1.0f, -1.0f)) { XLooping = true, YLooping = false });
-
+            InputAction = new PlayerInput(World.Player);
         }
 
         public override bool ShowCursor => true;
@@ -412,33 +411,8 @@ namespace RogueTower
         {
 
             //Pause Menu Updates
-            if (gameState == GameState.Game)
-            {
-                if (KeyState.IsKeyDown(Keys.Tab) && LastKeyState.IsKeyUp(Keys.Tab) || (PadState.IsButtonDown(Buttons.RightStick) && LastPadState.IsButtonUp(Buttons.RightStick)))
-                    GameSpeedToggle = !GameSpeedToggle;
-                World.Update(GameSpeedToggle ? 0.1f : 1.0f);
-                if (PadState.IsButtonDown(Buttons.RightTrigger) && LastPadState.IsButtonUp(Buttons.RightTrigger))
-                    {
-                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex + 1, Weapon.PresetWeaponList.Length);
-                    World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
-                }
-                else if (PadState.IsButtonDown(Buttons.RightShoulder) && LastPadState.IsButtonUp(Buttons.RightShoulder))
-                {
-                    CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, Weapon.PresetWeaponList.Length);
-                    World.Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
-                }
-                if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
-                {
-                    gameState = GameState.Paused;
-                }
-            }
-            else if (gameState == GameState.Paused)
-            {
-                if ((KeyState.IsKeyDown(Keys.Enter) && LastKeyState.IsKeyUp(Keys.Enter)) || (PadState.IsButtonDown(Buttons.Start) && LastPadState.IsButtonUp(Buttons.Start)))
-                {
-                    gameState = GameState.Game;
-                }
-            }
+            InputAction.HandleInput(this);
+            World.Update(InputAction.GameSpeed);
             Health.Update(1.0f);
             HealthShadow.Update(1.0f);
             HeightTraversed = (int)(World.Height - World.Player.Position.Y) / 16;
@@ -624,6 +598,10 @@ namespace RogueTower
                 $"OnGround: {World.Player.OnGround}\n" +
                 $"OnWall: {World.Player.OnWall}\n" +
                 $"Room: {(int)(World.Player.Position.X / 8 / 16)},{(int)(World.Player.Position.Y / 8 / 16)}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
+
+            foreach(var inputAction in GetOrderedInputActions(InputAction))
+                inputAction.Draw(this);
+
             //Pause Screen
             if (gameState != GameState.Paused)
             {
@@ -683,6 +661,22 @@ namespace RogueTower
                 widthFill = width - 1;
 
             SpriteBatch.Draw(spriteBar.Texture, new Rectangle((int)position.X, (int)position.Y, widthFill, spriteBar.Height), new Rectangle(0, 0, widthFill, spriteBar.Height), Color.White);
+        }
+
+        IEnumerable<InputAction> GetOrderedInputActions(InputAction action)
+        {
+            if (action != null)
+            {
+                yield return action;
+
+                foreach (var subaction in action.SubActions.Reverse<InputAction>())
+                {
+                    foreach (var i in GetOrderedInputActions(subaction))
+                    {
+                        yield return i;
+                    }
+                }
+            }
         }
 
         private void DrawMapBackground(Map map)
