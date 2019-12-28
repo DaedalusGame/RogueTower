@@ -131,7 +131,7 @@ namespace RogueTower
         public double SwordSwingDamage = 15.0;
         public double SwordSwingDownDamage = 20.0;
 
-        public SceneGame SceneGame;
+        public PlayerInput PlayerInput;
 
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -147,9 +147,9 @@ namespace RogueTower
             Box.Data = this;
         }
 
-        public void SetControl(SceneGame game)
+        public void SetControl(PlayerInput input)
         {
-            SceneGame = game;
+            PlayerInput = input;
         }
 
         protected override void HandleInput()

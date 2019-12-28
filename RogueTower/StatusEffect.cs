@@ -98,7 +98,7 @@ namespace RogueTower
         {
             PoisonFX = new StatusPoisonEffect(Enemy.World, this);
             if (Enemy is Player player)
-                player.SceneGame.InputAction.SubActions.Add(new MessageBox("Oops! You just got poison'd!", InputResult.ActionTaken));
+                player.PlayerInput.SubActions.Add(new MessageBox("Oops! You just got poison'd!", InputResult.ActionTaken));
             //You're poisoned!
         }
 

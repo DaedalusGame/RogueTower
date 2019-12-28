@@ -367,8 +367,11 @@ namespace RogueTower
             World = new GameWorld(100, 800);
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
-            World.Player.SetControl(this);
             World.Player.Weapon = Weapon.PresetWeaponList.First();
+
+            PlayerInput playerInput = new PlayerInput(World.Player);
+            InputAction = playerInput;
+            World.Player.SetControl(playerInput);
 
             Health = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 10.0);
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
@@ -383,7 +386,6 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
 
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, 0), new Vector2(-1.0f, -1.0f)) { XLooping = true, YLooping = false });
-            InputAction = new PlayerInput(World.Player);
         }
 
         public override bool ShowCursor => true;
