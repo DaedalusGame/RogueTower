@@ -34,6 +34,17 @@ namespace RogueTower
             return wait;
         }
 
+        public void RunTimer(System.Action action, Wait wait)
+        {
+            Run(new Coroutine(RunTimerInternal(action, wait)));
+        }
+
+        private IEnumerable<Wait> RunTimerInternal(System.Action action, Wait wait)
+        {
+            yield return wait;
+            action();
+        }
+
         public void Update()
         {
             while(CoroutineQueue.Count > 0)

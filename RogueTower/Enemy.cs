@@ -145,6 +145,11 @@ namespace RogueTower
             //NOOP
         }
 
+        public virtual void DropItems(Vector2 position)
+        {
+            //NOOP
+        }
+
         public Func<Vector2> OffsetHitStun(float time)
         {
             float startTime = Lifetime;
@@ -886,10 +891,16 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
-            var drop = new DroppedItem(World, Position, Meat.Moai);
-            drop.Spread();
+            Vector2 deathPosition = Position;
+            Scheduler.Instance.RunTimer(() => DropItems(deathPosition), new WaitDelta(World, 10));
             if (!(CurrentAction is ActionEnemyDeath))
                 CurrentAction = new ActionEnemyDeath(this, 20);
+        }
+
+        public override void DropItems(Vector2 position)
+        {
+            var drop = new DroppedItem(World, position, Meat.Moai);
+            drop.Spread();
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
@@ -1674,13 +1685,19 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
-            var drop = new DroppedItem(World, Position, Meat.Snake);
-            drop.Spread();
+            Vector2 deathPosition = HeadPosition;
+            Scheduler.Instance.RunTimer(() => DropItems(deathPosition), new WaitDelta(World, 10));
             if (!(CurrentAction is ActionDeath))
             {
                 new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);
                 CurrentAction = new ActionDeath(this, GetFacingVector(Facing) * -24 + new Vector2(0, 0), 30);
             }
+        }
+
+        public override void DropItems(Vector2 position)
+        {
+            var drop = new DroppedItem(World, position, Meat.Snake);
+            drop.Spread();
         }
 
         public override IEnumerable<Vector2> GetDrawPoints()
