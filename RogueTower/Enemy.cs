@@ -336,11 +336,11 @@ namespace RogueTower
 
         protected void HandlePhysicsEarly()
         {
-            if (OnCeiling)
+            if (OnCeiling && !Incorporeal)
             {
                 HandleCeiling();
             }
-            else if (OnGround) //Friction
+            else if (OnGround && !Incorporeal) //Friction
             {
                 UpdateGroundFriction();
                 Velocity.Y = 0;
@@ -451,7 +451,7 @@ namespace RogueTower
             HandlePhysicsEarly();
 
             var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
-            if (wallTiles.Any())
+            if (wallTiles.Any() && !Incorporeal)
             {
                 Velocity.X = 0;
             }
