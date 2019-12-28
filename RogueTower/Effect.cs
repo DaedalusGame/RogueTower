@@ -34,8 +34,6 @@ namespace RogueTower
         {
             yield return DrawPass.Effect;
         }
-
-        public abstract void Draw(SceneGame scene);
     }
 
     class ScreenShake : VisualEffect

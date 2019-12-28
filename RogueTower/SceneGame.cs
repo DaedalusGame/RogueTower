@@ -961,20 +961,12 @@ namespace RogueTower
 
         public void DrawObject(GameObject obj, Rectangle drawZone)
         {
-            if (obj is Enemy enemy && enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
+            if (obj is Enemy enemy && !enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
             {
-                enemy.Draw(this);
+                return;
             }
 
-            if(obj is Bullet bullet)
-            { 
-                bullet.Draw(this);
-            }
-
-            if (obj is VisualEffect effect)
-            {
-                effect.Draw(this);
-            }
+            obj.Draw(this);
         }
 
         public void DrawHuman(EnemyHuman human)
@@ -1000,7 +992,7 @@ namespace RogueTower
                 return;
             }
 
-            ColorMatrix color = ColorMatrix.Identity;
+            ColorMatrix color = human.VisualBaseColor;
             foreach(var statusEffect in human.StatusEffects)
             {
                 color *= statusEffect.ColorMatrix;

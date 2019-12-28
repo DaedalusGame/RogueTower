@@ -97,7 +97,18 @@ namespace RogueTower
 
         public override void Draw(SceneGame scene)
         {
-            //NOOP
+            SpriteReference textbox = SpriteLoader.Instance.AddSprite("content/ui_box");
+
+            if (Player.NearbyItems.Any())
+            {
+                int width = 256;
+                int height = 16;
+                int x = (scene.Viewport.Width - width) / 2;
+                int y = scene.Viewport.Height - height - 4;
+                RectangleF rect = new RectangleF(x, y, width, height);
+                scene.DrawUI(textbox, rect.ToRectangle(), Color.White);
+                scene.DrawText($"Pick up {Player.NearbyItems.First().Item.Name}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
+            }
         }
     }
 

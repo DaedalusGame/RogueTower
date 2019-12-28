@@ -72,6 +72,20 @@ namespace RogueTower
             player.Weapon.HandleAttack(player);
         }
 
+        protected void HandleItemInput(Player player)
+        {
+            if (player.Controls.Pickup && player.NearbyItems.Any())
+            {
+                var nearbyItem = player.NearbyItems.First();
+                if(!nearbyItem.Destroyed)
+                {
+                    //Just for show since there's no inventory yet.
+                    new DamagePopup(player.World, nearbyItem.Position, $"+1 {nearbyItem.Item.Name}", 30);
+                    nearbyItem.Destroy();
+                }
+            }
+        }
+
         abstract public void GetPose(PlayerState basePose);
     }
 
@@ -93,6 +107,7 @@ namespace RogueTower
             HandleMoveInput(player);
             HandleJumpInput(player);
             HandleSlashInput(player);
+            HandleItemInput(player);
         }
 
         public override void UpdateDelta(float delta)
@@ -128,6 +143,7 @@ namespace RogueTower
             WalkingRight = player.Controls.MoveRight;
             HandleJumpInput(player);
             HandleSlashInput(player);
+            HandleItemInput(player);
         }
 
         public override void GetPose(PlayerState basePose)
@@ -196,6 +212,7 @@ namespace RogueTower
             JumpingRight = player.Controls.MoveRight;
             HandleExtraJump(player);
             HandleSlashInput(player);
+            HandleItemInput(player);
         }
 
         public override void UpdateDelta(float delta)

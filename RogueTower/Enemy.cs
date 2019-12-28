@@ -37,6 +37,7 @@ namespace RogueTower
         public float Hitstop;
         public Func<Vector2> VisualOffset = () => Vector2.Zero;
         public Func<ColorMatrix> VisualFlash = () => ColorMatrix.Identity;
+        public ColorMatrix VisualBaseColor => ColorMatrix.Identity;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -190,8 +191,6 @@ namespace RogueTower
         {
             yield return DrawPass.Foreground;
         }
-
-        public abstract void Draw(SceneGame scene);
     }
     
     abstract class EnemyGravity : Enemy
@@ -887,6 +886,8 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
+            var drop = new DroppedItem(World, Position, Meat.Moai);
+            drop.Spread();
             if (!(CurrentAction is ActionEnemyDeath))
                 CurrentAction = new ActionEnemyDeath(this, 20);
         }
@@ -1673,6 +1674,8 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
+            var drop = new DroppedItem(World, Position, Meat.Snake);
+            drop.Spread();
             if (!(CurrentAction is ActionDeath))
             {
                 new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);

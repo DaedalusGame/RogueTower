@@ -47,6 +47,7 @@
     <Compile Include="DrawPass.cs" />
     <Compile Include="Healthbar.cs" />
     <Compile Include="InputAction.cs" />
+    <Compile Include="Item.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />
@@ -531,6 +532,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\hydra_body_strip4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\item_meat_moai.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\item_meat_snake.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\katana.png">

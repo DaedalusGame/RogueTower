@@ -76,8 +76,6 @@ namespace RogueTower
         {
             yield return DrawPass.Bullet;
         }
-
-        public abstract void Draw(SceneGame scene);
     }
 
     abstract class BulletSolid : Bullet

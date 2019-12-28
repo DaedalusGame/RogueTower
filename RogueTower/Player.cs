@@ -45,6 +45,7 @@ namespace RogueTower
         public bool DownAttack;
         public bool AltAttack;
         public bool AltAttackHeld;
+        public bool Pickup;
 
         public bool ClimbUp;
         public bool ClimbDown;
@@ -65,6 +66,7 @@ namespace RogueTower
             bool down = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
             bool attack = game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X));
             bool altattack = game.KeyState.IsKeyDown(Keys.LeftAlt) && LastState.IsKeyUp(Keys.LeftAlt) || (game.PadState.IsButtonDown(Buttons.B) && LastGPState.IsButtonUp(Buttons.B));
+            bool pickup = game.KeyState.IsKeyDown(Keys.LeftControl) && LastState.IsKeyUp(Keys.LeftControl) || (game.PadState.IsButtonDown(Buttons.Y) && LastGPState.IsButtonUp(Buttons.Y));
             bool forward = (Player.Facing == HorizontalFacing.Left && left) || (Player.Facing == HorizontalFacing.Right && right);
             bool back = (Player.Facing == HorizontalFacing.Left && right) || (Player.Facing == HorizontalFacing.Right && left);
 
@@ -92,6 +94,10 @@ namespace RogueTower
             if(altattack)
                 AltAttack = true;
             AltAttackHeld = game.KeyState.IsKeyDown(Keys.LeftAlt) || game.PadState.IsButtonDown(Buttons.B);
+
+            if (pickup)
+                Pickup = true;
+
             LastState = game.KeyState;
             LastGPState = game.PadState;
         }
@@ -110,6 +116,7 @@ namespace RogueTower
             UpAttack = false;
             AltAttack = false;
             AltAttackHeld = false;
+            Pickup = false;
 
             ClimbUp = false;
             ClimbDown = false;
@@ -132,6 +139,8 @@ namespace RogueTower
         public double SwordSwingDownDamage = 20.0;
 
         public PlayerInput PlayerInput;
+
+        public List<DroppedItem> NearbyItems = new List<DroppedItem>();
 
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -156,6 +165,14 @@ namespace RogueTower
         {
             CurrentAction.OnInput();
             Controls.Reset();
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+
+            RectangleF pickupArea = new RectangleF(Position + new Vector2(-12, 0), new Vector2(24, 8));
+            NearbyItems = World.FindBoxes(pickupArea).Where(x => x.Data is DroppedItem).Select(x => (DroppedItem)x.Data).ToList();
         }
 
         public override PlayerState GetBasePose()
