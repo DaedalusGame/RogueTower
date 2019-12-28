@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "platforms", "ConnectionDown": "outside", "ConnectionLeft": "dockright", "ConnectionRight": "outside", "Weight": 10000, "Direction": "Any"},
+  "values": {"ConnectionUp": "platforms", "ConnectionDown": "outside", "ConnectionLeft": "dockright", "ConnectionRight": "outside", "Weight": 100, "Direction": "Any"},
   "layers": [
     {
       "name": "Foreground",
@@ -16,7 +16,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Foreground",
-      "data": [-1, -1, -1, -1, -1, 17, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 17, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, 6, 6, 6, 6, 6, 6, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "data": [-1, -1, -1, -1, -1, 0, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, 6, 6, 6, 6, 6, 6, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
       "exportMode": 0,
       "arrayMode": 0
     },

@@ -46,6 +46,7 @@
     <Compile Include="Coroutine.cs" />
     <Compile Include="DrawPass.cs" />
     <Compile Include="Healthbar.cs" />
+    <Compile Include="InputAction.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />
@@ -293,6 +294,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\crit_strip10.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\cursor.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\effects.fx">
@@ -653,6 +657,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\sword.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ui_box.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\wall.png">

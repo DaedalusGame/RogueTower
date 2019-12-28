@@ -293,6 +293,7 @@ namespace RogueTower
     {
         int Time;
 
+        public override float Friction => 1;
         public override float Drag => 1;
         public override bool Incorporeal => true;
 
