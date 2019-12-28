@@ -28,10 +28,21 @@ namespace RogueTower
     {
         public Template Template;
         public bool Forbidden;
+        public bool Memory;
 
         public PossibleTemplate(Template template)
         {
             Template = template;
+        }
+
+        public void Save()
+        {
+            Memory = Forbidden;
+        }
+
+        public void Revert()
+        {
+            Forbidden = Memory;
         }
 
         public override string ToString()
@@ -197,6 +208,23 @@ namespace RogueTower
                         break;*/
             }
             //CheckDead("special room");
+        }
+
+        public void Save()
+        {
+            foreach(var template in PossibleTemplates)
+            {
+                template.Save();
+            }
+        }
+
+        public void Revert()
+        {
+            LockedTemplate = null;
+            foreach (var template in PossibleTemplates)
+            {
+                template.Revert();
+            }
         }
 
         /*public bool PropagateWave()
@@ -426,6 +454,9 @@ namespace RogueTower
 
             Console.WriteLine("started");
             int i = 0;
+            int tilesSinceSave = 0;
+            int reverts = 0;
+            int saves = 0;
             while (true)
             {
                 i++;
@@ -441,18 +472,45 @@ namespace RogueTower
 
                 tile.Collapse();
                 tile.Counter = i;
+                tilesSinceSave++;
 
                 var dead = tiles.Where(x => x.Entropy < 0);
                 if (dead.Any())
                 {
-                    Console.WriteLine($"extinct {i} iterations at {tile.X},{tile.Y}");
-                    return false;
+                    reverts++;
+                    tilesSinceSave = 0;
+                    if (reverts > 100)
+                    {
+                        Console.WriteLine($"extinct {i} iterations at {tile.X},{tile.Y}");
+                        return false;
+                    }
+                    Console.WriteLine($"Revert #{reverts}");
+                    Revert();
+                }
+                else if(tilesSinceSave > 10)
+                {
+                    saves++;
+                    Console.WriteLine($"Save #{saves}");
+                    Save();
+                    tilesSinceSave = 0;
                 }
             }
 
             var fillCount = tiles.Where(x => x.Entropy == 0).Count();
 
             return !tiles.Any(x => x.Entropy < 0);
+        }
+
+        public void Save()
+        {
+            foreach (var tile in EnumerateTiles())
+                tile.Save();
+        }
+
+        public void Revert()
+        {
+            foreach (var tile in EnumerateTiles())
+                tile.Revert();
         }
 
         public void KConnectivity()
