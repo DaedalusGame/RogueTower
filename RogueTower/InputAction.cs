@@ -56,6 +56,9 @@ namespace RogueTower
         bool GameSpeedToggle = false;
         int CurrentWeaponIndex = 0;
 
+        DroppedItem NearestItem = null;
+        float NearestItemTicks = 0;
+
         public PlayerInput(Player player)
         {
             Player = player;
@@ -64,6 +67,8 @@ namespace RogueTower
         public override void HandleInput(SceneGame scene)
         {
             base.HandleInput(scene);
+
+            NearestItemTicks++;
 
             if (SubActions.Count > 0)
             {
@@ -93,21 +98,38 @@ namespace RogueTower
             }
 
             Player.Controls.Update(scene);
+
+            DroppedItem nearest = null;
+            if (Player.NearbyItems.Any())
+            {
+                nearest = Player.NearbyItems.First();
+            }
+
+            if (nearest != NearestItem)
+            {
+                NearestItem = nearest;
+                NearestItemTicks = 0;
+            }
         }
 
         public override void Draw(SceneGame scene)
         {
             SpriteReference textbox = SpriteLoader.Instance.AddSprite("content/ui_box");
 
-            if (Player.NearbyItems.Any())
+            if (NearestItem != null)
             {
                 int width = 256;
                 int height = 16;
                 int x = (scene.Viewport.Width - width) / 2;
                 int y = scene.Viewport.Height - height - 4;
+                float openCoeff = Math.Min(NearestItemTicks / 7f, 1f);
+                float openResize = MathHelper.Lerp(-0.5f, 0.0f, openCoeff);
                 RectangleF rect = new RectangleF(x, y, width, height);
-                scene.DrawUI(textbox, rect.ToRectangle(), Color.White);
-                scene.DrawText($"Pick up {Player.NearbyItems.First().Item.Name}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
+                rect.Inflate(rect.Width * openResize * 0.5f, rect.Height * openResize);
+                if (openCoeff > 0)
+                    scene.DrawUI(textbox, rect.ToRectangle(), Color.White);
+                if (openCoeff >= 1)
+                    scene.DrawText($"Pick up {NearestItem.Item.Name}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
             }
         }
     }

@@ -77,12 +77,7 @@ namespace RogueTower
             if (player.Controls.Pickup && player.NearbyItems.Any())
             {
                 var nearbyItem = player.NearbyItems.First();
-                if(!nearbyItem.Destroyed)
-                {
-                    //Just for show since there's no inventory yet.
-                    new DamagePopup(player.World, nearbyItem.Position, $"+1 {nearbyItem.Item.Name}", 30);
-                    nearbyItem.Destroy();
-                }
+                player.Pickup(nearbyItem);
             }
         }
 
