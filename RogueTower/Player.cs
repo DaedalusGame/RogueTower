@@ -161,6 +161,17 @@ namespace RogueTower
             PlayerInput = input;
         }
 
+        public void Pickup(DroppedItem item)
+        {
+            if (!item.Destroyed)
+            {
+                //Just for show since there's no inventory yet.
+                //new DamagePopup(World, item.Position, $"+1 {item.Item.Name}", 30);
+                new ItemPickup(World, item.Item, item.Position, new Vector2(24, 24), 50);
+                item.Destroy();
+            }
+        }
+
         protected override void HandleInput()
         {
             CurrentAction.OnInput();

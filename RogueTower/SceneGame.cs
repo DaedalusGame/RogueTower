@@ -330,7 +330,7 @@ namespace RogueTower
         public Vector2 Camera;
         public Vector2 CameraSize => new Vector2(Viewport.Width / 2, Viewport.Height / 2);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
-        Matrix WorldTransform;
+        public Matrix WorldTransform;
         Matrix Projection;
 
         Shear DepthShear = Shear.All;
