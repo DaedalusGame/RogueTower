@@ -76,21 +76,21 @@ namespace RogueTower
                 return;
             }
 
-            if ((scene.KeyState.IsKeyDown(Keys.Tab) && scene.LastKeyState.IsKeyUp(Keys.Tab)) || (scene.PadState.IsButtonDown(Buttons.RightStick) && scene.LastPadState.IsButtonUp(Buttons.RightStick)))
+            if (scene.InputState.IsKeyPressed(Keys.Tab) || scene.InputState.IsButtonPressed(Buttons.RightStick))
                 GameSpeedToggle = !GameSpeedToggle;
 
-            if (scene.PadState.IsButtonDown(Buttons.RightTrigger) && scene.LastPadState.IsButtonUp(Buttons.RightTrigger))
+            if (scene.InputState.IsButtonPressed(Buttons.RightTrigger))
             {
                 CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex + 1, Weapon.PresetWeaponList.Length);
                 Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
             }
-            else if (scene.PadState.IsButtonDown(Buttons.RightShoulder) && scene.LastPadState.IsButtonUp(Buttons.RightShoulder))
+            else if (scene.InputState.IsButtonPressed(Buttons.RightShoulder))
             {
                 CurrentWeaponIndex = PositiveMod(CurrentWeaponIndex - 1, Weapon.PresetWeaponList.Length);
                 Player.Weapon = Weapon.PresetWeaponList[CurrentWeaponIndex];
             }
 
-            if ((scene.KeyState.IsKeyDown(Keys.Enter) && scene.LastKeyState.IsKeyUp(Keys.Enter)) || (scene.PadState.IsButtonDown(Buttons.Start) && scene.LastPadState.IsButtonUp(Buttons.Start)))
+            if ((scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.Start)))
             {
                 //SubActions.Add(new Pause());
                 SubActions.Add(new Menu(Player));
@@ -143,7 +143,7 @@ namespace RogueTower
         {
             base.HandleInput(scene);
 
-            if ((scene.KeyState.IsKeyDown(Keys.Enter) && scene.LastKeyState.IsKeyUp(Keys.Enter)) || (scene.PadState.IsButtonDown(Buttons.Start) && scene.LastPadState.IsButtonUp(Buttons.Start)))
+            if ((scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.Start)))
             {
                 Result = InputResult.ActionTaken;
             }
@@ -181,8 +181,8 @@ namespace RogueTower
         {
             base.HandleInput(scene);
 
-            bool confirm = (scene.KeyState.IsKeyDown(Keys.Enter) && scene.LastKeyState.IsKeyUp(Keys.Enter)) || (scene.PadState.IsButtonDown(Buttons.A) && scene.LastPadState.IsButtonUp(Buttons.A));
-            bool cancel = (scene.KeyState.IsKeyDown(Keys.Escape) && scene.LastKeyState.IsKeyUp(Keys.Escape)) || (scene.PadState.IsButtonDown(Buttons.B) && scene.LastPadState.IsButtonUp(Buttons.B));
+            bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
+            bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
 
             if (confirm)
                 Result = ConfirmResult;
@@ -257,10 +257,10 @@ namespace RogueTower
                 return;
             }
 
-            bool up = (scene.KeyState.IsKeyDown(Keys.W) && scene.LastKeyState.IsKeyUp(Keys.W)) || (scene.PadState.IsButtonDown(Buttons.LeftThumbstickUp) && scene.LastPadState.IsButtonUp(Buttons.LeftThumbstickUp)) || (scene.PadState.IsButtonDown(Buttons.DPadUp) && scene.LastPadState.IsButtonUp(Buttons.DPadUp));
-            bool down = (scene.KeyState.IsKeyDown(Keys.S) && scene.LastKeyState.IsKeyUp(Keys.S)) || (scene.PadState.IsButtonDown(Buttons.LeftThumbstickDown) && scene.LastPadState.IsButtonUp(Buttons.LeftThumbstickDown)) || (scene.PadState.IsButtonDown(Buttons.DPadDown) && scene.LastPadState.IsButtonUp(Buttons.DPadDown));
-            bool confirm = (scene.KeyState.IsKeyDown(Keys.Enter) && scene.LastKeyState.IsKeyUp(Keys.Enter)) || (scene.PadState.IsButtonDown(Buttons.A) && scene.LastPadState.IsButtonUp(Buttons.A));
-            bool cancel = (scene.KeyState.IsKeyDown(Keys.Escape) && scene.LastKeyState.IsKeyUp(Keys.Escape)) || (scene.PadState.IsButtonDown(Buttons.B) && scene.LastPadState.IsButtonUp(Buttons.B));
+            bool up = (scene.InputState.IsKeyPressed(Keys.W, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickUp, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadUp, 20, 5));
+            bool down = (scene.InputState.IsKeyPressed(Keys.S, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickDown, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadDown, 20, 5));
+            bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
+            bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
 
             if (up) //TODO: key repeat
             {
@@ -316,9 +316,208 @@ namespace RogueTower
         public Menu(Player player)
         {
             Player = player;
-            AddAction(new ActAction("Items", () => { SubActions.Add(new MessageBox("Not implemented.",InputResult.Cancel)); return InputResult.NoResult; }));
+            AddAction(new ActAction("Items", () => { SubActions.Add(new ItemMenu(Player)); return InputResult.NoResult; }));
             AddAction(new ActAction("Stats", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Cancel)); return InputResult.NoResult; }));
             AddAction(new ActAction("Fusion", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Cancel)); return InputResult.NoResult; }));
+        }
+    }
+
+    class ItemMenu : InputAction
+    {
+        public class Stack
+        {
+            public List<Item> Items;
+
+            public Item this[int index]
+            {
+                get
+                {
+                    return Items[index];
+                }
+            }
+
+            public Item Representative
+            {
+                get
+                {
+                    return Items.First();
+                }
+            }
+
+            public int Count
+            {
+                get
+                {
+                    return Items.Count;
+                }
+            }
+
+            public Stack(IEnumerable<Item> items)
+            {
+                Items = items.ToList();
+            }
+        }
+
+        public Player Player;
+        public int Selection;
+        public int SubSelection;
+        public List<Stack> Items;
+
+        public override bool Done
+        {
+            get
+            {
+                return Result != InputResult.NoResult;
+            }
+        }
+
+        public Stack SelectedStack
+        {
+            get
+            {
+                return Items[Util.PositiveMod(Selection, Items.Count)];
+            }
+        }
+
+        public Item SelectedItem
+        {
+            get
+            {
+                return SelectedStack[Util.PositiveMod(SubSelection, SelectedStack.Count)];
+            }
+        }
+
+        public virtual bool IsBlacklisted(Item item)
+        {
+            return false;
+        }
+
+        public ItemMenu(Player player)
+        {
+            Player = player;
+            Populate();
+        }
+
+        public void Refresh()
+        {
+            if (Items.Count == 0)
+                Populate();
+            else
+            {
+                Item currentSelection = SelectedItem;
+                Populate();
+                int index = GetIndex(currentSelection);
+                if (index >= 0)
+                    Selection = index;
+            }
+        }
+
+        private void Populate()
+        {
+            Items = Player.Inventory.GroupBy(x => x, Item.Stacker).Select(x => x.Where(item => !IsBlacklisted(item))).Where(x => x.Any()).Select(x => new Stack(x)).ToList();
+        }
+
+        public int GetIndex(Item item)
+        {
+            return Items.FindIndex(x => x.Items.Contains(item));
+        }
+
+        public override void HandleInput(SceneGame scene)
+        {
+            base.HandleInput(scene);
+
+            if (SubActions.Count > 0)
+            {
+                HandleSubActions(scene);
+                if (SubActions.Count == 0)
+                    Refresh();
+                return;
+            }
+
+            bool up = (scene.InputState.IsKeyPressed(Keys.W, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickUp, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadUp, 20, 5));
+            bool down = (scene.InputState.IsKeyPressed(Keys.S, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickDown, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadDown, 20, 5));
+            bool left = (scene.InputState.IsKeyPressed(Keys.A, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickLeft, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadLeft, 20, 5));
+            bool right = (scene.InputState.IsKeyPressed(Keys.D, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickRight, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadRight, 20, 5));
+            bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
+            bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
+
+
+            if (up)
+            {
+                Selection--;
+            }
+            else if (down)
+            {
+                Selection++;
+            }
+            else if (left)
+            {
+                SubSelection--;
+            }
+            else if (right)
+            {
+                SubSelection++;
+            }
+            else if (Items.Count > 0 && confirm)
+            {
+                var actionMenu = new Act();
+
+                actionMenu.AddAction(new ActAction($"Examine {SelectedItem.Name}", () =>
+                {
+                    StringBuilder description = new StringBuilder(SelectedItem.Description);
+                    actionMenu.SubActions.Add(new MessageBox(description.ToString(), InputResult.Cancel));
+                    return InputResult.NoResult;
+                }));
+                actionMenu.AddAction(new ActAction($"Dispose {SelectedItem.Name}", () =>
+                {
+                    Player.Inventory.Remove(SelectedItem);
+                    actionMenu.SubActions.Add(new MessageBox($"Threw {SelectedItem.Name} away.", InputResult.ActionTaken));
+                    return InputResult.NoResult;
+                }));
+
+                SubActions.Add(actionMenu);
+            }
+            else if (cancel)
+            {
+                Result = InputResult.Cancel;
+            }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            SpriteReference cursor = SpriteLoader.Instance.AddSprite("content/cursor");
+            SpriteReference textbox = SpriteLoader.Instance.AddSprite("content/ui_box");
+
+            int edgeDistance = 75;
+            int width = scene.Viewport.Width - edgeDistance * 2;
+            int height = 16 * Math.Max(Items.Count, 1);
+            int x = edgeDistance;
+            int y = (scene.Viewport.Height - height) / 2;
+            float openCoeff = Math.Min(Ticks / 7f, 1f);
+            float openResize = MathHelper.Lerp(-0.5f, 0.0f, openCoeff);
+            RectangleF rect = new RectangleF(x, y, width, height);
+            rect.Inflate(rect.Width * openResize, rect.Height * openResize);
+            if (openCoeff > 0)
+                scene.DrawUI(textbox, rect.ToRectangle(), Color.White);
+            int i = 0;
+            if (openCoeff >= 1)
+            {
+                if (Items.Count <= 0)
+                    scene.DrawText("You haven't anything.", new Vector2(x, y), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.LightGray, Color.Black));
+                foreach (var menupoint in Items)
+                {
+                    var item = menupoint.Representative;
+                    if (menupoint == SelectedStack)
+                    {
+                        scene.SpriteBatch.Draw(cursor.Texture, new Vector2(x + 0, y + i * 16), cursor.GetFrameRect(0), Color.White);
+                        item = SelectedItem;
+                    }
+
+                    item.DrawIcon(scene, new Vector2(x + 16 + 8, y + i * 16 + 8));
+                    scene.DrawText($"{item.Name} x{menupoint.Count}", new Vector2(x + 32, y + i * 16), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.White, Color.Black));
+                    i++;
+                }
+            }
         }
     }
 }

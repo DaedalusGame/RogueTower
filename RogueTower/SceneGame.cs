@@ -411,7 +411,6 @@ namespace RogueTower
 
         public override void Update(GameTime gameTime)
         {
-
             //Pause Menu Updates
             InputAction.HandleInput(this);
             World.Update(InputAction.GameSpeed);

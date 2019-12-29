@@ -50,9 +50,6 @@ namespace RogueTower
         public bool ClimbUp;
         public bool ClimbDown;
 
-        KeyboardState LastState;
-        GamePadState LastGPState;
-
         public InputQueue(Player player)
         {
             Player = player;
@@ -60,22 +57,22 @@ namespace RogueTower
 
         public void Update(SceneGame game)
         {
-            bool left = game.KeyState.IsKeyDown(Keys.A) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickLeft) || game.PadState.IsButtonDown(Buttons.DPadLeft));
-            bool right = game.KeyState.IsKeyDown(Keys.D) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickRight) || game.PadState.IsButtonDown(Buttons.DPadRight));
-            bool up = game.KeyState.IsKeyDown(Keys.W) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickUp) || game.PadState.IsButtonDown(Buttons.DPadUp));
-            bool down = game.KeyState.IsKeyDown(Keys.S) || (game.PadState.IsButtonDown(Buttons.LeftThumbstickDown) || game.PadState.IsButtonDown(Buttons.DPadDown));
-            bool attack = game.KeyState.IsKeyDown(Keys.Space) && LastState.IsKeyUp(Keys.Space) || (game.PadState.IsButtonDown(Buttons.X) && LastGPState.IsButtonUp(Buttons.X));
-            bool altattack = game.KeyState.IsKeyDown(Keys.LeftAlt) && LastState.IsKeyUp(Keys.LeftAlt) || (game.PadState.IsButtonDown(Buttons.B) && LastGPState.IsButtonUp(Buttons.B));
-            bool pickup = game.KeyState.IsKeyDown(Keys.LeftControl) && LastState.IsKeyUp(Keys.LeftControl) || (game.PadState.IsButtonDown(Buttons.Y) && LastGPState.IsButtonUp(Buttons.Y));
+            bool left = game.InputState.IsKeyDown(Keys.A) || (game.InputState.IsButtonDown(Buttons.LeftThumbstickLeft) || game.InputState.IsButtonDown(Buttons.DPadLeft));
+            bool right = game.InputState.IsKeyDown(Keys.D) || (game.InputState.IsButtonDown(Buttons.LeftThumbstickRight) || game.InputState.IsButtonDown(Buttons.DPadRight));
+            bool up = game.InputState.IsKeyDown(Keys.W) || (game.InputState.IsButtonDown(Buttons.LeftThumbstickUp) || game.InputState.IsButtonDown(Buttons.DPadUp));
+            bool down = game.InputState.IsKeyDown(Keys.S) || (game.InputState.IsButtonDown(Buttons.LeftThumbstickDown) || game.InputState.IsButtonDown(Buttons.DPadDown));
+            bool attack = game.InputState.IsKeyPressed(Keys.Space) || (game.InputState.IsButtonPressed(Buttons.X));
+            bool altattack = game.InputState.IsKeyPressed(Keys.LeftAlt) || (game.InputState.IsButtonPressed(Buttons.B));
+            bool pickup = game.InputState.IsKeyPressed(Keys.LeftControl) || (game.InputState.IsButtonPressed(Buttons.Y));
             bool forward = (Player.Facing == HorizontalFacing.Left && left) || (Player.Facing == HorizontalFacing.Right && right);
             bool back = (Player.Facing == HorizontalFacing.Left && right) || (Player.Facing == HorizontalFacing.Right && left);
 
             MoveLeft = left;
             MoveRight = right;
 
-            if((game.KeyState.IsKeyDown(Keys.LeftShift) && LastState.IsKeyUp(Keys.LeftShift)) || (game.PadState.IsButtonDown(Buttons.A) && LastGPState.IsButtonUp(Buttons.A)))
+            if((game.InputState.IsKeyPressed(Keys.LeftShift)) || (game.InputState.IsButtonPressed(Buttons.A)))
                 Jump = true;
-            JumpHeld = game.KeyState.IsKeyDown(Keys.LeftShift) || game.PadState.IsButtonDown(Buttons.A);
+            JumpHeld = game.InputState.IsKeyDown(Keys.LeftShift) || game.InputState.IsButtonDown(Buttons.A);
             
             ClimbUp = up;
             ClimbDown = down;
@@ -93,13 +90,10 @@ namespace RogueTower
 
             if(altattack)
                 AltAttack = true;
-            AltAttackHeld = game.KeyState.IsKeyDown(Keys.LeftAlt) || game.PadState.IsButtonDown(Buttons.B);
+            AltAttackHeld = game.InputState.IsKeyDown(Keys.LeftAlt) || game.InputState.IsButtonDown(Buttons.B);
 
             if (pickup)
                 Pickup = true;
-
-            LastState = game.KeyState;
-            LastGPState = game.PadState;
         }
 
         public void Reset()
@@ -142,6 +136,8 @@ namespace RogueTower
 
         public List<DroppedItem> NearbyItems = new List<DroppedItem>();
 
+        public List<Item> Inventory = new List<Item>();
+
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
             InitHealth(100);
@@ -168,6 +164,7 @@ namespace RogueTower
                 //Just for show since there's no inventory yet.
                 //new DamagePopup(World, item.Position, $"+1 {item.Item.Name}", 30);
                 new ItemPickup(World, item.Item, item.Position, new Vector2(24, 24), 50);
+                Inventory.Add(item.Item);
                 item.Destroy();
             }
         }

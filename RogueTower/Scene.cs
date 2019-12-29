@@ -26,14 +26,16 @@ namespace RogueTower
         public GameWindow Window => Game.Window;
         public Viewport Viewport => GraphicsDevice.Viewport;
         public Effect Shader => Game.Shader;
-        public MouseState MouseState => Game.MouseState;
+        /*public MouseState MouseState => Game.MouseState;
         public MouseState LastMouseState => Game.LastMouseState;
 
         public KeyboardState KeyState => Game.KeyState;
         public KeyboardState LastKeyState => Game.LastKeyState;
 
         public GamePadState PadState => Game.GamePadState;
-        public GamePadState LastPadState => Game.LastGamePadState;
+        public GamePadState LastPadState => Game.LastGamePadState;*/
+
+        public InputTwinState InputState => Game.InputState;
 
         public int GetNoiseValue(int x, int y)
         {

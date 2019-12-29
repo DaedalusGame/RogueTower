@@ -10,8 +10,23 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueTower
 {
+    class ItemStacker : IEqualityComparer<Item>
+    {
+        public bool Equals(Item x, Item y)
+        {
+            return x.IsStackable(y);
+        }
+
+        public int GetHashCode(Item obj)
+        {
+            return obj.GetStackCode();
+        }
+    }
+
     abstract class Item
     {
+        public static ItemStacker Stacker = new ItemStacker();
+
         public string Name;
         public string Description;
 
@@ -21,20 +36,51 @@ namespace RogueTower
             Description = description;
         }
 
+        public virtual int GetStackCode()
+        {
+            return GetType().GetHashCode();
+        }
+
+        public virtual bool IsStackable(Item other)
+        {
+            return GetType().Equals(GetType());
+        }
+
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
     }
 
     class Meat : Item
     {
-        SpriteReference Sprite;
-
-        public Meat(SpriteReference sprite, string name, string description) : base(name, description)
+        public enum Type
         {
-            Sprite = sprite;
+            Moai,
+            Snake,
         }
 
-        public static Meat Moai => new Meat(SpriteLoader.Instance.AddSprite("content/item_meat_moai"),"Moai Meat","Tastes undescribable.");
-        public static Meat Snake => new Meat(SpriteLoader.Instance.AddSprite("content/item_meat_snake"), "Snake Meat", "Chewy.");
+        SpriteReference Sprite;
+        public Type MeatType;
+
+        public Meat(SpriteReference sprite, Type type, string name, string description) : base(name, description)
+        {
+            Sprite = sprite;
+            MeatType = type;
+        }
+
+        public static Meat Moai => new Meat(SpriteLoader.Instance.AddSprite("content/item_meat_moai"), Type.Moai, "Moai Meat", "Tastes undescribable.");
+        public static Meat Snake => new Meat(SpriteLoader.Instance.AddSprite("content/item_meat_snake"), Type.Snake, "Snake Meat", "Chewy.");
+
+        public override int GetStackCode()
+        {
+            return base.GetStackCode() ^ (int)MeatType;
+        }
+
+        public override bool IsStackable(Item other)
+        {
+            if(other is Meat otherMeat)
+                return otherMeat.MeatType == MeatType;
+            else
+                return base.IsStackable(other);
+        }
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {

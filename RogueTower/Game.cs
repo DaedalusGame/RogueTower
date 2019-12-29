@@ -55,6 +55,9 @@ namespace RogueTower
         public GamePadState GamePadState;
         public GamePadState LastGamePadState;
 
+        private IEnumerator<InputTwinState> Input;
+        public InputTwinState InputState => Input.Current;
+
         const int FontSpritesAmount = 64;
         SpriteReference[] FontSprites = new SpriteReference[FontSpritesAmount];
 
@@ -66,6 +69,32 @@ namespace RogueTower
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+        }
+
+        public IEnumerator<InputTwinState> InputIterator()
+        {
+            InputState previous = new InputState();
+            InputTwinState twinState = null;
+            StringBuilder textBuffer = new StringBuilder();
+
+            Window.TextInput += (sender, e) =>
+            {
+                textBuffer.Append(e.Character);
+            };
+
+            while (true)
+            {
+                var keyboard = Keyboard.GetState();
+                var mouse = Mouse.GetState();
+                var gamepad = GamePad.GetState(0);
+
+                InputState next = new InputState(keyboard, mouse, gamepad, textBuffer.ToString());
+                twinState = new InputTwinState(previous, next, twinState);
+                twinState.HandleRepeats();
+                yield return twinState;
+                previous = next;
+                textBuffer.Clear();
+            }
         }
 
         public int GetNoiseValue(int x, int y)
@@ -86,6 +115,8 @@ namespace RogueTower
         /// </summary>
         protected override void Initialize()
         {
+            Input = InputIterator();
+
             Random noiseRandom = new Random(0);
             noiseRandom.NextBytes(NoiseAlpha);
             noiseRandom.NextBytes(NoiseBeta);
@@ -195,6 +226,8 @@ namespace RogueTower
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            Input.MoveNext();
+
             SpriteLoader.Instance.Update(gameTime);
             Scheduler.Instance.Update();
             AudioMgr.Update();
