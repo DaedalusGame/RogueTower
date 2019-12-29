@@ -405,4 +405,87 @@ namespace RogueTower
             scene.DrawSpriteExt(spriteShockwave, (int)Frame, Position - new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height) + new Vector2(0, Box.Height / 2), new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (ScalingFactor > 1) ? 1 + ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
         }
     }
+
+    class BoomerangProjectile : BulletSolid
+    {
+        public float Angle;
+        public float Lifetime; //How long before this returns?
+        public bool Bounced = false;
+        public WeaponBoomerang Boomerang;
+        public BoomerangProjectile(GameWorld world, Vector2 position, float lifetime, WeaponBoomerang boomerang) : base(world, position, new Vector2(8, 8))
+        {
+            Lifetime = lifetime;
+            Boomerang = boomerang;
+            FrameEnd = float.PositiveInfinity;
+        }
+
+        protected override ICollisionResponse GetCollision(ICollision collision)
+        {
+            if(Bounced || Lifetime < 0)
+            {
+                if (collision.Box.Data is Tile tile)
+                {
+                    return null;
+                }
+            }
+            return base.GetCollision(collision);
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+            if (Bounced || Lifetime < 0)
+            {
+                if (Shooter is Enemy human)
+                {
+                    var diffX = human.Position.X - Position.X;
+                    var diffY = human.Position.Y - Position.Y;
+                    var diffVector = Vector2.Normalize(new Vector2(diffX, diffY)) * 5;
+                    Velocity = diffVector;
+                    if (Math.Abs(diffX) < 4 && Math.Abs(diffY) < 4)
+                    {
+                        Destroy();
+                    }
+                }
+                else
+                {
+                    Destroy();
+                }
+            }
+        }
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+            Lifetime -= delta;
+            Angle += Math.Sign(Velocity.X) * delta;
+        }
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
+                return;
+            Bounced = true;
+
+            if(hit.Box.Data is Enemy enemy)
+            {
+                if (enemy.CanDamage)
+                {
+                    enemy.AddStatusEffect(new Stun(enemy, 120));
+                    enemy.Hit(Velocity, 20, 40, Boomerang.Damage);
+                }
+            }
+            if(hit.Box.Data is Tile tile)
+            {
+                if (tile.CanDamage)
+                {
+                    tile.HandleTileDamage(Boomerang.Damage);
+                }
+            }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var spriteBoomerang = SpriteLoader.Instance.AddSprite("content/boomerang");
+            scene.DrawSpriteExt(spriteBoomerang, 0, Position - spriteBoomerang.Middle, spriteBoomerang.Middle, Angle, SpriteEffects.None, 0);
+        }
+    }
 }

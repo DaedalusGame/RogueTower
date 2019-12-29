@@ -62,11 +62,12 @@ namespace RogueTower
         }
 
         public static WeaponState None => new NoneState();
-        public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
+        public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(3, 6), angle);
         public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(18, 1), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
+        public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
         public static WeaponState WandOrange(float angle) => new WeaponState("wand_orange", 0, new Vector2(2, 4), angle);
         public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle);
     }
@@ -144,9 +145,9 @@ namespace RogueTower
             {
                 default:
                 case Type.Left:
-                    return HoldOffsetLeft[Frame % HoldOffsetLeft.Length];
+                    return HoldOffsetLeft[PositiveMod(Frame, HoldOffsetLeft.Length)];
                 case Type.Right:
-                    return HoldOffsetRight[Frame % HoldOffsetRight.Length];
+                    return HoldOffsetRight[PositiveMod(Frame, HoldOffsetLeft.Length)];
             }
         }
 
