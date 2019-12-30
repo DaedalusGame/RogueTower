@@ -1360,8 +1360,8 @@ namespace RogueTower
 
         public override void GetPose(PlayerState basePose)
         {
-            float startAngle = 180+45;
-            float endAngle = 0;
+            float startAngle = -45 / 2;
+            float endAngle = 180 + 45 / 2;
             switch (State)
             {
                 case (SwingAction.Start):
@@ -1375,7 +1375,7 @@ namespace RogueTower
                     break;
             }
             basePose.WeaponHold = WeaponHold.Left;
-            basePose.Weapon.Angle = -basePose.LeftArm.GetHoldAngle(ArmState.Type.Left) + MathHelper.PiOver2;
+            basePose.Weapon.Angle = basePose.LeftArm.GetHoldAngle(ArmState.Type.Left) - MathHelper.PiOver2;
         }
 
         public override void OnInput()
