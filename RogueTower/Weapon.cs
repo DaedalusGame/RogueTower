@@ -40,7 +40,7 @@ namespace RogueTower
             new WeaponWandOrange(10, 16, new Vector2(8, 32)),
             new WeaponLance(20, 38, new Vector2(19, 76)),
             new WeaponWarhammer(30, 36, new Vector2(18, 72)),
-            new WeaponBoomerang(5, 8, new Vector2(8, 8)),
+            new WeaponBoomerang(10, 8, new Vector2(8, 8)),
             new WeaponUnarmed(10, 14, new Vector2(14, 10))
         };
         public Vector2 Input2Direction(Player player)
@@ -418,10 +418,8 @@ namespace RogueTower
     class WeaponBoomerang : Weapon
     {
         public BoomerangProjectile BoomerProjectile;
-        
-        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0)
+        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.1f)
         {
-
         }
 
         public override WeaponState GetWeaponState(float angle)
@@ -431,9 +429,13 @@ namespace RogueTower
 
         public override void HandleAttack(Player player)
         {
-            if(player.Controls.IsAiming && (BoomerProjectile == null || BoomerProjectile.Destroyed))
+            if (player.Controls.Attack && (BoomerProjectile == null || BoomerProjectile.Destroyed))
             {
-                player.CurrentAction = new ActionAiming(player, new ActionBoomerangThrow(player, 10, this));
+                player.CurrentAction = new ActionSlash(player, 2, 4, 8, 2, this);
+            }
+            else if(player.Controls.IsAiming && (BoomerProjectile == null || BoomerProjectile.Destroyed))
+            {
+                player.CurrentAction = new ActionAiming(player, new ActionBoomerangThrow(player, 10, this, 40));
             }
         }
     }

@@ -1741,10 +1741,10 @@ namespace RogueTower
                     PrethrowTime -= delta;
                     if(PrethrowTime < 0)
                     {
-                        BoomerangProjectile = new BoomerangProjectile(Human.World, new Vector2(Human.Box.Bounds.X + (Human.Box.Bounds.Width + 8) * GetFacingVector(Human.Facing).X, Human.Box.Y + Human.Box.Height / 2), Lifetime, Weapon)
+                        BoomerangProjectile = new BoomerangProjectile(Human.World, new Vector2(Human.Box.Bounds.X + 8 * GetFacingVector(Human.Facing).X, Human.Box.Y + Human.Box.Height / 2), Lifetime, Weapon)
                         {
                             Shooter = Human,
-                            Velocity = AngleToVector(Angle)
+                            Velocity = AngleToVector(Angle) * 5
                         };
                         Weapon.BoomerProjectile = BoomerangProjectile;
                         BoomerangAction = BoomerangState.Throw;
@@ -1774,15 +1774,18 @@ namespace RogueTower
     {
         public float AimAngle;
         public Action PostAction;
+        public AimingReticule AimFX;
         public ActionAiming(Player player, Action action) : base(player)
         {
             PostAction = action;
+            AimFX = new AimingReticule(player.World, Vector2.Zero, player);
         }
 
         public override void OnInput()
         {
             var player = (Player)Human;
             AimAngle = player.Controls.AimAngle;
+            AimFX.Position = player.Position + (AngleToVector(AimAngle) * 100);
             if (player.Controls.AimFire)
             {
                 if(PostAction is IActionAimable aimable)
@@ -1796,6 +1799,8 @@ namespace RogueTower
         public override void GetPose(PlayerState basePose)
         {
             var armAngle = AimAngle;
+            var aimVector = AngleToVector(AimAngle);
+            Human.Facing = (aimVector.X < 0) ? HorizontalFacing.Left : HorizontalFacing.Right;
             if (Human.Facing == HorizontalFacing.Left)
                 armAngle = -armAngle;
             switch (basePose.WeaponHold)

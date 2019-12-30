@@ -563,6 +563,32 @@ namespace RogueTower
         }
     }
 
+    class AimingReticule : Particle
+    {
+        public float FrameEnd;
+        public EnemyHuman Player;
+        public AimingReticule(GameWorld world, Vector2 position, EnemyHuman human) : base(world, position)
+        {
+            FrameEnd = float.PositiveInfinity;
+            Player = human;
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            base.UpdateDelta(delta);
+            if(!(Player.CurrentAction is ActionAiming))
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene)
+        {
+            var aimingreticule = SpriteLoader.Instance.AddSprite("content/aim_reticule");
+            scene.DrawSpriteExt(aimingreticule, 0, Position - aimingreticule.Middle, aimingreticule.Middle, 0, SpriteEffects.None, 0);
+        }
+    }
+
     abstract class StatusEffectVisual<T> : VisualEffect where T : StatusEffect
     {
         protected T Effect;
