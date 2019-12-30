@@ -1761,7 +1761,7 @@ namespace RogueTower
             }
         }
 
-        public override Vector2 IdleOffset => new Vector2(0,-20) + 15 * AngleToVector(MathHelper.PiOver2 + MathHelper.PiOver2 / Body.Heads.Count + MathHelper.Pi * Index / Body.Heads.Count);
+        public override Vector2 IdleOffset => new Vector2(0,-20) + 15 * AngleToVector(/*MathHelper.PiOver2 + MathHelper.PiOver2 / Body.Heads.Count*/ + MathHelper.Pi * Index / Body.Heads.Count);
         //public override Vector2 IdleCircle => new Vector2(15,5);
 
         public SnakeHydra(Hydra body, int index) : base(body.World, body.Position)
@@ -2099,8 +2099,8 @@ namespace RogueTower
         public float ChargeTime;
         public float FireTime;
 
-        public Vector2 FacingVector => new Vector2((float)Math.Sin(Angle), (float)Math.Cos(Angle));
-        public Vector2 VarianceVector => new Vector2((float)Math.Sin(Angle + Math.PI / 2), (float)Math.Cos(Angle + Math.PI / 2));
+        public Vector2 FacingVector => AngleToVector(Angle);
+        public Vector2 VarianceVector => AngleToVector(Angle + MathHelper.PiOver2);
 
         public Cannon(GameWorld world, Vector2 position, float angle) : base(world, position)
         {

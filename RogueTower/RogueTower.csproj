@@ -781,6 +781,9 @@
     <None Include="Content\templates\corridor_obstacle6.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\templates\corridor_obstacle7.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Content\templates\corridor_pit.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
