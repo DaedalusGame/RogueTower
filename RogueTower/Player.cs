@@ -100,6 +100,7 @@ namespace RogueTower
                 Pickup = true;
 
             var aimVector = game.InputState.Next.GamePad.ThumbSticks.Right;
+            aimVector.Y = -aimVector.Y;
             if (!IsAiming)
             {
                 if(aimVector.Length() > 0.8f)

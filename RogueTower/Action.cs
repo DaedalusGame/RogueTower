@@ -1795,20 +1795,23 @@ namespace RogueTower
 
         public override void GetPose(PlayerState basePose)
         {
+            var armAngle = AimAngle;
+            if (Human.Facing == HorizontalFacing.Left)
+                armAngle = -armAngle;
             switch (basePose.WeaponHold)
             {
                 case (WeaponHold.Left):
-                    basePose.LeftArm = ArmState.Angular(AimAngle);
+                    basePose.LeftArm = ArmState.Angular(armAngle);
                     break;
                 case (WeaponHold.Right):
-                    basePose.RightArm = ArmState.Angular(AimAngle);
+                    basePose.RightArm = ArmState.Angular(armAngle);
                     break;
                 case (WeaponHold.TwoHand):
-                    basePose.LeftArm = ArmState.Angular(AimAngle);
-                    basePose.RightArm = ArmState.Angular(AimAngle);
+                    basePose.LeftArm = ArmState.Angular(armAngle);
+                    basePose.RightArm = ArmState.Angular(armAngle);
                     break;
             }
-            basePose.Weapon = Human.Weapon.GetWeaponState(AimAngle);
+            basePose.Weapon = Human.Weapon.GetWeaponState(armAngle);
         }
 
         public override void UpdateDiscrete()
