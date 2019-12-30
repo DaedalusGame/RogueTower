@@ -431,9 +431,9 @@ namespace RogueTower
 
         public override void HandleAttack(Player player)
         {
-            if(player.Controls.Attack && (BoomerProjectile == null || BoomerProjectile.Destroyed))
+            if(player.Controls.IsAiming && (BoomerProjectile == null || BoomerProjectile.Destroyed))
             {
-                player.CurrentAction = new ActionBoomerangThrow(player, 10, this);
+                player.CurrentAction = new ActionAiming(player, new ActionBoomerangThrow(player, 10, this));
             }
         }
     }

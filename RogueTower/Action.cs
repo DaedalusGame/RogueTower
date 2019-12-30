@@ -1505,7 +1505,7 @@ namespace RogueTower
             {
                 case (PunchState.PunchStart):
                     basePose.Head = HeadState.Down;
-                    basePose.RightArm = ArmState.Low;
+                    basePose.RightArm = ArmState.Angular(MathHelper.ToRadians(180));
                     basePose.Body = BodyState.Kneel;
                     break;
                 case (PunchState.PunchEnd):
@@ -1579,7 +1579,7 @@ namespace RogueTower
             {
                 case (PunchState.PunchStart):
                     basePose.Head = HeadState.Down;
-                    basePose.LeftArm = ArmState.Low;
+                    basePose.LeftArm = ArmState.Angular(MathHelper.ToRadians(180));
                     basePose.Body = BodyState.Kneel;
                     break;
                 case (PunchState.PunchEnd):
@@ -1687,7 +1687,7 @@ namespace RogueTower
         }
     }
 
-    class ActionBoomerangThrow : Action
+    class ActionBoomerangThrow : Action, IActionAimable
     {
         public enum BoomerangState
         {
@@ -1695,10 +1695,16 @@ namespace RogueTower
             Throw
         }
 
+        public void SetAngle(float angle)
+        {
+            Angle = angle;
+        }
+
         public BoomerangState BoomerangAction;
         public BoomerangProjectile BoomerangProjectile;
         public float PrethrowTime;
         public float Lifetime;
+        public float Angle = 0;
         public WeaponBoomerang Weapon;
 
         public ActionBoomerangThrow(EnemyHuman player, float prethrowTime, WeaponBoomerang weapon, float lifetime = 20) : base(player)
@@ -1738,7 +1744,7 @@ namespace RogueTower
                         BoomerangProjectile = new BoomerangProjectile(Human.World, new Vector2(Human.Box.Bounds.X + (Human.Box.Bounds.Width + 8) * GetFacingVector(Human.Facing).X, Human.Box.Y + Human.Box.Height / 2), Lifetime, Weapon)
                         {
                             Shooter = Human,
-                            Velocity = new Vector2(GetFacingVector(Human.Facing).X * 5, (Human.Velocity.Y - Human.Gravity))
+                            Velocity = AngleToVector(Angle)
                         };
                         Weapon.BoomerProjectile = BoomerangProjectile;
                         BoomerangAction = BoomerangState.Throw;
@@ -1754,6 +1760,62 @@ namespace RogueTower
         }
 
         public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+    }
+
+    interface IActionAimable 
+    {
+        void SetAngle(float angle);
+    }
+
+    class ActionAiming : Action
+    {
+        public float AimAngle;
+        public Action PostAction;
+        public ActionAiming(Player player, Action action) : base(player)
+        {
+            PostAction = action;
+        }
+
+        public override void OnInput()
+        {
+            var player = (Player)Human;
+            AimAngle = player.Controls.AimAngle;
+            if (player.Controls.AimFire)
+            {
+                if(PostAction is IActionAimable aimable)
+                {
+                    aimable.SetAngle(AimAngle);
+                }
+                player.CurrentAction = PostAction;
+            }
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (basePose.WeaponHold)
+            {
+                case (WeaponHold.Left):
+                    basePose.LeftArm = ArmState.Angular(AimAngle);
+                    break;
+                case (WeaponHold.Right):
+                    basePose.RightArm = ArmState.Angular(AimAngle);
+                    break;
+                case (WeaponHold.TwoHand):
+                    basePose.LeftArm = ArmState.Angular(AimAngle);
+                    basePose.RightArm = ArmState.Angular(AimAngle);
+                    break;
+            }
+            basePose.Weapon = Human.Weapon.GetWeaponState(AimAngle);
+        }
+
+        public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+        public override void UpdateDelta(float delta)
         {
             //NOOP
         }

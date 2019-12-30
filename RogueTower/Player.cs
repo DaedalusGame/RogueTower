@@ -50,6 +50,10 @@ namespace RogueTower
         public bool ClimbUp;
         public bool ClimbDown;
 
+        public bool IsAiming;
+        public bool AimFire;
+        public float AimAngle;
+
         public InputQueue(Player player)
         {
             Player = player;
@@ -94,6 +98,28 @@ namespace RogueTower
 
             if (pickup)
                 Pickup = true;
+
+            var aimVector = game.InputState.Next.GamePad.ThumbSticks.Right;
+            if (!IsAiming)
+            {
+                if(aimVector.Length() > 0.8f)
+                {
+                    IsAiming = true;
+                }
+            }
+            else
+            {
+                if (aimVector.Length() < 0.8f)
+                {
+                    AimFire = true;
+                    IsAiming = false;
+                }
+                else
+                {
+                    AimAngle = VectorToAngle(aimVector);
+                }
+            }
+
         }
 
         public void Reset()
@@ -114,6 +140,8 @@ namespace RogueTower
 
             ClimbUp = false;
             ClimbDown = false;
+
+            AimFire = false;
         }
     }
 
