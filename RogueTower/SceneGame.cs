@@ -386,6 +386,8 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 0), new Vector2(-0.2f, 0.4f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
 
+            PotionAppearance.Randomize(World.Random);
+
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, 0), new Vector2(-1.0f, -1.0f)) { XLooping = true, YLooping = false });
         }
 

@@ -38,6 +38,9 @@ namespace RogueTower
         public string Description;
         public bool Destroyed;
 
+        public virtual string FakeName => Name;
+        public virtual string FakeDescription => Description;
+
         public Item(string name, string description)
         {
             Name = name;
@@ -109,6 +112,80 @@ namespace RogueTower
         {
             enemy.Heal(10);
             Destroy();
+        }
+    }
+
+    class PotionAppearance
+    {
+        public SpriteReference Sprite;
+        public string Name;
+        public string Description;
+        public PotionAppearance Randomized;
+
+        public PotionAppearance(SpriteReference sprite, string name, string description)
+        {
+            Sprite = sprite;
+            Name = name;
+            Description = description;
+            Randomized = this;
+        }
+
+        //Not random
+        public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Water Bottle", "A bottle of water.");
+        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blood"), "Blood Potion", "A blood potion.");
+        //Random
+        public static PotionAppearance Red = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
+        public static PotionAppearance Blue = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blue"), "Blue Potion", "A blue potion.");
+        public static PotionAppearance Green = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_green"), "Green Potion", "A green potion.");
+        public static PotionAppearance Clear = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Clear Potion", "A clear potion.");
+
+        public static IEnumerable<PotionAppearance> RandomAppearances
+        {
+            get
+            {
+                yield return Red;
+                yield return Blue;
+                yield return Green;
+                yield return Clear;
+            }
+        }
+
+        public static void Randomize(Random random)
+        {
+            var potionsA = RandomAppearances.ToList();
+            var potionsB = RandomAppearances.Shuffle().ToList();
+
+            foreach(var tuple in Enumerable.Zip(potionsA,potionsB,(a,b) => Tuple.Create(a,b)))
+            {
+                tuple.Item1.Randomized = tuple.Item2.Randomized;
+            }
+        }
+    }
+
+    class Potion : Item
+    {
+        public PotionAppearance Appearance;
+
+        public override string FakeName => Appearance.Randomized.Name;
+        public override string FakeDescription => Appearance.Randomized.Description;
+
+        public Potion(PotionAppearance appearance, string name, string description) : base(name, description)
+        {
+            Appearance = appearance;
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            var appearance = Appearance.Randomized;
+            scene.DrawSprite(appearance.Sprite, 0, position - appearance.Sprite.Middle, SpriteEffects.None, 1.0f);
+        }
+    }
+
+    class PotionHealth : Potion
+    {
+        public PotionHealth() : base(PotionAppearance.Red, "Health Potion", "A health potion.")
+        {
+
         }
     }
 

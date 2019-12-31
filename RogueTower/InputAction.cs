@@ -130,7 +130,7 @@ namespace RogueTower
                 if (openCoeff > 0)
                     scene.DrawUI(textbox, rect.ToRectangle(), Color.White);
                 if (openCoeff >= 1)
-                    scene.DrawText($"Pick up {NearestItem.Item.Name}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
+                    scene.DrawText($"Pick up {NearestItem.Item.FakeName}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
             }
         }
     }
@@ -340,15 +340,15 @@ namespace RogueTower
 
         private void Populate()
         {
-            AddAction(new ActAction($"Examine {Item.Name}", () =>
+            AddAction(new ActAction($"Examine {Item.FakeName}", () =>
             {
-                StringBuilder description = new StringBuilder(Item.Description);
+                StringBuilder description = new StringBuilder(Item.FakeDescription);
                 SubActions.Add(new MessageBox(description.ToString(), InputResult.Close));
                 return InputResult.None;
             }));
             if (Item is IEdible edible && edible.CanEat(Player))
             {
-                AddAction(new ActAction($"Eat {Item.Name}", () =>
+                AddAction(new ActAction($"Eat {Item.FakeName}", () =>
                 {
                     edible.EatEffect(Player);
                     return Item.Destroyed ? InputResult.Close : InputResult.None;
@@ -356,16 +356,16 @@ namespace RogueTower
             }
             if (Item is Weapon weapon)
             {
-                AddAction(new ActAction($"Equip {Item.Name}", () =>
+                AddAction(new ActAction($"Equip {Item.FakeName}", () =>
                 {
                     Player.Weapon = weapon;
                     return InputResult.Close;
                 }));
             }
-            AddAction(new ActAction($"Dispose {Item.Name}", () =>
+            AddAction(new ActAction($"Dispose {Item.FakeName}", () =>
             {
                 Item.Destroy();
-                SubActions.Add(new MessageBox($"Threw {Item.Name} away.", InputResult.Close));
+                SubActions.Add(new MessageBox($"Threw {Item.FakeName} away.", InputResult.Close));
                 return Item.Destroyed ? InputResult.Close : InputResult.None;
             }));
         }
@@ -397,14 +397,30 @@ namespace RogueTower
         {
             string combineString;
             if (Selections.Count <= 3)
-                combineString = EnglishJoin(", ", " and ", Selections.Select(x => x.Item.Name));
+                combineString = EnglishJoin(", ", " and ", Selections.Select(x => x.Item.FakeName));
             else
                 combineString = $"{Selections.Count} Items";
+            if (Items.All(x => x is Potion)) //All items are potions -> mix
+            {
+                AddAction(new ActAction($"Mix {combineString}", () =>
+                {
+                    return InputResult.None;
+                }));
+            }
+            else if (Items.Any(x => x is Potion) && Selections.Count == 2) //2 items, of which one is a potion -> dip
+            {
+                var potion = Items.First(x => x is Potion);
+                var nonPotion = Items.First(x => !(x is Potion));
+                AddAction(new ActAction($"Dip {nonPotion.FakeName} into {potion.FakeName}", () =>
+                {
+                    return InputResult.None;
+                }));
+            }
             AddAction(new ActAction($"Combine {combineString}", () =>
             {
                 return InputResult.None;
             }));
-            if(Selections.Count == 2)
+            if (Selections.Count == 2)
             {
                 AddAction(new ActAction($"Swap {combineString}", () =>
                 {
@@ -664,7 +680,7 @@ namespace RogueTower
                     item.DrawIcon(scene, new Vector2(x + 16 + 8, y + i * 16 + 8));
                     if (item == Player.Weapon)
                         scene.DrawSprite(flagEquipped, 0, new Vector2(x + 16, y + i * 16), SpriteEffects.None, 0);
-                    scene.DrawText($"{item.Name} x{menupoint.Count}", new Vector2(x + 32, y + i * 16), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.White, Color.Black));
+                    scene.DrawText($"{item.FakeName} x{menupoint.Count}", new Vector2(x + 32, y + i * 16), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.White, Color.Black));
                     i++;
                 }
             }

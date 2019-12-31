@@ -185,6 +185,11 @@ namespace RogueTower
             {
                 Inventory.Add(weapon);
             }
+
+            for(int i = 0; i < 3; i++)
+            {
+                Inventory.Add(new PotionHealth());
+            }
         }
 
         public void SetControl(PlayerInput input)
