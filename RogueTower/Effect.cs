@@ -571,17 +571,18 @@ namespace RogueTower
     class AimingReticule : Particle
     {
         public float FrameEnd;
-        public EnemyHuman Player;
-        public AimingReticule(GameWorld world, Vector2 position, EnemyHuman human) : base(world, position)
+        public Action Action;
+        public EnemyHuman Player => Action.Human;
+        public AimingReticule(GameWorld world, Vector2 position, Action action) : base(world, position)
         {
             FrameEnd = float.PositiveInfinity;
-            Player = human;
+            Action = action;
         }
 
         protected override void UpdateDelta(float delta)
         {
             base.UpdateDelta(delta);
-            if(!(Player.CurrentAction is ActionAiming || Player.CurrentAction is ActionWandBlastAim))
+            if(Player.CurrentAction != Action)
             {
                 Destroy();
             }

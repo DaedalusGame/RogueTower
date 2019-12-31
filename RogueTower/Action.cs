@@ -15,7 +15,7 @@ namespace RogueTower
 {
     abstract class Action
     {
-        protected EnemyHuman Human;
+        public EnemyHuman Human;
         protected Action(EnemyHuman player)
         {
             Human = player;
@@ -1272,7 +1272,7 @@ namespace RogueTower
         public ActionWandBlastAim(Player player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
         {
             FireReady = false;
-            AimFX = new AimingReticule(player.World, Vector2.Zero, player);
+            AimFX = new AimingReticule(player.World, Vector2.Zero, this);
         }
 
         public override void OnInput()
@@ -1733,7 +1733,7 @@ namespace RogueTower
         public ActionAiming(Player player, Action action) : base(player)
         {
             PostAction = action;
-            AimFX = new AimingReticule(player.World, Vector2.Zero, player);
+            AimFX = new AimingReticule(player.World, Vector2.Zero, this);
         }
 
         public override void OnInput()
