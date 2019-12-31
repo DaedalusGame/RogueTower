@@ -263,11 +263,11 @@ namespace RogueTower
             bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
             bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
 
-            if (up) //TODO: key repeat
+            if (up)
             {
                 Selection--;
             }
-            else if (down) //TODO: key repeat
+            else if (down)
             {
                 Selection++;
             }

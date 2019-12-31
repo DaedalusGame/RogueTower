@@ -791,7 +791,7 @@ namespace RogueTower
                     bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3 && Weapon is WeaponWandOrange)
                     {
-                        CurrentAction = new ActionWandBlast(this, Target, 24, 12, Weapon);
+                        CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, Weapon);
                         RangedCooldown = 60 + Random.Next(40);
                     }
                     else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)

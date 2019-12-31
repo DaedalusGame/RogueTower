@@ -109,12 +109,7 @@ namespace RogueTower
 
         public void WandBlast(Player player, Enemy target, float upTime, float downTime)
         {
-            player.CurrentAction = new ActionWandBlast(player, target, upTime, downTime, this);
-        }
-
-        public void WandBlastUntargeted(Player player, Vector2 direction, float upTime, float downTime)
-        {
-            player.CurrentAction = new ActionWandBlastUntargeted(player, direction, upTime, downTime, this);
+            player.CurrentAction = new ActionWandBlastHoming(player, target, upTime, downTime, this);
         }
 
         public void ChargeAttack(Player player, float chargeTime, Action chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
@@ -378,7 +373,6 @@ namespace RogueTower
 
     class WeaponWandOrange : Weapon
     {
-
         public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Orange Wand", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
@@ -402,7 +396,7 @@ namespace RogueTower
                 //TwoHandSlash(player, 3, 12);
                 player.CurrentAction = new ActionWandSwing(player, 10, 5, 20);
             }
-            else if (player.Controls.AltAttack)
+            /*else if (player.Controls.AltAttack)
             {
                 var SuccessOrFail = false;
                 Vector2 ScanBox = new Vector2(96, 96);
@@ -422,8 +416,12 @@ namespace RogueTower
                 {
                     Vector2 Direction = Input2Direction(player);
                     bool NoDirection = Direction.Equals(new Vector2(0, 0));
-                    WandBlastUntargeted(player, NoDirection ? GetFacingVector(player.Facing) * new Vector2(1,0) : Direction, 24, 12);
+                    WandBlastUntargeted(player, 24, 12);
                 }
+            }*/
+            else if(player.Controls.IsAiming)
+            {
+                player.CurrentAction = new ActionWandBlastAim(player, 24, 12, this);
             }
         }
 

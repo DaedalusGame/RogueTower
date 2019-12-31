@@ -1171,15 +1171,16 @@ namespace RogueTower
             DownSwing,
         }
 
-        public Enemy Target;
+        public Vector2 FirePosition => Human.Position + GetFacingVector(Human.Facing) * 10;
+        public virtual Vector2 TargetOffset => GetFacingVector(Human.Facing);
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
         public Weapon Weapon;
+        public bool FireReady = true;
 
-        public ActionWandBlast(EnemyHuman human, Enemy target, float upTime, float downTime, Weapon weapon) : base(human)
+        public ActionWandBlast(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human)
         {
-            Target = target;
             SlashUpTime = upTime;
             SlashDownTime = downTime;
             Weapon = weapon;
@@ -1218,7 +1219,7 @@ namespace RogueTower
             {
                 case (SwingAction.UpSwing):
                     SlashUpTime -= delta;
-                    if (SlashUpTime < 0)
+                    if (SlashUpTime < 0 && FireReady)
                         Fire();
                     break;
                 case (SwingAction.DownSwing):
@@ -1237,11 +1238,9 @@ namespace RogueTower
         public void Fire()
         {
             SlashAction = SwingAction.DownSwing;
-            var facing = GetFacingVector(Human.Facing);
-            var firePosition = Human.Position + facing * 10;
-            var homing = Target.HomingTarget - firePosition;
+            var homing = TargetOffset;
             homing.Normalize();
-            new SpellOrange(Human.World, firePosition)
+            new SpellOrange(Human.World, FirePosition)
             {
                 Velocity = homing * 3,
                 FrameEnd = 70,
@@ -1251,89 +1250,45 @@ namespace RogueTower
         }
     }
 
-    class ActionWandBlastUntargeted : Action //I had to do this sin to allow untargeted wand shots.
+    class ActionWandBlastHoming : ActionWandBlast
     {
-        public enum SwingAction
+        Enemy Target;
+
+        public override Vector2 TargetOffset => Target.Position - FirePosition;
+
+        public ActionWandBlastHoming(EnemyHuman human, Enemy target, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
         {
-            UpSwing,
-            DownSwing,
+            Target = target;
         }
+    }
 
-        public Vector2 Direction;
-        public SwingAction SlashAction;
-        public float SlashUpTime;
-        public float SlashDownTime;
-        public Weapon Weapon;
+    class ActionWandBlastAim : ActionWandBlast
+    {
+        public AimingReticule AimFX;
+        public float AimAngle;
 
-        public ActionWandBlastUntargeted(EnemyHuman human, Vector2 direction, float upTime, float downTime, Weapon weapon) : base(human)
+        public override Vector2 TargetOffset => AngleToVector(AimAngle);
+
+        public ActionWandBlastAim(Player player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
         {
-            Direction = direction;
-            SlashUpTime = upTime;
-            SlashDownTime = downTime;
-            Weapon = weapon;
-            PlaySFX(sfx_wand_charge, 1.0f, 0.1f, 0.4f);
+            FireReady = false;
+            AimFX = new AimingReticule(player.World, Vector2.Zero, player);
         }
 
         public override void OnInput()
         {
-            //NOOP
-        }
-
-        public override void GetPose(PlayerState basePose)
-        {
-            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
-
-            switch (SlashAction)
+            var player = (Player)Human;
+            if (!FireReady)
             {
-                default:
-                case (SwingAction.UpSwing):
-                    basePose.LeftArm = ArmState.Angular(9);
-                    basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
-                    break;
-                case (SwingAction.DownSwing):
-                    basePose.Body = BodyState.Crouch(1);
-                    basePose.LeftArm = ArmState.Angular(0);
-                    basePose.RightArm = ArmState.Angular(0);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
-                    break;
+                AimAngle = player.Controls.AimAngle;
+                var aimVector = AngleToVector(AimAngle);
+                Human.Facing = (aimVector.X < 0) ? HorizontalFacing.Left : HorizontalFacing.Right;
+                if (player.Controls.AimFire)
+                {
+                    FireReady = true;
+                }
             }
-        }
-
-        public override void UpdateDelta(float delta)
-        {
-            switch (SlashAction)
-            {
-                case (SwingAction.UpSwing):
-                    SlashUpTime -= delta;
-                    if (SlashUpTime < 0)
-                        Fire();
-                    break;
-                case (SwingAction.DownSwing):
-                    SlashDownTime -= delta;
-                    if (SlashDownTime < 0)
-                        Human.ResetState();
-                    break;
-            }
-        }
-
-        public override void UpdateDiscrete()
-        {
-            //NOOP
-        }
-
-        public void Fire()
-        {
-            SlashAction = SwingAction.DownSwing;
-            var facing = GetFacingVector(Human.Facing);
-            var firePosition = Human.Position + facing * 10;
-            new SpellOrange(Human.World, firePosition)
-            {
-                Velocity = Direction * 3,
-                FrameEnd = 70,
-                Shooter = Human
-            };
-            PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
+            AimFX.Position = player.Position + (AngleToVector(AimAngle) * 100);
         }
     }
 

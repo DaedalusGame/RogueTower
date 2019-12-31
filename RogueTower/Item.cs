@@ -189,6 +189,8 @@ namespace RogueTower
         }
 
         public abstract void DrinkEffect(Enemy enemy);
+
+        public abstract void DipEffect(Item item);
     }
 
     class PotionHealth : Potion
@@ -196,6 +198,11 @@ namespace RogueTower
         public PotionHealth() : base(PotionAppearance.Red, "Health Potion", "A health potion.")
         {
 
+        }
+
+        public override void DipEffect(Item item)
+        {
+            //NOOP
         }
 
         public override void DrinkEffect(Enemy enemy)
@@ -212,6 +219,11 @@ namespace RogueTower
 
         }
 
+        public override void DipEffect(Item item)
+        {
+            //NOOP
+        }
+
         public override void DrinkEffect(Enemy enemy)
         {
             foreach (var statusEffect in enemy.StatusEffects.Where(x => x is Poison))
@@ -225,6 +237,11 @@ namespace RogueTower
         public PotionPoison() : base(PotionAppearance.Septic, "Poison Potion", "A poison potion.")
         {
 
+        }
+
+        public override void DipEffect(Item item)
+        {
+            //NOOP
         }
 
         public override void DrinkEffect(Enemy enemy)
