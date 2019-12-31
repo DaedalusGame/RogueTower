@@ -366,7 +366,8 @@ namespace RogueTower
             {
                 AddAction(new ActAction($"Quaff {Item.FakeName}", () =>
                 {
-                    return InputResult.Close;
+                    potion.DrinkEffect(Player);
+                    return Item.Destroyed ? InputResult.Close : InputResult.None;
                 }));
             }
             AddAction(new ActAction($"Dispose {Item.FakeName}", () =>

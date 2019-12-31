@@ -186,9 +186,16 @@ namespace RogueTower
                 Inventory.Add(weapon);
             }
 
-            for(int i = 0; i < 3; i++)
+            WeightedList<Func<Potion>> potions = new WeightedList<Func<Potion>>()
             {
-                Inventory.Add(new PotionHealth());
+                { () => new PotionHealth(), 10 },
+                { () => new PotionAntidote(), 10 },
+                { () => new PotionPoison(), 10 },
+            };
+
+            for(int i = 0; i < 20; i++)
+            {
+                Inventory.Add(potions.GetWeighted(Random)());
             }
         }
 

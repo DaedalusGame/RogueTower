@@ -170,7 +170,7 @@ namespace RogueTower
         }
     }
 
-    class Potion : Item
+    abstract class Potion : Item
     {
         public PotionAppearance Appearance;
 
@@ -187,6 +187,8 @@ namespace RogueTower
             var appearance = Appearance.Randomized;
             scene.DrawSprite(appearance.Sprite, 0, position - appearance.Sprite.Middle, SpriteEffects.None, 1.0f);
         }
+
+        public abstract void DrinkEffect(Enemy enemy);
     }
 
     class PotionHealth : Potion
@@ -194,6 +196,41 @@ namespace RogueTower
         public PotionHealth() : base(PotionAppearance.Red, "Health Potion", "A health potion.")
         {
 
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            enemy.Heal(40);
+            Destroy();
+        }
+    }
+
+    class PotionAntidote : Potion
+    {
+        public PotionAntidote() : base(PotionAppearance.Green, "Antidote Potion", "An antidote potion.")
+        {
+
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            foreach (var statusEffect in enemy.StatusEffects.Where(x => x is Poison))
+                statusEffect.Remove();
+            Destroy();
+        }
+    }
+
+    class PotionPoison : Potion
+    {
+        public PotionPoison() : base(PotionAppearance.Septic, "Poison Potion", "A poison potion.")
+        {
+
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            enemy.AddStatusEffect(new Poison(enemy, 1000));
+            Destroy();
         }
     }
 
