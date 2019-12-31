@@ -2295,7 +2295,7 @@ namespace RogueTower
                 var move = Position + Offset - size / 2;
                 var response = Box.Move(move.X, move.Y, collision =>
                   {
-                      return new CrossResponse(collision);
+                      return null;
                   });
                 foreach (var hit in response.Hits)
                 {

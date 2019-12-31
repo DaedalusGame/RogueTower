@@ -166,6 +166,7 @@ namespace RogueTower
         public List<DroppedItem> NearbyItems = new List<DroppedItem>();
 
         public List<Item> Inventory = new List<Item>();
+        public bool InventoryChanged;
 
         public Player(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -179,6 +180,11 @@ namespace RogueTower
             Box = World.Create(x, y, 12, 14);
             Box.AddTags(CollisionTag.Character);
             Box.Data = this;
+
+            foreach(var weapon in Weapon.PresetWeaponList)
+            {
+                Inventory.Add(weapon);
+            }
         }
 
         public void SetControl(PlayerInput input)
@@ -190,10 +196,10 @@ namespace RogueTower
         {
             if (!item.Destroyed)
             {
-                //Just for show since there's no inventory yet.
                 //new DamagePopup(World, item.Position, $"+1 {item.Item.Name}", 30);
                 new ItemPickup(World, item.Item, item.Position, new Vector2(24, 24), 50);
                 Inventory.Add(item.Item);
+                InventoryChanged = true;
                 item.Destroy();
             }
         }
@@ -204,14 +210,21 @@ namespace RogueTower
             Controls.Reset();
         }
 
+        public override void Update(float delta)
+        {
+            InventoryChanged = false;
+            base.Update(delta);
+            int removed = Inventory.RemoveAll(item => item.Destroyed);
+            if (removed > 0)
+                InventoryChanged = true;
+        }
+
         protected override void UpdateDiscrete()
         {
             base.UpdateDiscrete();
 
             RectangleF pickupArea = new RectangleF(Position + new Vector2(-12, 0), new Vector2(24, 8));
             NearbyItems = World.FindBoxes(pickupArea).Where(x => x.Data is DroppedItem).Select(x => (DroppedItem)x.Data).ToList();
-
-            Inventory.RemoveAll(item => item.Destroyed);
         }
 
         public override PlayerState GetBasePose()

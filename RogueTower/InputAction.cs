@@ -1,5 +1,6 @@
 ﻿using Humper.Base;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ namespace RogueTower
 {
     enum InputResult
     {
-        NoResult,
-        ActionTaken,
-        Cancel,
+        None,
+        Close,
+        CloseAll,
     }
 
     abstract class InputAction
@@ -38,7 +39,7 @@ namespace RogueTower
         {
             var first = SubActions.First();
             first.HandleInput(scene);
-            if (first.Result == InputResult.ActionTaken)
+            if (first.Result == InputResult.CloseAll)
                 Result = first.Result;
             if (first.Done)
                 SubActions.RemoveAt(0);
@@ -136,7 +137,7 @@ namespace RogueTower
 
     class Pause : InputAction
     {
-        public override bool Done => Result != InputResult.NoResult;
+        public override bool Done => Result != InputResult.None;
         public override float GameSpeed => 0.0f;
 
         public override void HandleInput(SceneGame scene)
@@ -145,7 +146,7 @@ namespace RogueTower
 
             if ((scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.Start)))
             {
-                Result = InputResult.ActionTaken;
+                Result = InputResult.Close;
             }
         }
 
@@ -162,7 +163,7 @@ namespace RogueTower
         public InputResult ConfirmResult;
         public InputResult CancelResult;
 
-        public override bool Done => Result != InputResult.NoResult;
+        public override bool Done => Result != InputResult.None;
         public override float GameSpeed => 0.0f;
 
         public MessageBox(string text, InputResult confirmResult, InputResult cancelResult)
@@ -230,7 +231,7 @@ namespace RogueTower
         {
             get
             {
-                return Result != InputResult.NoResult && !SubActions.Any();
+                return Result != InputResult.None && !SubActions.Any();
             }
         }
 
@@ -276,7 +277,7 @@ namespace RogueTower
             }
             else if (cancel)
             {
-                Result = InputResult.Cancel;
+                Result = InputResult.Close;
             }
         }
 
@@ -316,9 +317,61 @@ namespace RogueTower
         public Menu(Player player)
         {
             Player = player;
-            AddAction(new ActAction("Items", () => { SubActions.Add(new ItemMenu(Player)); return InputResult.NoResult; }));
-            AddAction(new ActAction("Stats", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Cancel)); return InputResult.NoResult; }));
-            AddAction(new ActAction("Fusion", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Cancel)); return InputResult.NoResult; }));
+            AddAction(new ActAction("Items", () => { SubActions.Add(new ItemMenu(Player)); return InputResult.None; }));
+            AddAction(new ActAction("Stats", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Close)); return InputResult.None; }));
+            AddAction(new ActAction("Fusion", () => { SubActions.Add(new MessageBox("Not implemented.", InputResult.Close)); return InputResult.None; }));
+        }
+    }
+
+    class ActItem : Act
+    {
+        public Player Player;
+        public Item Item;
+
+        public ActItem(Player player, Item item)
+        {
+            Player = player;
+            Item = item;
+            Populate();
+        }
+
+        private void Populate()
+        {
+            AddAction(new ActAction($"Examine {Item.Name}", () =>
+            {
+                StringBuilder description = new StringBuilder(Item.Description);
+                SubActions.Add(new MessageBox(description.ToString(), InputResult.Close));
+                return InputResult.None;
+            }));
+            if (Item is IEdible edible && edible.CanEat(Player))
+            {
+                AddAction(new ActAction($"Eat {Item.Name}", () =>
+                {
+                    edible.EatEffect(Player);
+                    return Item.Destroyed ? InputResult.Close : InputResult.None;
+                }));
+            }
+            if (Item is Weapon weapon)
+            {
+                AddAction(new ActAction($"Equip {Item.Name}", () =>
+                {
+                    Player.Weapon = weapon;
+                    return InputResult.Close;
+                }));
+            }
+            AddAction(new ActAction($"Dispose {Item.Name}", () =>
+            {
+                Item.Destroy();
+                SubActions.Add(new MessageBox($"Threw {Item.Name} away.", InputResult.Close));
+                return Item.Destroyed ? InputResult.Close : InputResult.None;
+            }));
+        }
+
+        public override void HandleInput(SceneGame scene)
+        {
+            if (Item.Destroyed)
+                Result = InputResult.Close;
+            base.HandleInput(scene);
         }
     }
 
@@ -363,7 +416,7 @@ namespace RogueTower
         public int SubSelection;
         public List<Stack> Items;
 
-        public override bool Done => Result != InputResult.NoResult && !SubActions.Any();
+        public override bool Done => Result != InputResult.None && !SubActions.Any();
         public Stack SelectedStack => Items[Util.PositiveMod(Selection, Items.Count)];
         public Item SelectedItem => SelectedStack[Util.PositiveMod(SubSelection, SelectedStack.Count)];
 
@@ -414,6 +467,11 @@ namespace RogueTower
                 return;
             }
 
+            if (Player.InventoryChanged)
+            {
+                Refresh();
+            }
+
             bool up = (scene.InputState.IsKeyPressed(Keys.W, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickUp, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadUp, 20, 5));
             bool down = (scene.InputState.IsKeyPressed(Keys.S, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickDown, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadDown, 20, 5));
             bool left = (scene.InputState.IsKeyPressed(Keys.A, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickLeft, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadLeft, 20, 5));
@@ -440,34 +498,11 @@ namespace RogueTower
             }
             else if (Items.Count > 0 && confirm)
             {
-                var actionMenu = new Act();
-
-                actionMenu.AddAction(new ActAction($"Examine {SelectedItem.Name}", () =>
-                {
-                    StringBuilder description = new StringBuilder(SelectedItem.Description);
-                    actionMenu.SubActions.Add(new MessageBox(description.ToString(), InputResult.NoResult));
-                    return InputResult.Cancel;
-                }));
-                if(SelectedItem is IEdible edible && edible.CanEat(Player))
-                {
-                    actionMenu.AddAction(new ActAction($"Eat {SelectedItem.Name}", () =>
-                    {
-                        edible.EatEffect(Player);
-                        return InputResult.Cancel;
-                    }));
-                }
-                actionMenu.AddAction(new ActAction($"Dispose {SelectedItem.Name}", () =>
-                {
-                    Player.Inventory.Remove(SelectedItem);
-                    actionMenu.SubActions.Add(new MessageBox($"Threw {SelectedItem.Name} away.", InputResult.NoResult));
-                    return InputResult.Cancel;
-                }));
-
-                SubActions.Add(actionMenu);
+                SubActions.Add(new ActItem(Player,SelectedItem));
             }
             else if (cancel)
             {
-                Result = InputResult.Cancel;
+                Result = InputResult.Close;
             }
         }
 
@@ -475,6 +510,7 @@ namespace RogueTower
         {
             SpriteReference cursor = SpriteLoader.Instance.AddSprite("content/cursor");
             SpriteReference textbox = SpriteLoader.Instance.AddSprite("content/ui_box");
+            SpriteReference flagEquipped = SpriteLoader.Instance.AddSprite("content/flag_equip");
 
             int edgeDistance = 75;
             int width = scene.Viewport.Width - edgeDistance * 2;
@@ -502,6 +538,8 @@ namespace RogueTower
                     }
 
                     item.DrawIcon(scene, new Vector2(x + 16 + 8, y + i * 16 + 8));
+                    if (item == Player.Weapon)
+                        scene.DrawSprite(flagEquipped, 0, new Vector2(x + 16, y + i * 16), SpriteEffects.None, 0);
                     scene.DrawText($"{item.Name} x{menupoint.Count}", new Vector2(x + 32, y + i * 16), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.White, Color.Black));
                     i++;
                 }

@@ -449,6 +449,11 @@ namespace RogueTower
             Offset = Util.AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 40;
         }
 
+        public override void Update(float delta)
+        {
+            base.Update(1.0f);
+        }
+
         protected override void UpdateDiscrete()
         {
             if (Frame >= FrameEnd)

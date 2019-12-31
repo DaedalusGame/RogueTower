@@ -7,18 +7,21 @@ using Microsoft.Xna.Framework;
 using Humper.Base;
 using static RogueTower.Game;
 using static RogueTower.Util;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueTower
 {
-    abstract class Weapon
+    abstract class Weapon : Item
     {
+        public static float Sqrt2 = (float)Math.Sqrt(2);
+
         public bool CanParry = false;
         public double Damage;
         public float WeaponSizeMult = 0;
         public Vector2 WeaponSize;
         public float SwingSize;
 
-        public Weapon(double damage, float weaponSizeMult, Vector2 weaponSize, float swingSize)
+        public Weapon(string name, string description, double damage, float weaponSizeMult, Vector2 weaponSize, float swingSize) : base(name, description)
         {
             Damage = damage;
             WeaponSizeMult = weaponSizeMult;
@@ -118,12 +121,22 @@ namespace RogueTower
         {
             player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this, slowDown, slowDownAmount);
         }
+
+        protected void DrawWeaponAsIcon(SceneGame scene, SpriteReference sprite, Vector2 position)
+        {
+            Vector2 scale;
+            if (sprite.Width >= 16)
+                scale = new Vector2(14 * Sqrt2 / sprite.Width);
+            else
+                scale = Vector2.One;
+            scene.DrawSpriteExt(sprite, 0, position - sprite.Middle, sprite.Middle, MathHelper.ToRadians(-45), scale, SpriteEffects.None, Color.White, 0);
+        }
     }
 
     class WeaponUnarmed : Weapon
     {
         public EnemyHuman Target;
-        public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.5f)
+        public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Unarmed", "", damage, weaponSizeMult, weaponSize, 0.5f)
         {
             CanParry = false;
         }
@@ -161,11 +174,16 @@ namespace RogueTower
                 }
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            //NOOP
+        }
     }
 
     class WeaponSword : Weapon
     {
-        public WeaponSword(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        public WeaponSword(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Sword", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
         }
@@ -194,11 +212,16 @@ namespace RogueTower
             }
             
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword"), position);
+        }
     }
 
     class WeaponKatana : Weapon
     {
-        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 1f)
+        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Katana", "", damage, weaponSizeMult, weaponSize, 1f)
         {
             CanParry = true;
         }
@@ -222,11 +245,16 @@ namespace RogueTower
                 }
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/katana"), position);
+        }
     }
 
     class WeaponKnife : Weapon
     {
-        public WeaponKnife(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.5f)
+        public WeaponKnife(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Knife", "", damage, weaponSizeMult, weaponSize, 0.5f)
         {
             CanParry = true;
         }
@@ -251,11 +279,16 @@ namespace RogueTower
                 player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/knife"), position);
+        }
     }
 
     class WeaponLance : Weapon
     {
-        public WeaponLance(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 1.5f)
+        public WeaponLance(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Lance", "", damage, weaponSizeMult, weaponSize, 1.5f)
         {
             CanParry = true;
         }
@@ -272,6 +305,11 @@ namespace RogueTower
                 player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)), this, false, 0) { CanJump = true, CanMove = true };
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/lance"), position);
+        }
     }
 
     class WeaponRapier : Weapon
@@ -279,7 +317,7 @@ namespace RogueTower
         public int FinesseCounter = 0;
         public float LastCombo;
         public int FinesseLimit;
-        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 2) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 2) : base("Rapier", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
             FinesseLimit = finesseLimit;
@@ -331,12 +369,17 @@ namespace RogueTower
                 player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/rapier"), position);
+        }
     }
 
     class WeaponWandOrange : Weapon
     {
 
-        public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.7f)
+        public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Orange Wand", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
         }
@@ -383,11 +426,16 @@ namespace RogueTower
                 }
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_orange"), position);
+        }
     }
 
     class WeaponWarhammer : Weapon
     {
-        public WeaponWarhammer(double damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 1.5f)
+        public WeaponWarhammer(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Warhammer", "", damage, weaponSizeMult, weaponSize, 1.5f)
         {
         }
 
@@ -413,12 +461,17 @@ namespace RogueTower
                 player.CurrentAction = new ActionShockwave(player, 4, 8, this, 2);
             }
         }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/warhammer"), position);
+        }
     }
 
     class WeaponBoomerang : Weapon
     {
         public BoomerangProjectile BoomerProjectile;
-        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base(damage, weaponSizeMult, weaponSize, 0.1f)
+        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSizeMult, weaponSize, 0.1f)
         {
         }
 
@@ -437,6 +490,11 @@ namespace RogueTower
             {
                 player.CurrentAction = new ActionAiming(player, new ActionBoomerangThrow(player, 10, this, 40));
             }
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/boomerang"), position);
         }
     }
 }
