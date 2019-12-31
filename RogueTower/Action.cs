@@ -972,7 +972,7 @@ namespace RogueTower
                 {
                     if(box.Data is Tile tile)
                         tile.HandleTileDamage(damageIn);
-                    if (box.Data is Enemy enemy)
+                    if (box.Data is Enemy enemy && box.Data != Human)
                         enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
                 }
             }

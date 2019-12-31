@@ -581,7 +581,7 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             base.UpdateDelta(delta);
-            if(!(Player.CurrentAction is ActionAiming))
+            if(!(Player.CurrentAction is ActionAiming || Player.CurrentAction is ActionWandBlastAim))
             {
                 Destroy();
             }

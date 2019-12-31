@@ -165,8 +165,13 @@ namespace RogueTower
 
             foreach(var tuple in Enumerable.Zip(potionsA,potionsB,(a,b) => Tuple.Create(a,b)))
             {
-                tuple.Item1.Randomized = tuple.Item2.Randomized;
+                tuple.Item1.Randomized = tuple.Item2;
             }
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 
