@@ -475,7 +475,7 @@ namespace RogueTower
                 if (enemy.CanDamage)
                 {
                     enemy.AddStatusEffect(new Stun(enemy, 120));
-                    enemy.Hit(Velocity, 20, 40, Boomerang.Damage);
+                    enemy.Hit(Velocity, 20, 20, Boomerang.Damage);
                 }
             }
             if(hit.Box.Data is Tile tile)

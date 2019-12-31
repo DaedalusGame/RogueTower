@@ -37,6 +37,7 @@ namespace RogueTower
 
         public static Weapon[] PresetWeaponList =
         {
+            new WeaponSword(15, 20, new Vector2(10, 40)),
             new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2)),
             new WeaponKatana(15, 20, new Vector2(10, 40)),
             new WeaponRapier(15, 20, new Vector2(10, 40)),
@@ -358,8 +359,10 @@ namespace RogueTower
                 else if (FinesseCounter == FinesseLimit + 1)
                 {
                     if (player.OnGround)
+                    {
                         player.Velocity.Y = -2.5f;
                         player.OnGround = false;
+                    }
                     DashAttack(player, new ActionStab(player, 4, 2, this), dashTime: 6, dashFactor: 4);
                     FinesseCounter = 0;
                 }
