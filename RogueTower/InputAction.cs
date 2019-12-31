@@ -362,6 +362,13 @@ namespace RogueTower
                     return InputResult.Close;
                 }));
             }
+            if (Item is Potion potion)
+            {
+                AddAction(new ActAction($"Quaff {Item.FakeName}", () =>
+                {
+                    return InputResult.Close;
+                }));
+            }
             AddAction(new ActAction($"Dispose {Item.FakeName}", () =>
             {
                 Item.Destroy();
@@ -416,10 +423,13 @@ namespace RogueTower
                     return InputResult.None;
                 }));
             }
-            AddAction(new ActAction($"Combine {combineString}", () =>
+            else
             {
-                return InputResult.None;
-            }));
+                AddAction(new ActAction($"Combine {combineString}", () =>
+                {
+                    return InputResult.None;
+                }));
+            }
             if (Selections.Count == 2)
             {
                 AddAction(new ActAction($"Swap {combineString}", () =>

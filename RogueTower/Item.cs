@@ -138,6 +138,10 @@ namespace RogueTower
         public static PotionAppearance Blue = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blue"), "Blue Potion", "A blue potion.");
         public static PotionAppearance Green = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_green"), "Green Potion", "A green potion.");
         public static PotionAppearance Clear = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Clear Potion", "A clear potion.");
+        public static PotionAppearance Grey = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_grey"), "Grey Potion", "A grey potion.");
+        public static PotionAppearance Mauve = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_mauve"), "Mauve Potion", "A mauve potion.");
+        public static PotionAppearance Orange = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_orange"), "Orange Potion", "An orange potion.");
+        public static PotionAppearance Septic = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_septic"), "Septic Potion", "A septic potion.");
 
         public static IEnumerable<PotionAppearance> RandomAppearances
         {
@@ -147,6 +151,10 @@ namespace RogueTower
                 yield return Blue;
                 yield return Green;
                 yield return Clear;
+                yield return Grey;
+                yield return Mauve;
+                yield return Orange;
+                yield return Septic;
             }
         }
 
