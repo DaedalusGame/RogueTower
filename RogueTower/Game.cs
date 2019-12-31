@@ -233,7 +233,7 @@ namespace RogueTower
             AudioMgr.Update();
             MouseState = Mouse.GetState();
             KeyState = Keyboard.GetState();
-            GamePadState = GamePad.GetState(PlayerIndex.One);
+            GamePadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
 
             IsMouseVisible = Scene.ShowCursor;
 

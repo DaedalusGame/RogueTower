@@ -457,7 +457,12 @@ namespace RogueTower
         {
             base.UpdateDelta(delta);
             Lifetime -= delta;
-            Angle += Math.Sign(Velocity.X) * delta;
+            if(Velocity.X != 0)
+                Angle += (Math.Sign(Velocity.X) * delta) * 0.5f;
+            else
+            {
+                Angle -= (Math.Sign(Velocity.Y) * delta) * 0.5f;
+            }
         }
         protected override void OnCollision(IHit hit)
         {
