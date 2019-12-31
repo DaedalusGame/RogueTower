@@ -210,6 +210,8 @@ namespace RogueTower
 
             RectangleF pickupArea = new RectangleF(Position + new Vector2(-12, 0), new Vector2(24, 8));
             NearbyItems = World.FindBoxes(pickupArea).Where(x => x.Data is DroppedItem).Select(x => (DroppedItem)x.Data).ToList();
+
+            Inventory.RemoveAll(item => item.Destroyed);
         }
 
         public override PlayerState GetBasePose()

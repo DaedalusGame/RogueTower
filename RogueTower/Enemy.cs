@@ -27,6 +27,10 @@ namespace RogueTower
         {
             get;
         }
+        public abstract Vector2 PopupPosition
+        {
+            get;
+        }
         public abstract bool Dead
         {
             get;
@@ -124,19 +128,24 @@ namespace RogueTower
             HandleDamage(damageIn);
         }
 
-        public abstract void ShowDamage(double damage);
-
         public virtual void HandleDamage(double damageIn)
         {
             if (CanDamage == false)
                 return;
             Health = Math.Min(Math.Max(Health-damageIn, 0), HealthMax);
             if(Math.Abs(damageIn) >= 0.1)
-                ShowDamage(damageIn);
+                new DamagePopup(World, PopupPosition + new Vector2(0, -16), damageIn.ToString(), 30);
             if (Health <= 0 && !Dead)
             {
                 Death();
             }
+        }
+
+        public virtual void Heal(double heal)
+        {
+            Health = Math.Min(Math.Max(Health + heal, 0), HealthMax);
+            if (Math.Abs(heal) >= 0.1)
+                new DamagePopup(World, PopupPosition + new Vector2(0, -16), heal.ToString(), 30, Color.Lime);
         }
 
         public virtual void Death()
@@ -228,6 +237,7 @@ namespace RogueTower
         public float AppliedFriction;
 
         public override Vector2 HomingTarget => Position;
+        public override Vector2 PopupPosition => Position;
 
         public EnemyGravity(GameWorld world, Vector2 position) : base(world, position)
         {
@@ -605,11 +615,6 @@ namespace RogueTower
             for(int i = 0; i < 3; i++)
                 new BloodSpatterEffect(World, GetRandomPosition(Box.Bounds, Random), Random.NextFloat() * MathHelper.TwoPi, 3 + Random.NextFloat() * 5);
             new ScreenShakeJerk(World, AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
-        }
-
-        public override void ShowDamage(double damage)
-        {
-            new DamagePopup(World, Position + new Vector2(0, -16), damage.ToString(), 30);
         }
 
         public override IEnumerable<DrawPass> GetDrawPasses()
@@ -1480,6 +1485,7 @@ namespace RogueTower
         public override bool Attacking => false;
         public override bool Incorporeal => CurrentAction.Hidden;
         public override Vector2 HomingTarget => Position + Head.Offset;
+        public override Vector2 PopupPosition => Position + Head.Offset;
         public override bool Dead => CurrentAction is ActionDeath;
         public override bool CanDamage => !CurrentAction.Hidden;
         public override bool CanHit => !CurrentAction.Hidden;
@@ -1677,11 +1683,6 @@ namespace RogueTower
             new ScreenShakeJerk(World, AngleToVector(Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
         }
 
-        public override void ShowDamage(double damage)
-        {
-            new DamagePopup(World, Position + Head.Offset + new Vector2(0, -16), damage.ToString(), 30);
-        }
-
         public override void Death()
         {
             base.Death();
@@ -1761,7 +1762,7 @@ namespace RogueTower
             }
         }
 
-        public override Vector2 IdleOffset => new Vector2(0,-20) + 15 * AngleToVector(/*MathHelper.PiOver2 + MathHelper.PiOver2 / Body.Heads.Count*/ + MathHelper.Pi * Index / Body.Heads.Count);
+        public override Vector2 IdleOffset => new Vector2(0,-20) + 15 * AngleToVector(-MathHelper.PiOver2 + MathHelper.PiOver2 / Body.Heads.Count + MathHelper.Pi * Index / Body.Heads.Count);
         //public override Vector2 IdleCircle => new Vector2(15,5);
 
         public SnakeHydra(Hydra body, int index) : base(body.World, body.Position)
@@ -1899,11 +1900,6 @@ namespace RogueTower
                 head.Destroy();
             }
             World.Remove(Box);
-        }
-
-        public override void ShowDamage(double damage)
-        {
-            //NOOP
         }
 
         private void Walk(float dx, float speedLimit)
@@ -2090,6 +2086,7 @@ namespace RogueTower
         public override bool Attacking => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
+        public override Vector2 PopupPosition => Position;
         public override bool Dead => false;
 
         public FireState State;
@@ -2159,11 +2156,6 @@ namespace RogueTower
             {
                 ShootTick();
             }
-        }
-
-        public override void ShowDamage(double damage)
-        {
-            //NOOP
         }
 
         public override void Draw(SceneGame scene)
@@ -2258,6 +2250,7 @@ namespace RogueTower
         public override bool Attacking => true;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
+        public override Vector2 PopupPosition => Position + Offset;
         public override bool Dead => false;
 
         public BallAndChain(GameWorld world, Vector2 position, float angle, float speed, float distance) : base(world, position)
@@ -2322,11 +2315,6 @@ namespace RogueTower
                 hitVelocity.Normalize();
                 enemy.Hit(hitVelocity * 5, 40, 30, Damage);
             }
-        }
-
-        public override void ShowDamage(double damage)
-        {
-            new DamagePopup(World, Position + Offset + new Vector2(0,-16), damage.ToString(), 30);
         }
 
         public override IEnumerable<Vector2> GetDrawPoints()

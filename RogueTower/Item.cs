@@ -10,6 +10,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueTower
 {
+    interface IEdible
+    {
+        bool CanEat(Enemy enemy);
+
+        void EatEffect(Enemy enemy);
+    }
+
     class ItemStacker : IEqualityComparer<Item>
     {
         public bool Equals(Item x, Item y)
@@ -29,11 +36,17 @@ namespace RogueTower
 
         public string Name;
         public string Description;
+        public bool Destroyed;
 
         public Item(string name, string description)
         {
             Name = name;
             Description = description;
+        }
+
+        public void Destroy()
+        {
+            Destroyed = true;
         }
 
         public virtual int GetStackCode()
@@ -49,7 +62,7 @@ namespace RogueTower
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
     }
 
-    class Meat : Item
+    class Meat : Item, IEdible
     {
         public enum Type
         {
@@ -85,6 +98,17 @@ namespace RogueTower
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
             scene.DrawSprite(Sprite, 0, position - Sprite.Middle, SpriteEffects.None, 1.0f);
+        }
+
+        public bool CanEat(Enemy enemy)
+        {
+            return true;
+        }
+
+        public void EatEffect(Enemy enemy)
+        {
+            enemy.Heal(10);
+            Destroy();
         }
     }
 

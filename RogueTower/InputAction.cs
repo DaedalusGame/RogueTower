@@ -163,7 +163,7 @@ namespace RogueTower
         public InputResult CancelResult;
 
         public override bool Done => Result != InputResult.NoResult;
-        public override float GameSpeed => 0.1f;
+        public override float GameSpeed => 0.0f;
 
         public MessageBox(string text, InputResult confirmResult, InputResult cancelResult)
         {
@@ -230,7 +230,7 @@ namespace RogueTower
         {
             get
             {
-                return Result != InputResult.NoResult;
+                return Result != InputResult.NoResult && !SubActions.Any();
             }
         }
 
@@ -363,29 +363,9 @@ namespace RogueTower
         public int SubSelection;
         public List<Stack> Items;
 
-        public override bool Done
-        {
-            get
-            {
-                return Result != InputResult.NoResult;
-            }
-        }
-
-        public Stack SelectedStack
-        {
-            get
-            {
-                return Items[Util.PositiveMod(Selection, Items.Count)];
-            }
-        }
-
-        public Item SelectedItem
-        {
-            get
-            {
-                return SelectedStack[Util.PositiveMod(SubSelection, SelectedStack.Count)];
-            }
-        }
+        public override bool Done => Result != InputResult.NoResult && !SubActions.Any();
+        public Stack SelectedStack => Items[Util.PositiveMod(Selection, Items.Count)];
+        public Item SelectedItem => SelectedStack[Util.PositiveMod(SubSelection, SelectedStack.Count)];
 
         public virtual bool IsBlacklisted(Item item)
         {
@@ -465,14 +445,22 @@ namespace RogueTower
                 actionMenu.AddAction(new ActAction($"Examine {SelectedItem.Name}", () =>
                 {
                     StringBuilder description = new StringBuilder(SelectedItem.Description);
-                    actionMenu.SubActions.Add(new MessageBox(description.ToString(), InputResult.Cancel));
-                    return InputResult.NoResult;
+                    actionMenu.SubActions.Add(new MessageBox(description.ToString(), InputResult.NoResult));
+                    return InputResult.Cancel;
                 }));
+                if(SelectedItem is IEdible edible && edible.CanEat(Player))
+                {
+                    actionMenu.AddAction(new ActAction($"Eat {SelectedItem.Name}", () =>
+                    {
+                        edible.EatEffect(Player);
+                        return InputResult.Cancel;
+                    }));
+                }
                 actionMenu.AddAction(new ActAction($"Dispose {SelectedItem.Name}", () =>
                 {
                     Player.Inventory.Remove(SelectedItem);
-                    actionMenu.SubActions.Add(new MessageBox($"Threw {SelectedItem.Name} away.", InputResult.ActionTaken));
-                    return InputResult.NoResult;
+                    actionMenu.SubActions.Add(new MessageBox($"Threw {SelectedItem.Name} away.", InputResult.NoResult));
+                    return InputResult.Cancel;
                 }));
 
                 SubActions.Add(actionMenu);

@@ -53,7 +53,7 @@
           "originX": 8,
           "originY": 24,
           "rotation": 0,
-          "values": {"Speed": 0.05, "Distance": 40, "Swings": false}
+          "values": {"Speed": 0.03, "Distance": 60, "Swings": false}
         },
         {
           "name": "ball_and_chain",
@@ -64,7 +64,7 @@
           "originX": 8,
           "originY": 24,
           "rotation": 180,
-          "values": {"Speed": 0.05, "Distance": 40, "Swings": false}
+          "values": {"Speed": 0.03, "Distance": 60, "Swings": false}
         }
       ]
     }
