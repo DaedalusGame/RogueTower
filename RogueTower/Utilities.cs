@@ -199,6 +199,14 @@ namespace RogueTower
             return dTile.Previous != null;
         }
 
+        public static string EnglishJoin(string seperator, string finalSeperator, IEnumerable<string> values)
+        {
+            values = values.ToList();
+            var first = values.Take(values.Count() - 1);
+            var last = values.Last();
+            return $"{String.Join(seperator,first)}{finalSeperator}{last}";
+        }
+
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> toShuffle)
         {
             List<T> shuffled = new List<T>();

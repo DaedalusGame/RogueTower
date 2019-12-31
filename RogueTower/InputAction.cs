@@ -326,12 +326,15 @@ namespace RogueTower
     class ActItem : Act
     {
         public Player Player;
-        public Item Item;
+        public ItemSelection Selection;
 
-        public ActItem(Player player, Item item)
+        public Item Item => Selection.Item;
+        public ItemMenu.Stack Stack => Selection.Stack;
+
+        public ActItem(Player player, ItemSelection selection)
         {
             Player = player;
-            Item = item;
+            Selection = selection;
             Populate();
         }
 
@@ -375,6 +378,97 @@ namespace RogueTower
         }
     }
 
+    class ActCombine : Act
+    {
+        public Player Player;
+        public List<ItemSelection> Selections;
+
+        public IEnumerable<Item> Items => Selections.Select(x => x.Item);
+        public IEnumerable<ItemMenu.Stack> Stacks => Selections.Select(x => x.Stack);
+
+        public ActCombine(Player player, IEnumerable<ItemSelection> selections)
+        {
+            Player = player;
+            Selections = selections.Distinct().ToList();
+            Populate();
+        }
+
+        private void Populate()
+        {
+            string combineString;
+            if (Selections.Count <= 3)
+                combineString = EnglishJoin(", ", " and ", Selections.Select(x => x.Item.Name));
+            else
+                combineString = $"{Selections.Count} Items";
+            AddAction(new ActAction($"Combine {combineString}", () =>
+            {
+                return InputResult.None;
+            }));
+            if(Selections.Count == 2)
+            {
+                AddAction(new ActAction($"Swap {combineString}", () =>
+                {
+                    return InputResult.None;
+                }));
+            }
+            AddAction(new ActAction($"Dispose {combineString}", () =>
+            {
+                foreach(var item in Items)
+                {
+                    item.Destroy();
+                }
+                SubActions.Add(new MessageBox($"Threw {combineString} away.", InputResult.Close));
+                return Items.Any(x => x.Destroyed) ? InputResult.Close : InputResult.None;
+            }));
+        }
+
+        public override void HandleInput(SceneGame scene)
+        {
+            if (Items.Any(x => x.Destroyed))
+                Result = InputResult.Close;
+            base.HandleInput(scene);
+        }
+    }
+
+    struct ItemSelection
+    {
+        ItemMenu Menu;
+        public int Index;
+        public int SubIndex;
+
+        public ItemMenu.Stack Stack => Menu.Items[PositiveMod(Index, Menu.Items.Count)];
+        public Item Item => Stack[PositiveMod(SubIndex, Stack.Count)];
+
+        public ItemSelection(ItemMenu menu, int selection, int subSelection)
+        {
+            Menu = menu;
+            Index = selection;
+            SubIndex = subSelection;
+        }
+
+        public static bool operator ==(ItemSelection a, ItemSelection b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(ItemSelection a, ItemSelection b)
+        {
+            return !a.Equals(b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ItemSelection other)
+                return PositiveMod(Index,Menu.Items.Count) == PositiveMod(other.Index, other.Menu.Items.Count) && PositiveMod(SubIndex,Stack.Count) == PositiveMod(other.SubIndex,other.Stack.Count);
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return PositiveMod(Index, Menu.Items.Count).GetHashCode() ^ PositiveMod(SubIndex, Stack.Count).GetHashCode() * 13;
+        }
+    }
+
     class ItemMenu : InputAction
     {
         public class Stack
@@ -412,16 +506,18 @@ namespace RogueTower
         }
 
         public Player Player;
-        public int Selection;
-        public int SubSelection;
+        public ItemSelection Selection;
+        public List<ItemSelection> CombineSelections = new List<ItemSelection>();
         public List<Stack> Items;
 
         public override bool Done => Result != InputResult.None && !SubActions.Any();
-        public Stack SelectedStack => Items[Util.PositiveMod(Selection, Items.Count)];
-        public Item SelectedItem => SelectedStack[Util.PositiveMod(SubSelection, SelectedStack.Count)];
+        //public Stack SelectedStack => Items[PositiveMod(Selection, Items.Count)];
+        //public Item SelectedItem => SelectedStack[PositiveMod(SubSelection, SelectedStack.Count)];
 
         public virtual bool IsBlacklisted(Item item)
         {
+            if (item is WeaponUnarmed)
+                return true;
             return false;
         }
 
@@ -429,6 +525,7 @@ namespace RogueTower
         {
             Player = player;
             Populate();
+            Selection = new ItemSelection(this, 0, 0);
         }
 
         public void Refresh()
@@ -437,11 +534,14 @@ namespace RogueTower
                 Populate();
             else
             {
-                Item currentSelection = SelectedItem;
+                Item selectionItem = Selection.Item;
+                List<Item> combineItems = CombineSelections.Select(x => x.Item).ToList();
                 Populate();
-                int index = GetIndex(currentSelection);
-                if (index >= 0)
-                    Selection = index;
+                var newSelection = GetIndex(selectionItem);
+                if (newSelection.HasValue)
+                    Selection = newSelection.Value;
+                CombineSelections.Clear();
+                CombineSelections.AddRange(combineItems.Select(x => GetIndex(x)).Where(x => x.HasValue).Select(x => x.Value));
             }
         }
 
@@ -450,9 +550,13 @@ namespace RogueTower
             Items = Player.Inventory.GroupBy(x => x, Item.Stacker).Select(x => x.Where(item => !IsBlacklisted(item))).Where(x => x.Any()).Select(x => new Stack(x)).ToList();
         }
 
-        public int GetIndex(Item item)
+        public ItemSelection? GetIndex(Item item)
         {
-            return Items.FindIndex(x => x.Items.Contains(item));
+            var stackIndex = Items.FindIndex(x => x.Items.Contains(item));
+            if (stackIndex < 0)
+                return null;
+            var itemIndex = Items[stackIndex].Items.FindIndex(x => x == item);
+            return new ItemSelection(this,stackIndex,itemIndex);
         }
 
         public override void HandleInput(SceneGame scene)
@@ -477,32 +581,44 @@ namespace RogueTower
             bool left = (scene.InputState.IsKeyPressed(Keys.A, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickLeft, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadLeft, 20, 5));
             bool right = (scene.InputState.IsKeyPressed(Keys.D, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickRight, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadRight, 20, 5));
             bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
+            bool combine = (scene.InputState.IsKeyPressed(Keys.LeftShift)) || (scene.InputState.IsButtonPressed(Buttons.Y));
             bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
-
 
             if (up)
             {
-                Selection--;
+                Selection.Index--;
             }
             else if (down)
             {
-                Selection++;
+                Selection.Index++;
             }
             else if (left)
             {
-                SubSelection--;
+                Selection.SubIndex--;
             }
             else if (right)
             {
-                SubSelection++;
+                Selection.SubIndex++;
             }
             else if (Items.Count > 0 && confirm)
             {
-                SubActions.Add(new ActItem(Player,SelectedItem));
+                var combinedSelections = CombineSelections.Concat(new[] { Selection }).Distinct();
+                if (combinedSelections.Count() > 1)
+                    SubActions.Add(new ActCombine(Player, combinedSelections));
+                else
+                    SubActions.Add(new ActItem(Player,Selection));
+            }
+            else if (Items.Count > 0 && combine)
+            {
+                if (!CombineSelections.Contains(Selection))
+                    CombineSelections.Add(Selection);
             }
             else if (cancel)
             {
-                Result = InputResult.Close;
+                if (CombineSelections.Any())
+                    CombineSelections.RemoveAt(CombineSelections.Count-1);
+                else
+                    Result = InputResult.Close;
             }
         }
 
@@ -531,11 +647,19 @@ namespace RogueTower
                 foreach (var menupoint in Items)
                 {
                     var item = menupoint.Representative;
-                    if (menupoint == SelectedStack)
+                    
+                    if (CombineSelections.Any(selection => selection.Stack == menupoint))
+                    {
+                        var combineSelection = CombineSelections.Find(selection => selection.Stack == menupoint);
+                        if (Ticks % 2 == 0)
+                            scene.SpriteBatch.Draw(cursor.Texture, new Vector2(x + 6, y + i * 16), cursor.GetFrameRect(0), Color.White);
+                        item = combineSelection.Item;
+                    }
+                    if (menupoint == Selection.Stack)
                     {
                         scene.SpriteBatch.Draw(cursor.Texture, new Vector2(x + 0, y + i * 16), cursor.GetFrameRect(0), Color.White);
-                        item = SelectedItem;
-                    }
+                        item = Selection.Item;
+                    }                
 
                     item.DrawIcon(scene, new Vector2(x + 16 + 8, y + i * 16 + 8));
                     if (item == Player.Weapon)
