@@ -789,19 +789,89 @@ namespace RogueTower
                     var attackSize = new Vector2(40, 30);
                     var attackZone = new RectangleF(Position + GetFacingVector(Facing) * 20 - attackSize / 2, attackSize);
                     bool runningAway = Math.Abs(Target.Velocity.X) > 1 && Math.Abs(dx) > 30 && Math.Sign(Target.Velocity.X) == Math.Sign(dx);
-                    if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3 && Weapon is WeaponWandOrange)
+                    if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3) //Ranged
                     {
-                        CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, Weapon);
+                        //Begin Weapon Ranged Attack Checks
+                        if (Weapon is WeaponWandOrange)
+                            CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, Weapon);
+                        else if (Weapon is WeaponKnife)
+                        {
+                            if (Target.Position.Y < Position.Y)
+                            {
+                                Velocity.Y = -4;
+                            }
+                            if (Target.Position.Y <= Position.Y)
+                                CurrentAction = new ActionKnifeThrow(this, 2, 4, 8, 2, Weapon);
+                        }
+                        else if (Weapon is WeaponRapier)
+                        {
+                            if (OnGround)
+                            {
+                                Velocity.Y = -2.5f;
+                                OnGround = false;
+                            }
+                            CurrentAction = new ActionDashAttack(this, 2, 6, 2, 4, false, false, new ActionStab(this, 4, 2, Weapon));
+                        }
+                        else if (Weapon is WeaponBoomerang boomerang)
+                            CurrentAction = new ActionBoomerangThrow(this, 10, boomerang, 40) { Angle = VectorToAngle(Target.Position - Position) };
+                        else if (Weapon is WeaponWarhammer)
+                        {
+                            if (OnGround)
+                            {
+                                Velocity.Y = -5;
+                                OnGround = false;
+                            }
+                            CurrentAction = new ActionShockwave(this, 4, 8, Weapon, 2);
+                        }
+
                         RangedCooldown = 60 + Random.Next(40);
                     }
-                    else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway)
+                    else if (Math.Abs(dx) <= 30 && AttackCooldown < 0 && Target.Invincibility < 3 && Target.Box.Bounds.Intersects(attackZone) && !runningAway) //Melee
                     {
                         Velocity.X += Math.Sign(dx) * 2;
+
+                        //Begin Weapon Melee Attack Checks
                         if (Weapon is WeaponUnarmed && !(Target.Weapon is WeaponUnarmed))
                         {
                             CurrentAction = new ActionStealWeapon(this, Target, 4, 8);
                         }
-                        else 
+                        else if (Weapon is WeaponSword)
+                        {
+                            Action[] actionHolder =
+                            {
+                                new ActionSlash(this, 2, 4, 8, 2, Weapon),
+                                new ActionSlashUp(this, 2, 4, 8, 2, Weapon)
+                            };
+                            CurrentAction = actionHolder[Random.Next(0, actionHolder.Length - 1)];
+                        }
+                        else if (Weapon is WeaponBoomerang boomerang)
+                        {
+                            if(boomerang.BoomerProjectile == null || boomerang.BoomerProjectile.Destroyed)
+                            {
+                                CurrentAction = new ActionSlash(this, 2, 4, 4, 2, Weapon);
+                            }
+                        }
+                        else if (Weapon is WeaponKnife || Weapon is WeaponRapier)
+                        {
+                            Action[] actionHolder =
+                            {
+                                    new ActionStab(this, 4, 10, Weapon),
+                                    new ActionDownStab(this, 4, 10, Weapon)
+                            };
+                            CurrentAction = actionHolder[Random.Next(0, actionHolder.Length - 1)];
+                        }
+                        else if (Weapon is WeaponWandOrange)
+                        {
+                            CurrentAction = new ActionWandSwing(this, 10, 5, 20);
+                        }
+                        else if (Weapon is WeaponWarhammer)
+                        {
+                            if (OnGround)
+                            {
+                                CurrentAction = new ActionTwohandSlash(this, 3, 12, Weapon);
+                            }
+                        }
+                        else
                         {
                             CurrentAction = new ActionTwohandSlash(this, 3, 12, Weapon);
                         }
