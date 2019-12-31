@@ -165,6 +165,7 @@ namespace RogueTower
 
         public List<DroppedItem> NearbyItems = new List<DroppedItem>();
 
+        public ItemMemory Memory = new ItemMemory();
         public List<Item> Inventory = new List<Item>();
         public bool InventoryChanged;
 

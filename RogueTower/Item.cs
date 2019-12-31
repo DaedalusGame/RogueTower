@@ -33,11 +33,13 @@ namespace RogueTower
     abstract class Item
     {
         public static ItemStacker Stacker = new ItemStacker();
+        public static ItemMemoryKey MemoryKnown = new ItemMemoryKey();
 
         public string Name;
         public string Description;
         public bool Destroyed;
 
+        public virtual ItemMemoryKey MemoryKey => MemoryKnown;
         public virtual string FakeName => Name;
         public virtual string FakeDescription => Description;
 
@@ -60,6 +62,12 @@ namespace RogueTower
         public virtual bool IsStackable(Item other)
         {
             return GetType().Equals(GetType());
+        }
+
+        public void Identify(Enemy enemy)
+        {
+            if (enemy is Player player)
+                player.Memory.Identify(this);
         }
 
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
@@ -200,6 +208,10 @@ namespace RogueTower
 
     class PotionHealth : Potion
     {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
         public PotionHealth() : base(PotionAppearance.Red, "Health Potion", "A health potion.")
         {
 
@@ -212,6 +224,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Identify(enemy);
             enemy.Heal(40);
             Destroy();
         }
@@ -219,6 +232,10 @@ namespace RogueTower
 
     class PotionAntidote : Potion
     {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
         public PotionAntidote() : base(PotionAppearance.Green, "Antidote Potion", "An antidote potion.")
         {
 
@@ -231,6 +248,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Identify(enemy);
             foreach (var statusEffect in enemy.StatusEffects.Where(x => x is Poison))
                 statusEffect.Remove();
             Destroy();
@@ -239,6 +257,10 @@ namespace RogueTower
 
     class PotionPoison : Potion
     {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
         public PotionPoison() : base(PotionAppearance.Septic, "Poison Potion", "A poison potion.")
         {
 
@@ -251,6 +273,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Identify(enemy);
             enemy.AddStatusEffect(new Poison(enemy, 1000));
             Destroy();
         }
