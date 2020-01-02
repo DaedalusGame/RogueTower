@@ -50,6 +50,7 @@
     <Compile Include="InputAction.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ItemMemory.cs" />
+    <Compile Include="MessageHistory.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />

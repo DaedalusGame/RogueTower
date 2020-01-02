@@ -7,6 +7,7 @@ using Humper;
 using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -77,10 +78,68 @@ namespace RogueTower
             return GetType().Equals(GetType());
         }
 
+        public bool IsKnown(Enemy enemy)
+        {
+            if (enemy is Player player)
+            {
+                return player.Memory.IsKnown(this);
+            }
+            return true;
+        }
+
         public void Identify(Enemy enemy)
         {
             if (enemy is Player player)
+            {
+                if(!player.Memory.IsKnown(this) && FakeName != TrueName)
+                    player.History.Add(new Message($"This {FakeName} is clearly a {TrueName}!"));
                 player.Memory.Identify(this);
+            }
+        }
+
+        public string GetName(Enemy enemy)
+        {
+            if (enemy is Player player)
+            {
+                return player.Memory.GetName(this);
+            }
+
+            return TrueName;
+        }
+
+        /// <summary>
+        /// Transforms an item in some way (without turning it into a different item).
+        /// Prints a message if the name of the item was changed.
+        /// </summary>
+        /// <typeparam name="T">Purely for more convenient use of lambdas. Must be the type of this instance, or a supertype.</typeparam>
+        /// <param name="enemy">The enemy performing the transformation.</param>
+        /// <param name="transform">The transformation.</param>
+        public void Transform<T>(Enemy enemy, Action<T> transform) where T : Item
+        {
+            if (!(this is T))
+                throw new ArgumentException();
+            string nameA = GetName(enemy);
+            transform((T)this);
+            string nameB = GetName(enemy);
+            if(nameA != nameB)
+                Message(enemy, new Message($"{nameA} became {nameB}."));
+        }
+
+        /// <summary>
+        /// Transforms an item into a different item.
+        /// Prints a message if the two items have different names.
+        /// </summary>
+        /// <param name="enemy">The enemy performing the transformation.</param>
+        /// <param name="newItem">The new item.</param>
+        public void Transform(Enemy enemy, Item newItem)
+        {
+            string nameA = GetName(enemy);
+            string nameB = newItem.GetName(enemy);
+            if (nameA != nameB)
+                Message(enemy, new Message($"{nameA} became {nameB}."));
+            if (enemy is Player player)
+                player.Pickup(newItem);
+            Destroy();
         }
 
         public Item Copy()
@@ -318,11 +377,7 @@ namespace RogueTower
 
         public void Empty(Enemy enemy)
         {
-            if(enemy is Player player)
-            {
-                player.Pickup(new EmptyBottle());
-            }
-            Destroy();
+            Transform(enemy, new EmptyBottle());
         }
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
@@ -413,6 +468,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Message(enemy, new Message("Blech! This is tainted!"));
             if (!enemy.StatusEffects.Any(x => x is Poison))
                 Identify(enemy);
             enemy.AddStatusEffect(new Poison(enemy, 1000));
@@ -440,6 +496,7 @@ namespace RogueTower
         {
             if(enemy is Player player && !player.Memory.IsKnown(item))
             {
+                Message(enemy, new Message($"Suddenly, {item.GetName(enemy)}'s nature is much clearer to you."));
                 item.Identify(player);
                 Identify(player);
             }
@@ -472,8 +529,11 @@ namespace RogueTower
         {
             if(item is Device device)
             {
-                device.Broken = false;
+                Message(enemy, new Message($"{device.GetName(enemy)} is imbued with energy!"));
                 device.Charges = Math.Min(device.Charges + enemy.Random.Next(6) + 3, device.MaxCharges);
+                if (device.Broken)
+                    device.Transform<Device>(enemy, x => x.Broken = false);
+                Identify(enemy);
             } 
             Empty(enemy);
         }
@@ -507,6 +567,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Message(enemy, new Message("Tastes like water."));
             Identify(enemy);
             Empty(enemy);
         }
@@ -566,6 +627,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Message(enemy, new Message("Tastes like blood."));
             Identify(enemy);
             Empty(enemy);
         }
@@ -751,13 +813,13 @@ namespace RogueTower
                     Charges -= 1;
                     if (item is Meat meat)
                     {
-                        if (enemy is Player player)
-                        {
-                            player.Pickup(BrewPotion(meat));
-                        }
+                        meat.Transform(enemy, BrewPotion(meat));
                         Identify(enemy);
                     }
-                    item.Destroy();
+                    else
+                    {
+                        item.Destroy();
+                    }
                 }
             }
         }

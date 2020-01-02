@@ -199,6 +199,14 @@ namespace RogueTower
             return dTile.Previous != null;
         }
 
+        public static void Message(Enemy enemy, Message message)
+        {
+            if(enemy is Player player)
+            {
+                player.History.Add(message);
+            }
+        }
+
         public static string EnglishJoin(string seperator, string finalSeperator, IEnumerable<string> values)
         {
             values = values.ToList();

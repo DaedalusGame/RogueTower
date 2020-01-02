@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -97,6 +98,7 @@ namespace RogueTower
         protected override void OnAdd()
         {
             PoisonFX = new StatusPoisonEffect(Enemy.World, this);
+            Message(Enemy, new Message("You have been poisoned!"));
             //if (Enemy is Player player)
             //    player.PlayerInput.SubActions.Add(new MessageBox("Oops! You just got poison'd!", InputResult.ActionTaken));
             //You're poisoned!
@@ -104,6 +106,7 @@ namespace RogueTower
 
         protected override void OnRemove()
         {
+            Message(Enemy, new Message("You are wracked by the last of the poison."));
             //You're no longer poisoned
         }
 
@@ -185,11 +188,13 @@ namespace RogueTower
         protected override void OnAdd()
         {
             SlowFX = new StatusSlowEffect(Enemy.World, this);
+            Message(Enemy, new Message("You slow down!"));
             //You slow down!
         }
 
         protected override void OnRemove()
         {
+            Message(Enemy, new Message("Your speed returns to normal."));
             //You're no longer slow
         }
 
@@ -222,11 +227,13 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
+            Message(Enemy, new Message("You have been cursed!"));
             //You're cursed!
         }
 
         protected override void OnRemove()
         {
+            Message(Enemy, new Message("Your curse has been lifted."));
             //You're no longer cursed
         }
 

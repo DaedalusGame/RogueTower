@@ -326,6 +326,7 @@ namespace RogueTower
 
         public void DrawText(string str, Vector2 drawpos, Alignment alignment, TextParameters parameters)
         {
+            parameters = parameters.Copy();
             int lineoffset = 0;
             int totalindex = 0;
             str = FontUtil.FitString(str, parameters);

@@ -87,6 +87,24 @@ namespace RogueTower
             LineSeperator = lineSeperator;
             return this;
         }
+
+        public TextParameters Copy()
+        {
+            return new TextParameters()
+            {
+                Bold = Bold,
+                Color = Color,
+                Border = Border,
+                Offset = Offset,
+                DialogIndex = DialogIndex,
+                MaxWidth = MaxWidth,
+                MaxHeight = MaxHeight,
+                CharSeperator = CharSeperator,
+                LineSeperator = LineSeperator,
+                ScriptOffset = ScriptOffset,
+                Underline = Underline,
+            };
+        }
     }
 
     struct CharInfo
@@ -138,6 +156,7 @@ namespace RogueTower
 
         public static int GetStringWidth(string str, TextParameters parameters)
         {
+            parameters = parameters.Copy();
             int n = 0;
 
             foreach (char chr in str)
@@ -185,6 +204,7 @@ namespace RogueTower
 
         public static string FitString(string str, TextParameters parameters)
         {
+            parameters = parameters.Copy();
             int maxwidth = parameters.MaxWidth ?? int.MaxValue;
             int lastspot = 0;
             int idealspot = 0;

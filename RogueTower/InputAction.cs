@@ -133,6 +133,23 @@ namespace RogueTower
                 if (openCoeff >= 1)
                     scene.DrawText($"Pick up {memory.GetName(NearestItem.Item)}", new Vector2(x, y), Alignment.Center, new TextParameters().SetConstraints(width, height).SetBold(true).SetColor(Color.White, Color.Black));
             }
+
+            DrawMessageHistory(scene, Player.History);
+        }
+
+        public void DrawMessageHistory(SceneGame scene, MessageHistory history)
+        {
+            var parameters = new TextParameters().SetColor(Color.White, Color.Black).SetBold(true).SetConstraints(scene.Viewport.Width, 128);
+            int offsetY = 80;
+            foreach(var message in history.Messages.Reverse<Message>())
+            {
+                string fitString = FontUtil.FitString(message.Text, parameters);
+                var height = FontUtil.GetStringHeight(fitString);
+                offsetY -= height;
+                if (offsetY + height < 0)
+                    break;
+                scene.DrawText(fitString, new Vector2(0, offsetY), Alignment.Right, parameters);
+            }
         }
     }
 
