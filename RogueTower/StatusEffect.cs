@@ -204,4 +204,51 @@ namespace RogueTower
             //NOOP
         }
     }
+
+    class Curse : StatusEffect
+    {
+        public float CurseTick;
+        private ColorMatrix CurseSkin = new ColorMatrix(new Matrix(
+              -0.33f, -0.59f, -0.11f, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 1),
+              new Vector4(1, 0, 0, 0));
+        public override ColorMatrix ColorMatrix => ColorMatrix.Lerp(ColorMatrix.Identity, CurseSkin, MathHelper.Lerp(0.0f, 1.0f, (float)Math.Sin(Duration / 10f) * 0.5f + 0.5f));
+
+        public Curse(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+        }
+
+        protected override void OnAdd()
+        {
+            //You're cursed!
+        }
+
+        protected override void OnRemove()
+        {
+            //You're no longer cursed
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            CurseTick += delta;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (CurseTick > 90)
+            {
+                if (Enemy.Health > 1)
+                {
+                    var HealthLoss = Math.Max(Enemy.Health - 1, 1);
+                    Enemy.Health = HealthLoss;
+                }
+                //Enemy.Hitstop = 6;
+                Enemy.VisualOffset = Enemy.OffsetHitStun(6);
+                new ScreenShakeJerk(Enemy.World, Util.AngleToVector(Enemy.Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
+                CurseTick -= 90;
+            }
+        }
+    }
 }

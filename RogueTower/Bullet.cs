@@ -468,15 +468,15 @@ namespace RogueTower
         {
             if (Destroyed || CheckFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
                 return;
-            Bounced = true;
-
+            
             if(hit.Box.Data is Enemy enemy)
             {
                 if (enemy.CanDamage)
                 {
                     enemy.AddStatusEffect(new Stun(enemy, 120));
-                    enemy.Hit(Velocity, 20, 20, Boomerang.Damage);
+                    enemy.Hit(Velocity, 0, 20, Boomerang.Damage);
                 }
+                Bounced = true;
             }
             if(hit.Box.Data is Tile tile)
             {
@@ -484,6 +484,7 @@ namespace RogueTower
                 {
                     tile.HandleTileDamage(Boomerang.Damage);
                 }
+                Bounced = true;
             }
         }
 

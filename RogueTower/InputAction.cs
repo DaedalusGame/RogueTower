@@ -103,7 +103,7 @@ namespace RogueTower
             DroppedItem nearest = null;
             if (Player.NearbyItems.Any())
             {
-                nearest = Player.NearbyItems.First();
+                nearest = Player.GetNearestItem();
             }
 
             if (nearest != NearestItem)

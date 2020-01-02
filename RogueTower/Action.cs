@@ -76,7 +76,7 @@ namespace RogueTower
         {
             if (player.Controls.Pickup && player.NearbyItems.Any())
             {
-                var nearbyItem = player.NearbyItems.First();
+                var nearbyItem = player.GetNearestItem();
                 player.Pickup(nearbyItem);
             }
         }

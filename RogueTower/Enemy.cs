@@ -50,7 +50,7 @@ namespace RogueTower
         public double HealthMax;
         public List<StatusEffect> StatusEffects = new List<StatusEffect>();
 
-        public bool Stunned => StatusEffects.Any(effect => effect is Stun);
+        public virtual bool Stunned => StatusEffects.Any(effect => effect is Stun);
 
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
@@ -172,6 +172,21 @@ namespace RogueTower
                     return -stunOffset;
                 else if (slide < 1f)
                     return stunOffset * (1-slide);
+                else
+                    return Vector2.Zero;
+            };
+        }
+
+        public Func<Vector2> OffsetShudder(float time)
+        {
+            float startTime = World.Frame;
+            Vector2 leftOffset = new Vector2(-2, 0);
+            Vector2 rightOffset = new Vector2(2, 0);
+            return () =>
+            {
+                float slide = (World.Frame - startTime) / time;
+                if (slide < 1f)
+                    return (World.Frame % 2) < 1 ? leftOffset : rightOffset;
                 else
                     return Vector2.Zero;
             };
@@ -581,8 +596,8 @@ namespace RogueTower
 
         protected void HandleDamage()
         {
-            if (!(CurrentAction is ActionHit))
-                Invincibility--;
+            //if (!(CurrentAction is ActionHit))
+            Invincibility--;
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
@@ -595,7 +610,7 @@ namespace RogueTower
             }
             if (Invincibility > 0 || Dead)
                 return;
-            Invincibility = invincibility;
+            Invincibility = invincibility + hurttime;
             if (Random.NextDouble() < 1.0) //Poise?
             {
                 if (CurrentAction is ActionClimb)
@@ -974,8 +989,8 @@ namespace RogueTower
 
         public override void DropItems(Vector2 position)
         {
-            var drop = new DroppedItem(World, position, Meat.Moai);
-            drop.Spread();
+            new DroppedItem(World, position, Meat.Moai).Spread();
+            new DroppedItem(World, position, new CurseMedal()).Spread();
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
@@ -1694,7 +1709,8 @@ namespace RogueTower
             wantedOffset = Math.Min(wantedOffset.Length(), 80f) * Vector2.Normalize(wantedOffset);
             Move(wantedOffset);*/
 
-            CurrentAction.UpdateDelta(delta);
+            if(!Stunned)
+                CurrentAction.UpdateDelta(delta);
 
             Box.Teleport(Position.X + Head.Offset.X - Box.Width / 2, Position.Y + Head.Offset.Y - Box.Height / 2);
         }
@@ -1717,15 +1733,16 @@ namespace RogueTower
         {
             MoveDelta = 0;
 
-            if (!(CurrentAction is ActionHit))
-                Invincibility--;
+            //if (!(CurrentAction is ActionHit))
+            Invincibility--;
 
             foreach (SnakeSegment segment in Segments)
             {
                 segment.UpdateDiscrete();
             }
 
-            CurrentAction.UpdateDiscrete();
+            if (!Stunned)
+                CurrentAction.UpdateDiscrete();
 
             PositionLast = Position;
 
@@ -1741,7 +1758,7 @@ namespace RogueTower
         {
             if (Invincibility > 0 || Dead)
                 return;
-            Invincibility = invincibility/10;
+            Invincibility = invincibility/10 + hurttime;
             CurrentAction = new ActionHit(this, velocity * 4, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
@@ -1939,6 +1956,8 @@ namespace RogueTower
         public override Vector2 HomingTarget => Position;
         public override bool Dead => false;
 
+        public override bool Stunned => Heads.All(x => x.Stunned);
+
         public bool InCombat => Target != null;
 
         public Player Target;
@@ -2107,7 +2126,8 @@ namespace RogueTower
             {
                 HandleMovement(delta);
 
-                CurrentAction.UpdateDelta(delta);
+                if(!Stunned)
+                    CurrentAction.UpdateDelta(delta);
             }
         }
 
@@ -2117,7 +2137,8 @@ namespace RogueTower
             {
                 HandlePhysicsEarly();
 
-                CurrentAction.UpdateDiscrete();
+                if (!Stunned)
+                    CurrentAction.UpdateDiscrete();
 
                 UpdateAI();
 

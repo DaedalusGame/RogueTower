@@ -44,6 +44,7 @@ namespace RogueTower
         public virtual string FakeDescription => Description;
         public virtual string TrueName => Name;
         public virtual string TrueDescription => Description;
+        public virtual bool AutoPickup => false;
 
         protected Item()
         {
@@ -54,6 +55,11 @@ namespace RogueTower
         {
             Name = name;
             Description = description;
+        }
+
+        public virtual void OnAdd(Enemy enemy)
+        {
+            //NOOP
         }
 
         public void Destroy()
@@ -93,6 +99,35 @@ namespace RogueTower
         }
 
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
+    }
+
+    class CurseMedal : Item
+    {
+        public override bool AutoPickup => true;
+
+        public CurseMedal() : base("Curse Medal", "This item will curse you.")
+        {
+        }
+
+        public override void OnAdd(Enemy enemy)
+        {
+            enemy.VisualOffset = enemy.OffsetShudder(60);
+            enemy.Hitstop = 60;
+            enemy.AddStatusEffect(new Curse(enemy));
+            Destroy();
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            var curse = SpriteLoader.Instance.AddSprite("content/item_curse");
+
+            scene.DrawSprite(curse, 0, position - curse.Middle, SpriteEffects.None, 1.0f);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new CurseMedal();
+        }
     }
 
     class Meat : Item, IEdible
@@ -180,8 +215,9 @@ namespace RogueTower
         }
 
         //Not random
-        public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Water Bottle", "A bottle of water.");
-        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Blood Potion", "A blood potion.");
+        public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Clear Potion", "A clear potion.");
+        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
+        public static PotionAppearance Lava = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_redange"), "Hot Potion", "A hot potion.");
         //Random
         public static PotionAppearance Red = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
         public static PotionAppearance Blue = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blue"), "Blue Potion", "A blue potion.");
@@ -421,6 +457,94 @@ namespace RogueTower
         }
     }
 
+    class PotionEnergy : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionEnergy() : base(PotionAppearance.Orange, "Energy Potion", "An energy potion.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            if(item is Device device)
+            {
+                device.Broken = false;
+                device.Charges = Math.Min(device.Charges + enemy.Random.Next(6) + 3, device.MaxCharges);
+            } 
+            Empty(enemy);
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionEnergy();
+        }
+    }
+
+    class PotionWater : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionWater() : base(PotionAppearance.Water, "Water", "A bottle of water.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            //NOOP
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Identify(enemy);
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionWater();
+        }
+    }
+
+    class PotionBlood : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionBlood() : base(PotionAppearance.Blood, "Blood", "A bottle of blood.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            //NOOP
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Identify(enemy);
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionBlood();
+        }
+    }
+
     abstract class Device : Item
     {
         public bool Broken;
@@ -647,6 +771,7 @@ namespace RogueTower
         public bool OnCeiling;
 
         public bool Incorporeal => false;
+        public bool AutoPickup => Item.AutoPickup;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
