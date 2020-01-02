@@ -195,6 +195,7 @@ namespace RogueTower
                 { () => new PotionIdentify(), 10 },
                 { () => new PotionEnergy(), 10 },
                 { () => new PotionWater(), 10 },
+                { () => new PotionHolyWater(), 10 },
                 { () => new PotionBlood(), 10 },
             };
 
