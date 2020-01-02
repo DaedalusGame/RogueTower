@@ -382,9 +382,15 @@ namespace RogueTower
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
-            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, 192 - 114), new Vector2(-0.2f, 0.4f));
-            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 0), new Vector2(-0.2f, 0.4f));
-            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 33), new Vector2(-0.4f, 0.2f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 24), new Vector2(-0.2f, 0.4f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, 192 - 56), new Vector2(-0.2f, 0.4f));
+            //AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer6"), new Vector2(0, 46), new Vector2(-0.15f, 0.4f)); //trees
+            //AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer7"), new Vector2(0, 134), new Vector2(0.025f, -0.4f)); //trees close
+            //AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), new Vector2(0, 192 - 48), new Vector2(-0.2f, 0.4f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 48, 544 + 200), new Vector2(-0.2f, 0.1f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 60, 528 + 200), new Vector2(-0.25f, 0.15f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 72, 512 + 200), new Vector2(-0.3f, 0.2f));
+
 
             PotionAppearance.Randomize(World.Random);
 
