@@ -32,12 +32,12 @@ namespace RogueTower
 
         public string GetName(Item item)
         {
-            return IsKnown(item) ? item.Name : item.FakeName;
+            return IsKnown(item) ? item.TrueName : item.FakeName;
         }
 
         public string GetDescription(Item item)
         {
-            return IsKnown(item) ? item.Description : item.FakeDescription;
+            return IsKnown(item) ? item.TrueDescription : item.FakeDescription;
         }
     }
 }

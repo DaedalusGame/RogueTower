@@ -407,10 +407,7 @@ namespace RogueTower
         {
             var memory = Player.Memory;
             string combineString;
-            if (Selections.Count <= 3)
-                combineString = EnglishJoin(", ", " and ", Selections.Select(x => memory.GetName(x.Item)));
-            else
-                combineString = $"{Selections.Count} Items";
+            combineString = GetCombineString(memory, Items);
             if (Items.All(x => x is Potion)) //All items are potions -> mix
             {
                 AddAction(new ActAction($"Mix {combineString}", () =>
@@ -418,22 +415,35 @@ namespace RogueTower
                     return InputResult.None;
                 }));
             }
-            else if (Items.Any(x => x is Potion) && Selections.Count == 2) //2 items, of which one is a potion -> dip
+            if (Items.Count(x => x is Device) == 1 && Selections.Count >= 2)
             {
-                var potion = Items.First(x => x is Potion);
+                var device = (Device)Items.First(x => x is Device);
+                var nonDevices = Items.Where(x => x != device);
+                if (device.CanUse(Player, nonDevices))
+                {
+                    AddAction(new ActAction($"Use {memory.GetName(device)} on {GetCombineString(memory, nonDevices)}", () =>
+                    {
+                        device.MachineEffect(Player, nonDevices);
+                        return Selections.Any(x => x.Item.Destroyed) ? InputResult.Close : InputResult.None;
+                    }));
+                }
+            }
+            if (Items.Any(x => x is Potion) && Selections.Count == 2) //2 items, of which one is a potion -> dip
+            {
+                var potion = (Potion)Items.First(x => x is Potion);
                 var nonPotion = Items.First(x => !(x is Potion));
                 AddAction(new ActAction($"Dip {memory.GetName(nonPotion)} into {memory.GetName(potion)}", () =>
                 {
-                    return InputResult.None;
+                    potion.DipEffect(Player, nonPotion);
+                    return Selections.Any(x => x.Item.Destroyed) ? InputResult.Close : InputResult.None;
                 }));
             }
-            else
+
+            /*AddAction(new ActAction($"Combine {combineString}", () =>
             {
-                AddAction(new ActAction($"Combine {combineString}", () =>
-                {
-                    return InputResult.None;
-                }));
-            }
+                return InputResult.None;
+            }));*/
+
             if (Selections.Count == 2)
             {
                 AddAction(new ActAction($"Swap {combineString}", () =>
@@ -443,13 +453,22 @@ namespace RogueTower
             }
             AddAction(new ActAction($"Dispose {combineString}", () =>
             {
-                foreach(var item in Items)
+                foreach (var item in Items)
                 {
                     item.Destroy();
                 }
                 SubActions.Add(new MessageBox($"Threw {combineString} away.", InputResult.Close));
                 return Items.Any(x => x.Destroyed) ? InputResult.Close : InputResult.None;
             }));
+        }
+
+        private string GetCombineString(ItemMemory memory, IEnumerable<Item> items)
+        {
+            int count = items.Count();
+            if (count <= 3)
+                return EnglishJoin(", ", " and ", items.Select(x => memory.GetName(x)));
+            else
+                return $"{items.Count()} Items";
         }
 
         public override void HandleInput(SceneGame scene)
@@ -611,8 +630,9 @@ namespace RogueTower
             bool left = (scene.InputState.IsKeyPressed(Keys.A, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickLeft, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadLeft, 20, 5));
             bool right = (scene.InputState.IsKeyPressed(Keys.D, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.LeftThumbstickRight, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.DPadRight, 20, 5));
             bool confirm = (scene.InputState.IsKeyPressed(Keys.Enter)) || (scene.InputState.IsButtonPressed(Buttons.A));
-            bool combine = (scene.InputState.IsKeyPressed(Keys.LeftShift)) || (scene.InputState.IsButtonPressed(Buttons.Y));
+            bool combine = (scene.InputState.IsKeyPressed(Keys.LeftShift, 20, 5)) || (scene.InputState.IsButtonPressed(Buttons.Y, 20, 5));
             bool cancel = (scene.InputState.IsKeyPressed(Keys.Escape)) || (scene.InputState.IsButtonPressed(Buttons.B));
+            bool cancelRepeat = (scene.InputState.IsKeyPressed(Keys.Escape,20,5)) || (scene.InputState.IsButtonPressed(Buttons.B, 20, 5));
 
             if (up)
             {
@@ -642,13 +662,27 @@ namespace RogueTower
             {
                 if (!CombineSelections.Contains(Selection))
                     CombineSelections.Add(Selection);
+                else //Otherwise try to add one more item out of the stack
+                {
+                    for(int i = 0; i < Selection.Stack.Count; i++)
+                    {
+                        var selection = new ItemSelection(this, Selection.Index, i);
+                        if (!CombineSelections.Contains(selection))
+                        {
+                            CombineSelections.Add(selection);
+                            break;
+                        }
+                    }
+                }
+
             }
-            else if (cancel)
+            else if (cancel && !CombineSelections.Any())
             {
-                if (CombineSelections.Any())
-                    CombineSelections.RemoveAt(CombineSelections.Count-1);
-                else
-                    Result = InputResult.Close;
+                Result = InputResult.Close;
+            }
+            else if (cancelRepeat && CombineSelections.Any())
+            {
+                CombineSelections.RemoveAt(CombineSelections.Count - 1);
             }
         }
 
@@ -690,11 +724,15 @@ namespace RogueTower
                     {
                         scene.SpriteBatch.Draw(cursor.Texture, new Vector2(x + 0, y + i * 16), cursor.GetFrameRect(0), Color.White);
                         item = Selection.Item;
-                    }                
+                    }
+
+                    int selectedItems = CombineSelections.Count(selection => selection.Stack == menupoint);
 
                     item.DrawIcon(scene, new Vector2(x + 16 + 8, y + i * 16 + 8));
                     if (item == Player.Weapon)
                         scene.DrawSprite(flagEquipped, 0, new Vector2(x + 16, y + i * 16), SpriteEffects.None, 0);
+                    if(selectedItems > 1)
+                        scene.DrawText(Game.ConvertToSmallPixelText(selectedItems.ToString()), new Vector2(x + 32, y + i * 16), Alignment.Right, new TextParameters().SetColor(Color.White, Color.Black));
                     scene.DrawText($"{memory.GetName(item)} x{menupoint.Count}", new Vector2(x + 32, y + i * 16), Alignment.Left, new TextParameters().SetConstraints(width - 32, 16).SetBold(true).SetColor(Color.White, Color.Black));
                     i++;
                 }

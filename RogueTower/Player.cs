@@ -192,11 +192,27 @@ namespace RogueTower
                 { () => new PotionHealth(), 10 },
                 { () => new PotionAntidote(), 10 },
                 { () => new PotionPoison(), 10 },
+                { () => new PotionIdentify(), 10 },
             };
 
             for(int i = 0; i < 20; i++)
             {
                 Inventory.Add(potions.GetWeighted(Random)());
+            }
+
+            WeightedList<Func<Device>> machines = new WeightedList<Func<Device>>()
+            {
+                //{ () => new DeviceBrew(true), 10 },
+                //{ () => new DeviceTrash(true), 10 },
+                //{ () => new DeviceDuplicate(true), 10 },
+                { () => new DeviceBrew(false), 10 },
+                { () => new DeviceTrash(false), 10 },
+                { () => new DeviceDuplicate(false), 10 },
+            };
+
+            for (int i = 0; i < 5; i++)
+            {
+                Inventory.Add(machines.GetWeighted(Random)());
             }
         }
 
@@ -211,10 +227,15 @@ namespace RogueTower
             {
                 //new DamagePopup(World, item.Position, $"+1 {item.Item.Name}", 30);
                 new ItemPickup(World, item.Item, item.Position, new Vector2(24, 24), 50);
-                Inventory.Add(item.Item);
-                InventoryChanged = true;
+                Pickup(item.Item);
                 item.Destroy();
             }
+        }
+
+        public void Pickup(Item item)
+        {
+            Inventory.Add(item);
+            InventoryChanged = true;
         }
 
         protected override void HandleInput()

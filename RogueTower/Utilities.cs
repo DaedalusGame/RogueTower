@@ -204,7 +204,10 @@ namespace RogueTower
             values = values.ToList();
             var first = values.Take(values.Count() - 1);
             var last = values.Last();
-            return $"{String.Join(seperator,first)}{finalSeperator}{last}";
+            if (!first.Any())
+                return last;
+            else
+                return $"{String.Join(seperator,first)}{finalSeperator}{last}";
         }
 
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> toShuffle)

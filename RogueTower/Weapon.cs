@@ -21,6 +21,11 @@ namespace RogueTower
         public Vector2 WeaponSize;
         public float SwingSize;
 
+        protected Weapon() : base()
+        {
+
+        }
+
         public Weapon(string name, string description, double damage, float weaponSizeMult, Vector2 weaponSize, float swingSize) : base(name, description)
         {
             Damage = damage;
@@ -127,11 +132,27 @@ namespace RogueTower
                 scale = Vector2.One;
             scene.DrawSpriteExt(sprite, 0, position - sprite.Middle, sprite.Middle, MathHelper.ToRadians(-45), scale, SpriteEffects.None, Color.White, 0);
         }
+
+        protected override void CopyTo(Item item)
+        {
+            base.CopyTo(item);
+            if (item is Weapon weapon) {
+                weapon.CanParry = CanParry;
+                weapon.Damage = Damage;
+                weapon.WeaponSizeMult = WeaponSizeMult;
+                weapon.WeaponSize = WeaponSize;
+                weapon.SwingSize = SwingSize;
+            }
+        }
     }
 
     class WeaponUnarmed : Weapon
     {
-        public EnemyHuman Target;
+        protected WeaponUnarmed() : base()
+        {
+
+        }
+
         public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Unarmed", "", damage, weaponSizeMult, weaponSize, 0.5f)
         {
             CanParry = false;
@@ -171,6 +192,11 @@ namespace RogueTower
             }
         }
 
+        protected override Item MakeCopy()
+        {
+            return new WeaponUnarmed();
+        }
+
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
             //NOOP
@@ -179,6 +205,11 @@ namespace RogueTower
 
     class WeaponSword : Weapon
     {
+        protected WeaponSword() : base()
+        {
+
+        }
+
         public WeaponSword(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Sword", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
@@ -213,10 +244,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponSword();
+        }
     }
 
     class WeaponKatana : Weapon
     {
+        protected WeaponKatana() : base()
+        {
+
+        }
+
         public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Katana", "", damage, weaponSizeMult, weaponSize, 1f)
         {
             CanParry = true;
@@ -246,10 +287,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/katana"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponKatana();
+        }
     }
 
     class WeaponKnife : Weapon
     {
+        protected WeaponKnife() : base()
+        {
+
+        }
+
         public WeaponKnife(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Knife", "", damage, weaponSizeMult, weaponSize, 0.5f)
         {
             CanParry = true;
@@ -280,10 +331,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/knife"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponKnife();
+        }
     }
 
     class WeaponLance : Weapon
     {
+        protected WeaponLance() : base()
+        {
+
+        }
+
         public WeaponLance(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Lance", "", damage, weaponSizeMult, weaponSize, 1.5f)
         {
             CanParry = true;
@@ -306,10 +367,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/lance"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponLance();
+        }
     }
 
     class WeaponRapier : Weapon
     {
+        protected WeaponRapier() : base()
+        {
+
+        }
+
         public int FinesseCounter = 0;
         public float LastCombo;
         public int FinesseLimit;
@@ -372,10 +443,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/rapier"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponRapier();
+        }
     }
 
     class WeaponWandOrange : Weapon
     {
+        protected WeaponWandOrange() : base()
+        {
+
+        }
+
         public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Orange Wand", "", damage, weaponSizeMult, weaponSize, 0.7f)
         {
             CanParry = true;
@@ -432,10 +513,20 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_orange"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponWandOrange();
+        }
     }
 
     class WeaponWarhammer : Weapon
     {
+        protected WeaponWarhammer() : base()
+        {
+
+        }
+
         public WeaponWarhammer(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Warhammer", "", damage, weaponSizeMult, weaponSize, 1.5f)
         {
         }
@@ -467,11 +558,22 @@ namespace RogueTower
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/warhammer"), position);
         }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponWarhammer();
+        }
     }
 
     class WeaponBoomerang : Weapon
     {
         public BoomerangProjectile BoomerProjectile;
+
+        protected WeaponBoomerang() : base()
+        {
+
+        }
+
         public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSizeMult, weaponSize, 0.1f)
         {
         }
@@ -496,6 +598,11 @@ namespace RogueTower
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
             DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/boomerang"), position);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponBoomerang();
         }
     }
 }

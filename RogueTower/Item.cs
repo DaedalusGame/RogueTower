@@ -42,6 +42,13 @@ namespace RogueTower
         public virtual ItemMemoryKey MemoryKey => MemoryKnown;
         public virtual string FakeName => Name;
         public virtual string FakeDescription => Description;
+        public virtual string TrueName => Name;
+        public virtual string TrueDescription => Description;
+
+        protected Item()
+        {
+
+        }
 
         public Item(string name, string description)
         {
@@ -70,6 +77,21 @@ namespace RogueTower
                 player.Memory.Identify(this);
         }
 
+        public Item Copy()
+        {
+            var item = MakeCopy();
+            CopyTo(item);
+            return item;
+        }
+
+        protected abstract Item MakeCopy();
+
+        protected virtual void CopyTo(Item item)
+        {
+            item.Name = Name;
+            item.Description = Description;
+        }
+
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
     }
 
@@ -83,6 +105,11 @@ namespace RogueTower
 
         SpriteReference Sprite;
         public Type MeatType;
+
+        protected Meat() : base()
+        {
+
+        }
 
         public Meat(SpriteReference sprite, Type type, string name, string description) : base(name, description)
         {
@@ -121,6 +148,20 @@ namespace RogueTower
             enemy.Heal(10);
             Destroy();
         }
+
+        protected override Item MakeCopy()
+        {
+            return new Meat();
+        }
+
+        protected override void CopyTo(Item item)
+        {
+            base.CopyTo(item);
+            if (item is Meat meat) {
+                meat.Sprite = Sprite;
+                meat.MeatType = MeatType;
+            }
+        }
     }
 
     class PotionAppearance
@@ -140,7 +181,7 @@ namespace RogueTower
 
         //Not random
         public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Water Bottle", "A bottle of water.");
-        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blood"), "Blood Potion", "A blood potion.");
+        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Blood Potion", "A blood potion.");
         //Random
         public static PotionAppearance Red = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
         public static PotionAppearance Blue = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blue"), "Blue Potion", "A blue potion.");
@@ -150,6 +191,12 @@ namespace RogueTower
         public static PotionAppearance Mauve = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_mauve"), "Mauve Potion", "A mauve potion.");
         public static PotionAppearance Orange = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_orange"), "Orange Potion", "An orange potion.");
         public static PotionAppearance Septic = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_septic"), "Septic Potion", "A septic potion.");
+        public static PotionAppearance Lime = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_lime"), "Lime Potion", "A lime potion.");
+        public static PotionAppearance BrownPink = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_bink"), "Disgusting Potion", "A disgusting potion.");
+        public static PotionAppearance BluePurple = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blurple"), "Pleasant Potion", "A pleasant potion.");
+        public static PotionAppearance BlueGrey = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_bray"), "Crystalline Potion", "A crystalline potion.");
+        public static PotionAppearance OrangeRed = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_redange"), "Hot Potion", "A hot potion.");
+        public static PotionAppearance YellowGreen = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_yeen"), "Bubbling Potion", "A bubbling potion.");
 
         public static IEnumerable<PotionAppearance> RandomAppearances
         {
@@ -163,6 +210,12 @@ namespace RogueTower
                 yield return Mauve;
                 yield return Orange;
                 yield return Septic;
+                yield return Lime;
+                yield return BrownPink;
+                yield return BluePurple;
+                yield return BlueGrey;
+                yield return OrangeRed;
+                yield return YellowGreen;
             }
         }
 
@@ -183,6 +236,25 @@ namespace RogueTower
         }
     }
 
+    class EmptyBottle : Item
+    {
+        public EmptyBottle() : base("Empty Bottle", "An empty bottle. The remainder of drinking a potion.")
+        {
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            var potionEmpty = SpriteLoader.Instance.AddSprite("content/item_potion_empty");
+
+            scene.DrawSprite(potionEmpty, 0, position - potionEmpty.Middle, SpriteEffects.None, 1.0f);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new EmptyBottle();
+        }
+    }
+
     abstract class Potion : Item
     {
         public PotionAppearance Appearance;
@@ -195,15 +267,33 @@ namespace RogueTower
             Appearance = appearance;
         }
 
+        public abstract void DrinkEffect(Enemy enemy);
+
+        public abstract void DipEffect(Enemy enemy, Item item);
+
+        protected override void CopyTo(Item item)
+        {
+            base.CopyTo(item);
+            if (item is Potion potion)
+            {
+                potion.Appearance = Appearance;
+            }
+        }
+
+        public void Empty(Enemy enemy)
+        {
+            if(enemy is Player player)
+            {
+                player.Pickup(new EmptyBottle());
+            }
+            Destroy();
+        }
+
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
             var appearance = Appearance.Randomized;
             scene.DrawSprite(appearance.Sprite, 0, position - appearance.Sprite.Middle, SpriteEffects.None, 1.0f);
         }
-
-        public abstract void DrinkEffect(Enemy enemy);
-
-        public abstract void DipEffect(Item item);
     }
 
     class PotionHealth : Potion
@@ -217,16 +307,24 @@ namespace RogueTower
 
         }
 
-        public override void DipEffect(Item item)
+        public override void DipEffect(Enemy enemy, Item item)
         {
             //NOOP
         }
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Identify(enemy);
-            enemy.Heal(40);
-            Destroy();
+            if (enemy.Health < enemy.HealthMax)
+            {
+                Identify(enemy);
+                enemy.Heal(40);
+            }
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionHealth();
         }
     }
 
@@ -241,17 +339,23 @@ namespace RogueTower
 
         }
 
-        public override void DipEffect(Item item)
+        public override void DipEffect(Enemy enemy, Item item)
         {
             //NOOP
         }
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Identify(enemy);
+            if (enemy.StatusEffects.Any(x => x is Poison))
+                Identify(enemy);
             foreach (var statusEffect in enemy.StatusEffects.Where(x => x is Poison))
                 statusEffect.Remove();
-            Destroy();
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionAntidote();
         }
     }
 
@@ -266,16 +370,252 @@ namespace RogueTower
 
         }
 
-        public override void DipEffect(Item item)
+        public override void DipEffect(Enemy enemy, Item item)
         {
             //NOOP
         }
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Identify(enemy);
+            if (!enemy.StatusEffects.Any(x => x is Poison))
+                Identify(enemy);
             enemy.AddStatusEffect(new Poison(enemy, 1000));
-            Destroy();
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionPoison();
+        }
+    }
+
+    class PotionIdentify : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionIdentify() : base(PotionAppearance.Clear, "Identify Potion", "An identify potion.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            if(enemy is Player player && !player.Memory.IsKnown(item))
+            {
+                item.Identify(player);
+                Identify(player);
+            }
+            Empty(enemy);
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionIdentify();
+        }
+    }
+
+    abstract class Device : Item
+    {
+        public bool Broken;
+        public int Charges, MaxCharges;
+        public ItemMemoryKey MemoryBroken = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryBroken;
+
+        public override string FakeName => Broken ? "Broken Machine" : "? Machine";
+        public override string FakeDescription => Broken ? "This machine is broken." : "This machine is unknown.";
+        public override string TrueName => Broken ? $"Broken Machine ({Name})" : $"{Name} [{Charges}]";
+
+        protected Device() : base()
+        {
+
+        }
+
+        public Device(string name, string description, bool broken, int maxCharges) : base(name, description)
+        {
+            Broken = broken;
+            MaxCharges = maxCharges;
+            Charges = maxCharges;
+        }
+
+        public override int GetStackCode()
+        {
+            return GetHashCode();
+        }
+
+        public override bool IsStackable(Item other)
+        {
+            return false;
+        }
+
+        public abstract bool CanUse(Enemy enemy, IEnumerable<Item> items);
+
+        public abstract void MachineEffect(Enemy enemy, IEnumerable<Item> items);
+
+        protected override void CopyTo(Item item)
+        {
+            base.CopyTo(item);
+
+            if(item is Device device)
+            {
+                device.Broken = Broken;
+                device.Charges = Charges;
+                device.MaxCharges = MaxCharges;
+            }
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            var caseBroken = SpriteLoader.Instance.AddSprite("content/item_machine_case_broken");
+            var gemBroken = SpriteLoader.Instance.AddSprite("content/item_machine_gem_broken");
+            var caseFixed = SpriteLoader.Instance.AddSprite("content/item_machine_case_iron");
+            var gemFixed = SpriteLoader.Instance.AddSprite("content/item_machine_gem_blue");
+
+            if (Broken)
+            {
+                scene.DrawSprite(gemBroken, 0, position - gemBroken.Middle, SpriteEffects.None, 1.0f);
+                scene.DrawSprite(caseBroken, 0, position - caseBroken.Middle, SpriteEffects.None, 1.0f);
+            }
+            else
+            {
+                scene.DrawSprite(gemFixed, 0, position - gemFixed.Middle, SpriteEffects.None, 1.0f);
+                scene.DrawSprite(caseFixed, 0, position - caseFixed.Middle, SpriteEffects.None, 1.0f);
+            }
+        }
+    }
+
+    class DeviceTrash : Device
+    {
+        protected DeviceTrash() : base()
+        {
+
+        }
+
+        public DeviceTrash(bool broken) : base("Trash Machine", "Any item this machine is used with will disappear.", broken, 10)
+        {
+        }
+
+        public override bool CanUse(Enemy enemy, IEnumerable<Item> items)
+        {
+            return items.Any();
+        }
+
+        public override void MachineEffect(Enemy enemy, IEnumerable<Item> items)
+        {
+            foreach (Item item in items)
+            {
+                if (Charges >= 1)
+                {
+                    Charges -= 1;
+                    item.Destroy();
+                    Identify(enemy);
+                }
+            }
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new DeviceTrash();
+        }
+    }
+
+    class DeviceDuplicate : Device
+    {
+        protected DeviceDuplicate() : base()
+        {
+
+        }
+
+        public DeviceDuplicate(bool broken) : base("Duplicate Machine", "Any item this machine is used with will be duplicated.", broken, 1)
+        {
+        }
+
+        public override bool CanUse(Enemy enemy, IEnumerable<Item> items)
+        {
+            return items.Any();
+        }
+
+        public override void MachineEffect(Enemy enemy, IEnumerable<Item> items)
+        {
+            foreach (Item item in items)
+            {
+                if (Charges >= 1)
+                {
+                    Charges -= 1;
+                    if(enemy is Player player)
+                    {
+                        player.Pickup(item.Copy());
+                    }
+                    Identify(enemy);
+                }
+            }
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new DeviceDuplicate();
+        }
+    }
+
+    class DeviceBrew : Device
+    {
+        WeightedList<Func<Potion>> Potions = new WeightedList<Func<Potion>>()
+            {
+                { () => new PotionHealth(), 10 },
+                { () => new PotionAntidote(), 10 },
+                { () => new PotionPoison(), 10 },
+            };
+
+        protected DeviceBrew() : base()
+        {
+
+        }
+
+        public DeviceBrew(bool broken) : base("Brewing Machine", "This machine can turn meat into potions.", broken, 10)
+        {
+        }
+
+        public override bool CanUse(Enemy enemy, IEnumerable<Item> items)
+        {
+            return items.All(x => x is Meat);
+        }
+
+        public override void MachineEffect(Enemy enemy, IEnumerable<Item> items)
+        {
+            foreach (Item item in items)
+            {
+                if (Charges >= 1)
+                {
+                    Charges -= 1;
+                    if (item is Meat meat)
+                    {
+                        if (enemy is Player player)
+                        {
+                            player.Pickup(BrewPotion(meat));
+                        }
+                        Identify(enemy);
+                    }
+                    item.Destroy();
+                }
+            }
+        }
+
+        private Potion BrewPotion(Meat meat)
+        {
+            Random random = new Random(meat.MeatType.GetHashCode());
+            return Potions.GetWeighted(random)();
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new DeviceBrew();
         }
     }
 

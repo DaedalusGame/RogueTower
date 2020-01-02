@@ -38,6 +38,8 @@ namespace RogueTower
         public static Sound sfx_tile_icebreak;
         public static Sound sfx_wand_charge;
         public static Sound sfx_wand_orange_cast;
+        public static Sound sfx_eat;
+        public static Sound sfx_drink;
 
         public Scene Scene;
 
@@ -168,6 +170,8 @@ namespace RogueTower
             sfx_tile_icebreak = AudioMgr.LoadSound("sounds/sfx/icetile_swordbreak.wav");
             sfx_wand_charge = AudioMgr.LoadSound("sounds/sfx/wand_charge.wav");
             sfx_wand_orange_cast = AudioMgr.LoadSound("sounds/sfx/wand_orange_cast.wav");
+            sfx_eat = AudioMgr.LoadSound("sounds/sfx/eat.ogg");
+            sfx_drink = AudioMgr.LoadSound("sounds/sfx/drink.ogg");
 
             var musicChannel = bgm_title_theme.Play();
             musicChannel.Looping = true;
