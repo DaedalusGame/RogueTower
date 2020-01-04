@@ -48,8 +48,10 @@
     <Compile Include="Healthbar.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="InputAction.cs" />
+    <Compile Include="IParryable.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ItemMemory.cs" />
+    <Compile Include="MessageHistory.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />
@@ -555,6 +557,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\hydra_body_strip4.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\item_curse.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\item_machine_case_broken.png">

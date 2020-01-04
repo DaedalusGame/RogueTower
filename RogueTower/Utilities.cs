@@ -1,5 +1,6 @@
 ﻿using Humper.Base;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -199,6 +200,26 @@ namespace RogueTower
             return dTile.Previous != null;
         }
 
+        public static void Message(Enemy enemy, Message message)
+        {
+            if(enemy is Player player)
+            {
+                player.History.Add(message);
+            }
+        }
+
+        public static bool Parry(IParryGiver giver, IParryReceiver receiver, RectangleF box)
+        {
+            if (giver != receiver && receiver.CanParry)
+            {
+                giver.ParryGive(receiver, box);
+                receiver.ParryReceive(giver, box);
+                return true;
+            }
+
+            return false;
+        }
+
         public static string EnglishJoin(string seperator, string finalSeperator, IEnumerable<string> values)
         {
             values = values.ToList();
@@ -219,6 +240,16 @@ namespace RogueTower
                 shuffled.Insert(random.Next(shuffled.Count + 1), value);
             }
             return shuffled;
+        }
+
+        public static Vector2 Mirror(this Vector2 vector, SpriteEffects mirror)
+        {
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                vector.X *= -1;
+            if (mirror.HasFlag(SpriteEffects.FlipVertically))
+                vector.Y *= -1;
+
+            return vector;
         }
 
         public static HorizontalFacing Mirror(this HorizontalFacing facing)

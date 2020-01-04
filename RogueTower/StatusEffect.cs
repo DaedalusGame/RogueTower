@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -97,6 +98,7 @@ namespace RogueTower
         protected override void OnAdd()
         {
             PoisonFX = new StatusPoisonEffect(Enemy.World, this);
+            Message(Enemy, new Message("You have been poisoned!"));
             //if (Enemy is Player player)
             //    player.PlayerInput.SubActions.Add(new MessageBox("Oops! You just got poison'd!", InputResult.ActionTaken));
             //You're poisoned!
@@ -104,6 +106,7 @@ namespace RogueTower
 
         protected override void OnRemove()
         {
+            Message(Enemy, new Message("You are wracked by the last of the poison."));
             //You're no longer poisoned
         }
 
@@ -185,11 +188,13 @@ namespace RogueTower
         protected override void OnAdd()
         {
             SlowFX = new StatusSlowEffect(Enemy.World, this);
+            Message(Enemy, new Message("You slow down!"));
             //You slow down!
         }
 
         protected override void OnRemove()
         {
+            Message(Enemy, new Message("Your speed returns to normal."));
             //You're no longer slow
         }
 
@@ -202,6 +207,55 @@ namespace RogueTower
         protected override void UpdateDiscrete()
         {
             //NOOP
+        }
+    }
+
+    class Curse : StatusEffect
+    {
+        public float CurseTick;
+        private ColorMatrix CurseSkin = new ColorMatrix(new Matrix(
+              -0.33f, -0.59f, -0.11f, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 1),
+              new Vector4(1, 0, 0, 0));
+        public override ColorMatrix ColorMatrix => ColorMatrix.Lerp(ColorMatrix.Identity, CurseSkin, MathHelper.Lerp(0.0f, 1.0f, (float)Math.Sin(Duration / 10f) * 0.5f + 0.5f));
+
+        public Curse(Enemy enemy, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+        }
+
+        protected override void OnAdd()
+        {
+            Message(Enemy, new Message("You have been cursed!"));
+            //You're cursed!
+        }
+
+        protected override void OnRemove()
+        {
+            Message(Enemy, new Message("Your curse has been lifted."));
+            //You're no longer cursed
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            CurseTick += delta;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (CurseTick > 90)
+            {
+                if (Enemy.Health > 1)
+                {
+                    var HealthLoss = Math.Max(Enemy.Health - 1, 1);
+                    Enemy.Health = HealthLoss;
+                }
+                //Enemy.Hitstop = 6;
+                Enemy.VisualOffset = Enemy.OffsetHitStun(6);
+                new ScreenShakeJerk(Enemy.World, Util.AngleToVector(Enemy.Random.NextFloat() * MathHelper.TwoPi) * 4, 3);
+                CurseTick -= 90;
+            }
         }
     }
 }

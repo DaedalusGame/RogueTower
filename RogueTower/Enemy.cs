@@ -13,12 +13,8 @@ using static RogueTower.Util;
 
 namespace RogueTower
 {
-    abstract class Enemy : GameObject
+    abstract class Enemy : GameObject, IParryGiver, IParryReceiver
     {
-        public abstract bool Attacking
-        {
-            get;
-        }
         public abstract bool Incorporeal
         {
             get;
@@ -35,6 +31,7 @@ namespace RogueTower
         {
             get;
         }
+        public virtual bool CanParry => false;
         public virtual bool CanHit => true;
         public virtual bool CanDamage => false;
 
@@ -50,7 +47,7 @@ namespace RogueTower
         public double HealthMax;
         public List<StatusEffect> StatusEffects = new List<StatusEffect>();
 
-        public bool Stunned => StatusEffects.Any(effect => effect is Stun);
+        public virtual bool Stunned => StatusEffects.Any(effect => effect is Stun);
 
         public Enemy(GameWorld world, Vector2 position) : base(world)
         {
@@ -128,6 +125,30 @@ namespace RogueTower
             HandleDamage(damageIn);
         }
 
+        public bool Parry(RectangleF hitmask)
+        {
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is IParryReceiver receiver && Util.Parry(this, receiver, hitmask))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public virtual void ParryGive(IParryReceiver receiver, RectangleF box)
+        {
+            //NOOP
+        }
+
+        public virtual void ParryReceive(IParryGiver giver, RectangleF box)
+        {
+            //NOOP
+        }
+
         public virtual void HandleDamage(double damageIn)
         {
             if (CanDamage == false)
@@ -172,6 +193,21 @@ namespace RogueTower
                     return -stunOffset;
                 else if (slide < 1f)
                     return stunOffset * (1-slide);
+                else
+                    return Vector2.Zero;
+            };
+        }
+
+        public Func<Vector2> OffsetShudder(float time)
+        {
+            float startTime = World.Frame;
+            Vector2 leftOffset = new Vector2(-2, 0);
+            Vector2 rightOffset = new Vector2(2, 0);
+            return () =>
+            {
+                float slide = (World.Frame - startTime) / time;
+                if (slide < 1f)
+                    return (World.Frame % 2) < 1 ? leftOffset : rightOffset;
                 else
                     return Vector2.Zero;
             };
@@ -402,7 +438,7 @@ namespace RogueTower
         public Weapon Weapon;
 
         public virtual bool Strafing => false;
-        public override bool Attacking => CurrentAction.Attacking;
+        public override bool CanParry => CurrentAction.CanParry;
         public override bool Incorporeal => CurrentAction.Incorporeal;
         public override bool Dead => CurrentAction is ActionEnemyDeath;
 
@@ -524,7 +560,7 @@ namespace RogueTower
             //NOOP
         }
 
-        public bool Parry(RectangleF hitmask)
+        /*public bool Parry(RectangleF hitmask)
         {
             //new RectangleDebug(World, hitmask, Color.Orange, 20);
             var affectedHitboxes = World.FindBoxes(hitmask);
@@ -552,6 +588,23 @@ namespace RogueTower
             }
 
             return false;
+        }*/
+
+        public override void ParryGive(IParryReceiver receiver, RectangleF box)
+        {
+            if (CurrentAction is ActionAttack attack)
+                attack.ParryGive(receiver);
+            Invincibility = 10;
+            Hitstop = 20;
+        }
+
+        public override void ParryReceive(IParryGiver giver, RectangleF box)
+        {
+            if (CurrentAction is ActionAttack attack)
+                attack.ParryReceive(giver);
+            new ParryEffect(World, Vector2.Lerp(box.Center, Position, 0.3f), 0, 10);
+            Invincibility = 10;
+            Hitstop = 20;
         }
 
         public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
@@ -581,21 +634,15 @@ namespace RogueTower
 
         protected void HandleDamage()
         {
-            if (!(CurrentAction is ActionHit))
-                Invincibility--;
+            //if (!(CurrentAction is ActionHit))
+            Invincibility--;
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
-            if (CurrentAction is ActionSlash slash && slash.IsUpSwing)
-            {
-                //Parry
-                slash.Swing();
-                return;
-            }
             if (Invincibility > 0 || Dead)
                 return;
-            Invincibility = invincibility;
+            Invincibility = invincibility + hurttime;
             if (Random.NextDouble() < 1.0) //Poise?
             {
                 if (CurrentAction is ActionClimb)
@@ -974,8 +1021,8 @@ namespace RogueTower
 
         public override void DropItems(Vector2 position)
         {
-            var drop = new DroppedItem(World, position, Meat.Moai);
-            drop.Spread();
+            new DroppedItem(World, position, Meat.Moai).Spread();
+            new DroppedItem(World, position, new CurseMedal()).Spread();
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
@@ -1552,7 +1599,7 @@ namespace RogueTower
 
         public int Invincibility = 0;
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => CurrentAction.Hidden;
         public override Vector2 HomingTarget => Position + Head.Offset;
         public override Vector2 PopupPosition => Position + Head.Offset;
@@ -1694,7 +1741,8 @@ namespace RogueTower
             wantedOffset = Math.Min(wantedOffset.Length(), 80f) * Vector2.Normalize(wantedOffset);
             Move(wantedOffset);*/
 
-            CurrentAction.UpdateDelta(delta);
+            if(!Stunned)
+                CurrentAction.UpdateDelta(delta);
 
             Box.Teleport(Position.X + Head.Offset.X - Box.Width / 2, Position.Y + Head.Offset.Y - Box.Height / 2);
         }
@@ -1717,15 +1765,16 @@ namespace RogueTower
         {
             MoveDelta = 0;
 
-            if (!(CurrentAction is ActionHit))
-                Invincibility--;
+            //if (!(CurrentAction is ActionHit))
+            Invincibility--;
 
             foreach (SnakeSegment segment in Segments)
             {
                 segment.UpdateDiscrete();
             }
 
-            CurrentAction.UpdateDiscrete();
+            if (!Stunned)
+                CurrentAction.UpdateDiscrete();
 
             PositionLast = Position;
 
@@ -1741,7 +1790,7 @@ namespace RogueTower
         {
             if (Invincibility > 0 || Dead)
                 return;
-            Invincibility = invincibility/10;
+            Invincibility = invincibility/10 + hurttime;
             CurrentAction = new ActionHit(this, velocity * 4, hurttime);
             PlaySFX(sfx_player_hurt, 1.0f, 0.1f, 0.3f);
             HandleDamage(damageIn);
@@ -1934,10 +1983,12 @@ namespace RogueTower
         public float WalkFrame;
         public HorizontalFacing Facing;
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override bool Dead => false;
+
+        public override bool Stunned => Heads.All(x => x.Stunned);
 
         public bool InCombat => Target != null;
 
@@ -2107,7 +2158,8 @@ namespace RogueTower
             {
                 HandleMovement(delta);
 
-                CurrentAction.UpdateDelta(delta);
+                if(!Stunned)
+                    CurrentAction.UpdateDelta(delta);
             }
         }
 
@@ -2117,7 +2169,8 @@ namespace RogueTower
             {
                 HandlePhysicsEarly();
 
-                CurrentAction.UpdateDiscrete();
+                if (!Stunned)
+                    CurrentAction.UpdateDiscrete();
 
                 UpdateAI();
 
@@ -2153,7 +2206,7 @@ namespace RogueTower
             Fire,
         }
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override Vector2 PopupPosition => Position;
@@ -2317,7 +2370,7 @@ namespace RogueTower
         public Vector2 Offset => OffsetUnit * Distance;
         public Vector2 LastOffset;
 
-        public override bool Attacking => true;
+        public override bool CanParry => true;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override Vector2 PopupPosition => Position + Offset;

@@ -226,11 +226,11 @@ namespace RogueTower
             {
                 SlashDown(player);
             }
-            else if (player.Controls.DownAttack)
+            else if (player.Controls.DownAttack && player.OnGround && !(player.CurrentAction is ActionKnifeThrow))
             {
                 SlashKnife(player);
             }
-            else if (player.Controls.Attack)
+            else if (player.Controls.Attack && !player.Controls.DownAttack && !(player.CurrentAction is ActionKnifeThrow))
             {
                 if(player.CurrentAction.GetType() == typeof(ActionSlash))
                     SlashUp(player);
@@ -574,7 +574,7 @@ namespace RogueTower
 
         }
 
-        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSizeMult, weaponSize, 0.1f)
+        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSizeMult, weaponSize, 0.4f)
         {
         }
 

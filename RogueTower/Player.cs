@@ -166,6 +166,7 @@ namespace RogueTower
         public List<DroppedItem> NearbyItems = new List<DroppedItem>();
 
         public ItemMemory Memory = new ItemMemory();
+        public MessageHistory History = new MessageHistory();
         public List<Item> Inventory = new List<Item>();
         public bool InventoryChanged;
 
@@ -193,6 +194,10 @@ namespace RogueTower
                 { () => new PotionAntidote(), 10 },
                 { () => new PotionPoison(), 10 },
                 { () => new PotionIdentify(), 10 },
+                { () => new PotionEnergy(), 10 },
+                { () => new PotionWater(), 10 },
+                { () => new PotionHolyWater(), 10 },
+                { () => new PotionBlood(), 10 },
             };
 
             for(int i = 0; i < 20; i++)
@@ -236,6 +241,12 @@ namespace RogueTower
         {
             Inventory.Add(item);
             InventoryChanged = true;
+            item.OnAdd(this);
+        }
+
+        public DroppedItem GetNearestItem()
+        {
+            return NearbyItems.WithMin(item => Math.Abs(item.Position.X - Position.X));
         }
 
         protected override void HandleInput()
@@ -259,6 +270,12 @@ namespace RogueTower
 
             RectangleF pickupArea = new RectangleF(Position + new Vector2(-12, 0), new Vector2(24, 8));
             NearbyItems = World.FindBoxes(pickupArea).Where(x => x.Data is DroppedItem).Select(x => (DroppedItem)x.Data).ToList();
+            if (NearbyItems.Any())
+            {
+                var nearest = GetNearestItem();
+                if (nearest.AutoPickup)
+                    Pickup(nearest);
+            }
         }
 
         public override PlayerState GetBasePose()

@@ -63,7 +63,7 @@ namespace RogueTower
 
         public static WeaponState None => new NoneState();
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle);
-        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(18, 1), angle);
+        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(18, 2), angle);
         public static WeaponState KatanaSheathed(float angle) => new WeaponState("katana", 0, new Vector2(18, 1), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
@@ -459,7 +459,7 @@ namespace RogueTower
             }
 
             //Background Gradient
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, effect: Shader);
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
             Color bg1 = new Color(32, 19, 48);
             Color bg2 = new Color(126, 158, 153);
             Shader.CurrentTechnique = Shader.Techniques["Gradient"];
@@ -471,7 +471,7 @@ namespace RogueTower
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
-            SpriteBatch.Begin(SpriteSortMode.Deferred, samplerState: SamplerState.PointWrap, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, samplerState: SamplerState.PointWrap, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
             foreach(Background bg in Backgrounds)
             {
                 bg.Draw(SpriteBatch);
@@ -545,7 +545,7 @@ namespace RogueTower
             }
             SpriteBatch.End();
 
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, samplerState: SamplerState.PointWrap);
+            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, samplerState: SamplerState.PointWrap);
 
             //This twisted game needs to be reset, and with this health bar we're one step closer to a world without undying borders.
             //Also, please clean this up if you can, if not that's okay too lmao. - Church
@@ -848,7 +848,7 @@ namespace RogueTower
             var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).ToLookup(tile => GetPass(tile));
             DrawMapPass(passes[0]);
             SpriteBatch.End();
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, transformMatrix: WorldTransform, effect: Shader);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform, effect: Shader);
             Matrix testMatrix = new Matrix(
               1.2f, 0, 0, 0,
               0, 1.2f, 0, 0,
@@ -1030,7 +1030,7 @@ namespace RogueTower
             Shader.Parameters["color_add"].SetValue(color.Add);
             Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
 
-            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, transformMatrix: transform, effect: Shader);
+            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: transform, effect: Shader);
 
             Vector2 offset = state.Body.Offset;
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
@@ -1072,7 +1072,7 @@ namespace RogueTower
         {
             if (!DepthShear.Contains(depth))
                 return;
-            SpriteBatch.Draw(sprite.Texture, position, sprite.GetFrameRect(frame), Color.White, 0, Vector2.Zero, 1, mirror, depth);
+            SpriteBatch.Draw(sprite.Texture, position, sprite.GetFrameRect(frame), Color.White, 0, Vector2.Zero, Vector2.One, mirror, depth);
         }
 
         public void DrawSpriteExt(SpriteReference sprite, int frame, Vector2 position, Vector2 origin, float angle, SpriteEffects mirror, float depth)
@@ -1084,12 +1084,12 @@ namespace RogueTower
         {
             if (!DepthShear.Contains(depth))
                 return;
-            SpriteBatch.Draw(sprite.Texture, position + origin, sprite.GetFrameRect(frame), color, angle, origin, scale, mirror, depth);
+            SpriteBatch.Draw(sprite.Texture, position + origin, sprite.GetFrameRect(frame), color, angle, origin, scale.Mirror(mirror), SpriteEffects.None, depth);
         }
 
         public void StartNormalBatch()
         {
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState:BlendState.NonPremultiplied, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState:BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
         }
 
         public float CalculateHeightSlide(float transitionStart, float transitionEnd, Player player, bool clamp = false)

@@ -7,6 +7,7 @@ using Humper;
 using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using static RogueTower.Util;
 
 namespace RogueTower
 {
@@ -44,6 +45,7 @@ namespace RogueTower
         public virtual string FakeDescription => Description;
         public virtual string TrueName => Name;
         public virtual string TrueDescription => Description;
+        public virtual bool AutoPickup => false;
 
         protected Item()
         {
@@ -54,6 +56,11 @@ namespace RogueTower
         {
             Name = name;
             Description = description;
+        }
+
+        public virtual void OnAdd(Enemy enemy)
+        {
+            //NOOP
         }
 
         public void Destroy()
@@ -71,10 +78,68 @@ namespace RogueTower
             return GetType().Equals(GetType());
         }
 
+        public bool IsKnown(Enemy enemy)
+        {
+            if (enemy is Player player)
+            {
+                return player.Memory.IsKnown(this);
+            }
+            return true;
+        }
+
         public void Identify(Enemy enemy)
         {
             if (enemy is Player player)
+            {
+                if(!player.Memory.IsKnown(this) && FakeName != TrueName)
+                    player.History.Add(new Message($"This {FakeName} is clearly a {TrueName}!"));
                 player.Memory.Identify(this);
+            }
+        }
+
+        public string GetName(Enemy enemy)
+        {
+            if (enemy is Player player)
+            {
+                return player.Memory.GetName(this);
+            }
+
+            return TrueName;
+        }
+
+        /// <summary>
+        /// Transforms an item in some way (without turning it into a different item).
+        /// Prints a message if the name of the item was changed.
+        /// </summary>
+        /// <typeparam name="T">Purely for more convenient use of lambdas. Must be the type of this instance, or a supertype.</typeparam>
+        /// <param name="enemy">The enemy performing the transformation.</param>
+        /// <param name="transform">The transformation.</param>
+        public void Transform<T>(Enemy enemy, Action<T> transform) where T : Item
+        {
+            if (!(this is T))
+                throw new ArgumentException();
+            string nameA = GetName(enemy);
+            transform((T)this);
+            string nameB = GetName(enemy);
+            if(nameA != nameB)
+                Message(enemy, new Message($"{nameA} became {nameB}."));
+        }
+
+        /// <summary>
+        /// Transforms an item into a different item.
+        /// Prints a message if the two items have different names.
+        /// </summary>
+        /// <param name="enemy">The enemy performing the transformation.</param>
+        /// <param name="newItem">The new item.</param>
+        public void Transform(Enemy enemy, Item newItem)
+        {
+            string nameA = GetName(enemy);
+            string nameB = newItem.GetName(enemy);
+            if (nameA != nameB)
+                Message(enemy, new Message($"{nameA} became {nameB}."));
+            if (enemy is Player player)
+                player.Pickup(newItem);
+            Destroy();
         }
 
         public Item Copy()
@@ -93,6 +158,35 @@ namespace RogueTower
         }
 
         public abstract void DrawIcon(SceneGame scene, Vector2 position);
+    }
+
+    class CurseMedal : Item
+    {
+        public override bool AutoPickup => true;
+
+        public CurseMedal() : base("Curse Medal", "This item will curse you.")
+        {
+        }
+
+        public override void OnAdd(Enemy enemy)
+        {
+            enemy.VisualOffset = enemy.OffsetShudder(60);
+            enemy.Hitstop = 60;
+            enemy.AddStatusEffect(new Curse(enemy));
+            Destroy();
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            var curse = SpriteLoader.Instance.AddSprite("content/item_curse");
+
+            scene.DrawSprite(curse, 0, position - curse.Middle, SpriteEffects.None, 1.0f);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new CurseMedal();
+        }
     }
 
     class Meat : Item, IEdible
@@ -180,8 +274,9 @@ namespace RogueTower
         }
 
         //Not random
-        public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Water Bottle", "A bottle of water.");
-        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Blood Potion", "A blood potion.");
+        public static PotionAppearance Water = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_water"), "Clear Potion", "A clear potion.");
+        public static PotionAppearance Blood = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
+        public static PotionAppearance Lava = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_redange"), "Hot Potion", "A hot potion.");
         //Random
         public static PotionAppearance Red = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_red"), "Red Potion", "A red potion.");
         public static PotionAppearance Blue = new PotionAppearance(SpriteLoader.Instance.AddSprite("content/item_potion_blue"), "Blue Potion", "A blue potion.");
@@ -282,11 +377,7 @@ namespace RogueTower
 
         public void Empty(Enemy enemy)
         {
-            if(enemy is Player player)
-            {
-                player.Pickup(new EmptyBottle());
-            }
-            Destroy();
+            Transform(enemy, new EmptyBottle());
         }
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
@@ -377,6 +468,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
+            Message(enemy, new Message("Blech! This is tainted!"));
             if (!enemy.StatusEffects.Any(x => x is Poison))
                 Identify(enemy);
             enemy.AddStatusEffect(new Poison(enemy, 1000));
@@ -404,6 +496,7 @@ namespace RogueTower
         {
             if(enemy is Player player && !player.Memory.IsKnown(item))
             {
+                Message(enemy, new Message($"Suddenly, {item.GetName(enemy)}'s nature is much clearer to you."));
                 item.Identify(player);
                 Identify(player);
             }
@@ -418,6 +511,130 @@ namespace RogueTower
         protected override Item MakeCopy()
         {
             return new PotionIdentify();
+        }
+    }
+
+    class PotionEnergy : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionEnergy() : base(PotionAppearance.Orange, "Energy Potion", "An energy potion.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            if(item is Device device)
+            {
+                Message(enemy, new Message($"{device.GetName(enemy)} is imbued with energy!"));
+                device.Charges = Math.Min(device.Charges + enemy.Random.Next(6) + 3, device.MaxCharges);
+                if (device.Broken)
+                    device.Transform<Device>(enemy, x => x.Broken = false);
+                Identify(enemy);
+            } 
+            Empty(enemy);
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionEnergy();
+        }
+    }
+
+    class PotionWater : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionWater() : base(PotionAppearance.Water, "Water", "A bottle of water.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            //NOOP
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Message(enemy, new Message("Tastes like water."));
+            Identify(enemy);
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionWater();
+        }
+    }
+
+    class PotionHolyWater : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionHolyWater() : base(PotionAppearance.Water, "Holy Water", "A bottle of holy water.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            //NOOP
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            if (enemy.StatusEffects.Any(x => x is Curse))
+                Identify(enemy);
+            foreach (var statusEffect in enemy.StatusEffects.Where(x => x is Curse))
+                statusEffect.Remove();
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionHolyWater();
+        }
+    }
+
+    class PotionBlood : Potion
+    {
+        public static ItemMemoryKey MemoryPotion = new ItemMemoryKey();
+
+        public override ItemMemoryKey MemoryKey => MemoryPotion;
+
+        public PotionBlood() : base(PotionAppearance.Blood, "Blood", "A bottle of blood.")
+        {
+
+        }
+
+        public override void DipEffect(Enemy enemy, Item item)
+        {
+            //NOOP
+        }
+
+        public override void DrinkEffect(Enemy enemy)
+        {
+            Message(enemy, new Message("Tastes like blood."));
+            Identify(enemy);
+            Empty(enemy);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new PotionBlood();
         }
     }
 
@@ -596,13 +813,13 @@ namespace RogueTower
                     Charges -= 1;
                     if (item is Meat meat)
                     {
-                        if (enemy is Player player)
-                        {
-                            player.Pickup(BrewPotion(meat));
-                        }
+                        meat.Transform(enemy, BrewPotion(meat));
                         Identify(enemy);
                     }
-                    item.Destroy();
+                    else
+                    {
+                        item.Destroy();
+                    }
                 }
             }
         }
@@ -647,6 +864,7 @@ namespace RogueTower
         public bool OnCeiling;
 
         public bool Incorporeal => false;
+        public bool AutoPickup => Item.AutoPickup;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
