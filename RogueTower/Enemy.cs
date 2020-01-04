@@ -13,12 +13,8 @@ using static RogueTower.Util;
 
 namespace RogueTower
 {
-    abstract class Enemy : GameObject
+    abstract class Enemy : GameObject, IParryGiver, IParryReceiver
     {
-        public abstract bool Attacking
-        {
-            get;
-        }
         public abstract bool Incorporeal
         {
             get;
@@ -35,6 +31,7 @@ namespace RogueTower
         {
             get;
         }
+        public virtual bool CanParry => false;
         public virtual bool CanHit => true;
         public virtual bool CanDamage => false;
 
@@ -126,6 +123,30 @@ namespace RogueTower
         public virtual void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
             HandleDamage(damageIn);
+        }
+
+        public bool Parry(RectangleF hitmask)
+        {
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is IParryReceiver receiver && Util.Parry(this, receiver, hitmask))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public virtual void ParryGive(IParryReceiver receiver, RectangleF box)
+        {
+            //NOOP
+        }
+
+        public virtual void ParryReceive(IParryGiver giver, RectangleF box)
+        {
+            //NOOP
         }
 
         public virtual void HandleDamage(double damageIn)
@@ -417,7 +438,7 @@ namespace RogueTower
         public Weapon Weapon;
 
         public virtual bool Strafing => false;
-        public override bool Attacking => CurrentAction.Attacking;
+        public override bool CanParry => CurrentAction.CanParry;
         public override bool Incorporeal => CurrentAction.Incorporeal;
         public override bool Dead => CurrentAction is ActionEnemyDeath;
 
@@ -539,7 +560,7 @@ namespace RogueTower
             //NOOP
         }
 
-        public bool Parry(RectangleF hitmask)
+        /*public bool Parry(RectangleF hitmask)
         {
             //new RectangleDebug(World, hitmask, Color.Orange, 20);
             var affectedHitboxes = World.FindBoxes(hitmask);
@@ -567,6 +588,23 @@ namespace RogueTower
             }
 
             return false;
+        }*/
+
+        public override void ParryGive(IParryReceiver receiver, RectangleF box)
+        {
+            if (CurrentAction is ActionAttack attack)
+                attack.ParryGive(receiver);
+            Invincibility = 10;
+            Hitstop = 20;
+        }
+
+        public override void ParryReceive(IParryGiver giver, RectangleF box)
+        {
+            if (CurrentAction is ActionAttack attack)
+                attack.ParryReceive(giver);
+            new ParryEffect(World, Vector2.Lerp(box.Center, Position, 0.3f), 0, 10);
+            Invincibility = 10;
+            Hitstop = 20;
         }
 
         public void SwingWeapon(RectangleF hitmask, double damageIn = 0)
@@ -602,12 +640,6 @@ namespace RogueTower
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
-            if (CurrentAction is ActionSlash slash && slash.IsUpSwing)
-            {
-                //Parry
-                slash.Swing();
-                return;
-            }
             if (Invincibility > 0 || Dead)
                 return;
             Invincibility = invincibility + hurttime;
@@ -1567,7 +1599,7 @@ namespace RogueTower
 
         public int Invincibility = 0;
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => CurrentAction.Hidden;
         public override Vector2 HomingTarget => Position + Head.Offset;
         public override Vector2 PopupPosition => Position + Head.Offset;
@@ -1951,7 +1983,7 @@ namespace RogueTower
         public float WalkFrame;
         public HorizontalFacing Facing;
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override bool Dead => false;
@@ -2174,7 +2206,7 @@ namespace RogueTower
             Fire,
         }
 
-        public override bool Attacking => false;
+        public override bool CanParry => false;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override Vector2 PopupPosition => Position;
@@ -2338,7 +2370,7 @@ namespace RogueTower
         public Vector2 Offset => OffsetUnit * Distance;
         public Vector2 LastOffset;
 
-        public override bool Attacking => true;
+        public override bool CanParry => true;
         public override bool Incorporeal => false;
         public override Vector2 HomingTarget => Position;
         public override Vector2 PopupPosition => Position + Offset;

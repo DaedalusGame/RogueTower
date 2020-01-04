@@ -24,7 +24,7 @@ namespace RogueTower
         public virtual bool HasGravity => true;
         public virtual float Friction => 1 - (1 - 0.85f) * Human.GroundFriction;
         public virtual float Drag => 0.85f;
-        public virtual bool Attacking => false;
+        public virtual bool CanParry => false;
         public virtual bool Incorporeal => false;
 
         abstract public void OnInput();
@@ -541,7 +541,39 @@ namespace RogueTower
             }
         }
     }
-    class ActionSlash : Action
+
+    abstract class ActionAttack : Action
+    {
+        public bool Parried;
+
+        public abstract bool Done
+        {
+            get;
+        }
+
+        public override float Friction => Parried ? 1 : base.Friction;
+        public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+        public override bool CanParry => true;
+
+        public ActionAttack(EnemyHuman player) : base(player)
+        {
+        }
+
+        public abstract void ParryGive(IParryReceiver receiver);
+
+        public abstract void ParryReceive(IParryGiver giver);
+
+        public override void OnInput()
+        {
+            var player = (Player)Human;
+            if (Done)
+                HandleSlashInput(player);
+            if (Parried)
+                HandleExtraJump(player);
+        }
+    }
+
+    class ActionSlash : ActionAttack
     {
         public Weapon Weapon;
         public SwingAction SlashAction;
@@ -550,13 +582,11 @@ namespace RogueTower
         public float SlashDownTime;
         public float SlashFinishTime;
 
-        public bool Parried;
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing || SlashAction == SwingAction.StartSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing || SlashAction == SwingAction.FinishSwing;
+        public override bool CanParry => IsUpSwing;
 
-        public override float Friction => Parried ? 1 : base.Friction;
-        public override float Drag => 1 - (1 - base.Drag) * 0.1f;
-        public override bool Attacking => true;
+        public override bool Done => IsDownSwing;
 
         public enum SwingAction
         {
@@ -603,17 +633,6 @@ namespace RogueTower
             
         }
 
-        public override void OnInput()
-        {
-            var player = (Player)Human;
-            if (IsDownSwing)
-            {
-                HandleSlashInput(player);
-            }
-            if (Parried)
-                HandleExtraJump(player);
-        }
-
         public override void UpdateDelta(float delta)
         {
             switch (SlashAction)
@@ -639,6 +658,18 @@ namespace RogueTower
                         Human.ResetState();
                     break;
             }
+        }
+
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            SwingVisual(true);
+            SlashAction = SwingAction.DownSwing;
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+            SwingVisual(Parried);
+            SlashAction = SwingAction.DownSwing;
         }
 
         public virtual void Swing()
@@ -675,6 +706,7 @@ namespace RogueTower
             //NOOP
         }
     }
+
     class ActionSlashUp : ActionSlash
     {
         public ActionSlashUp(EnemyHuman player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime, Weapon weapon) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime, weapon)
@@ -709,18 +741,6 @@ namespace RogueTower
             }
         }
 
-        public override void OnInput()
-        {
-            var player = (Player)Human;
-            if (IsDownSwing)
-            {
-                HandleSlashInput(player);
-            }
-
-            if (Parried)
-                HandleExtraJump(player);
-        }
-
         public override void SwingVisual(bool parry)
         {
             var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
@@ -730,7 +750,7 @@ namespace RogueTower
         }
     }
 
-    class ActionStab : Action
+    class ActionStab : ActionAttack
     {
         public enum SwingAction
         {
@@ -742,13 +762,12 @@ namespace RogueTower
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
-        public bool Parried;
 
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
+        public override bool CanParry => IsUpSwing;
 
-        public override float Friction => Parried ? 1 : base.Friction;
-        public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+        public override bool Done => IsDownSwing;
 
         public ActionStab(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player)
         {
@@ -776,11 +795,6 @@ namespace RogueTower
             }
         }
 
-        public override void OnInput()
-        {
-
-        }
-
         public override void UpdateDelta(float delta)
         {
             switch (SlashAction)
@@ -801,6 +815,18 @@ namespace RogueTower
         public override void UpdateDiscrete()
         {
             //NOOP
+        }
+
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            SwingVisual(Parried);
+            SlashAction = SwingAction.DownSwing;
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+            SwingVisual(Parried);
+            SlashAction = SwingAction.DownSwing;
         }
 
         public virtual void Swing()
@@ -829,9 +855,11 @@ namespace RogueTower
                     Parried = true;
             }
             if (!Parried)
+            {
                 Human.SwingWeapon(weaponMask, 10);
-            SwingVisual(Parried);
-            SlashAction = SwingAction.DownSwing;
+                SwingVisual(Parried);
+                SlashAction = SwingAction.DownSwing;
+            }
         }
 
         public virtual void SwingVisual(bool parry)
@@ -880,7 +908,7 @@ namespace RogueTower
 
     class ActionKnifeThrow : ActionSlash
     {
-        public override bool Attacking => false;
+        public override bool CanParry => false;
 
         public ActionKnifeThrow(EnemyHuman player, float slashStartTime, float slashUpTime, float slashDownTime, float slashFinishTime, Weapon weapon) : base(player, slashStartTime, slashUpTime, slashDownTime, slashFinishTime, weapon)
         {
@@ -915,11 +943,6 @@ namespace RogueTower
             }
         }
 
-        public override void OnInput()
-        {
-            //NOOP
-        }
-
         public override void Swing()
         {
             Vector2 facing = GetFacingVector(Human.Facing);
@@ -934,7 +957,7 @@ namespace RogueTower
         }
     }
 
-    class ActionPlunge : Action
+    class ActionPlunge : ActionAttack
     {
         public Weapon Weapon;
         public float PlungeStartTime;
@@ -942,6 +965,8 @@ namespace RogueTower
         public bool PlungeFinished = false;
 
         public override bool HasGravity => false;
+        public override bool Done => PlungeFinished;
+        public override bool CanParry => !PlungeFinished;
 
         public ActionPlunge(EnemyHuman player, float plungeStartTime, float plungeFinishTime, Weapon weapon) : base(player)
         {
@@ -952,6 +977,16 @@ namespace RogueTower
 
         public override void OnInput()
         {
+        }
+
+        public override void ParryGive(IParryReceiver receiver)
+        {
+
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+
         }
 
         public override void UpdateDiscrete()
@@ -1063,7 +1098,7 @@ namespace RogueTower
         }
     }
 
-    class ActionTwohandSlash : Action
+    class ActionTwohandSlash : ActionAttack
     {
         public enum SwingAction
         {
@@ -1071,28 +1106,21 @@ namespace RogueTower
             DownSwing,
         }
 
+        public Weapon Weapon;
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
-        public bool Parried;
-        public Weapon Weapon;
 
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
-
-        public override float Friction => Parried ? 1 : base.Friction;
-        public override float Drag => 1 - (1 - base.Drag) * 0.1f;
+        public override bool Done => IsDownSwing;
+        public override bool CanParry => IsUpSwing;
 
         public ActionTwohandSlash(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human)
         {
             SlashUpTime = upTime;
             SlashDownTime = downTime;
             Weapon = weapon;
-        }
-
-        public override void OnInput()
-        {
-            //NOOP
         }
 
         public override void GetPose(PlayerState basePose)
@@ -1138,6 +1166,18 @@ namespace RogueTower
             //NOOP
         }
 
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            SwingVisual(true);
+            SlashAction = SwingAction.DownSwing;
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+            SwingVisual(true);
+            SlashAction = SwingAction.DownSwing;
+        }
+
         public virtual void Swing()
         {
             Vector2 Position = Human.Position;
@@ -1146,7 +1186,7 @@ namespace RogueTower
             Vector2 PlayerWeaponOffset = Position + FacingVector * Weapon.WeaponSizeMult;
             Vector2 WeaponSize = Weapon.WeaponSize;
             RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
-            if (true)
+            if (Human.Weapon.CanParry)
             {
                 Vector2 parrySize = new Vector2(22, 22);
                 bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
@@ -1154,12 +1194,19 @@ namespace RogueTower
                     Parried = true;
             }
             if (!Parried)
+            {
                 Human.SwingWeapon(weaponMask, 10);
+                SwingVisual(Parried);
+                SlashAction = SwingAction.DownSwing;
+            }
+        }
+
+        private void SwingVisual(bool parried)
+        {
             var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
-            if (Parried)
+            if (parried)
                 effect.Frame = effect.FrameEnd / 2;
-            SlashAction = SwingAction.DownSwing;
         }
     }
 
@@ -1292,7 +1339,7 @@ namespace RogueTower
         }
     }
 
-    class ActionWandSwing : Action
+    class ActionWandSwing : ActionAttack
     {
         enum SwingAction
         {
@@ -1305,6 +1352,9 @@ namespace RogueTower
         Slider StartTime;
         Slider SwingTime;
         Slider EndTime;
+
+        public override bool Done => State == SwingAction.End;
+        public override bool CanParry => State == SwingAction.Start;
 
         public ActionWandSwing(EnemyHuman player, float startTime, float swingTime, float endTime) : base(player)
         {
@@ -1333,11 +1383,6 @@ namespace RogueTower
             basePose.Weapon.Angle = basePose.LeftArm.GetHoldAngle(ArmState.Type.Left) - MathHelper.PiOver2;
         }
 
-        public override void OnInput()
-        {
-            //NOOP
-        }
-
         public override void UpdateDelta(float delta)
         {
             switch(State)
@@ -1355,6 +1400,16 @@ namespace RogueTower
                         Human.ResetState();
                     break;
             }
+        }
+
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+
         }
 
         public override void UpdateDiscrete()
@@ -1435,7 +1490,7 @@ namespace RogueTower
         }
     }
 
-    class ActionPunch : Action
+    class ActionPunch : ActionAttack
     {
         public enum PunchState
         {
@@ -1443,10 +1498,14 @@ namespace RogueTower
             PunchEnd
         }
 
+        public Weapon Weapon;
         public PunchState PunchAction;
         public float PunchStartTime;
         public float PunchFinishTime;
-        public Weapon Weapon;
+
+        public override bool Done => PunchAction == PunchState.PunchEnd;
+        public override bool CanParry => PunchAction == PunchState.PunchStart;
+
         public ActionPunch(EnemyHuman human, float punchStartTime, float punchFinishTime, Weapon weapon) : base(human)
         {
             PunchStartTime = punchStartTime;
@@ -1471,11 +1530,6 @@ namespace RogueTower
             
         }
 
-        public override void OnInput()
-        {
-            //NOOP
-        }
-
         public override void UpdateDelta(float delta)
         {
             switch (PunchAction)
@@ -1485,7 +1539,6 @@ namespace RogueTower
                     if(PunchStartTime < 0)
                     {
                         Punch();
-                        PunchAction = PunchState.PunchEnd;
                     }
                     break;
                 case (PunchState.PunchEnd):
@@ -1502,6 +1555,18 @@ namespace RogueTower
         {
         }
 
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            PunchVisual();
+            PunchAction = PunchState.PunchEnd;
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+            PunchVisual();
+            PunchAction = PunchState.PunchEnd;
+        }
+
         public virtual void Punch()
         {
             Vector2 weaponSize = Weapon.WeaponSize;
@@ -1513,6 +1578,7 @@ namespace RogueTower
                 weaponSize);
             Human.SwingWeapon(weaponMask, Weapon.Damage);
             PunchVisual();
+            PunchAction = PunchState.PunchEnd;
             //new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
         }
 
@@ -1556,6 +1622,7 @@ namespace RogueTower
                 weaponSize);
             Human.SwingWeapon(weaponMask, Weapon.Damage);
             PunchVisual();
+            PunchAction = PunchState.PunchEnd;
             //new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
         }
 
@@ -1565,7 +1632,7 @@ namespace RogueTower
         }
     }
 
-    class ActionStealWeapon : Action
+    class ActionStealWeapon : ActionAttack
     {
         public enum StealState
         {
@@ -1577,16 +1644,15 @@ namespace RogueTower
         public EnemyHuman Victim;
         public float StealStartTime;
         public float StealEndTime;
+
+        public override bool Done => StealAction == StealState.StealFinish;
+        public override bool CanParry => StealAction == StealState.StealStart;
+
         public ActionStealWeapon(EnemyHuman thief, EnemyHuman victim, float stealStartTime, float stealEndTime) : base(thief)
         {
             Victim = victim;
             StealStartTime = stealStartTime;
             StealEndTime = stealEndTime;
-        }
-
-        public override void OnInput()
-        {
-            //NOOP
         }
 
         public override void GetPose(PlayerState basePose)
@@ -1614,15 +1680,7 @@ namespace RogueTower
                     StealStartTime -= delta;
                     if (StealStartTime < 0)
                     {
-                        if (!(Victim.Weapon is WeaponUnarmed) && !(Victim.Weapon is null) && Victim.Invincibility <= 0)
-                        {
-                            Human.Weapon = Victim.Weapon;
-                            Victim.Weapon = new WeaponUnarmed(10, 14, new Vector2(14, 10));
-                            Victim.Hit(GetFacingVector(Human.Facing)*0.5f, 30, 30, 0);
-                            new ParryEffect(Human.World, Victim.Position, 0, 10);
-                            PlaySFX(sfx_player_disappointed, 1.0f);
-                        }
-                        StealAction = StealState.StealFinish;
+                        Steal();
                     }
                     break;
 
@@ -1634,6 +1692,29 @@ namespace RogueTower
                     }
                     break;
             }
+        }
+
+        public override void ParryGive(IParryReceiver receiver)
+        {
+            Steal();
+        }
+
+        public override void ParryReceive(IParryGiver giver)
+        {
+            Steal();
+        }
+
+        private void Steal()
+        {
+            if (!(Victim.Weapon is WeaponUnarmed) && !(Victim.Weapon is null) && Victim.Invincibility <= 0)
+            {
+                Human.Weapon = Victim.Weapon;
+                Victim.Weapon = new WeaponUnarmed(10, 14, new Vector2(14, 10));
+                Victim.Hit(GetFacingVector(Human.Facing) * 0.5f, 30, 30, 0);
+                new ParryEffect(Human.World, Victim.Position, 0, 10);
+                PlaySFX(sfx_player_disappointed, 1.0f);
+            }
+            StealAction = StealState.StealFinish;
         }
 
         public override void UpdateDiscrete()

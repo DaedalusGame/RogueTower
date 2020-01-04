@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueTower
 {
-    abstract class Bullet : GameObject
+    abstract class Bullet : GameObject, IParryGiver
     {
         public virtual Vector2 Position
         {
@@ -67,6 +67,25 @@ namespace RogueTower
             }
         }
 
+        public bool Parry(RectangleF hitmask)
+        {
+            var affectedHitboxes = World.FindBoxes(hitmask);
+            foreach (Box Box in affectedHitboxes)
+            {
+                if (Box.Data is IParryReceiver receiver && Util.Parry(this, receiver, hitmask))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void ParryGive(IParryReceiver receiver, RectangleF box)
+        {
+            //NOOP
+        }
+
         protected virtual void ApplyEffect(Enemy enemy)
         {
             //NOOP
@@ -78,7 +97,7 @@ namespace RogueTower
         }
     }
 
-    abstract class BulletSolid : Bullet
+    abstract class BulletSolid : Bullet, IParryReceiver
     {
         public IBox Box;
         public override Vector2 Position
@@ -93,6 +112,7 @@ namespace RogueTower
                 Box.Teleport(pos.X, pos.Y);
             }
         }
+        public virtual bool CanParry => false;
 
         protected BulletSolid(GameWorld world, Vector2 position, Vector2 size) : base(world, position, size)
         {
@@ -109,6 +129,11 @@ namespace RogueTower
         {
             base.Destroy();
             World.Remove(Box);
+        }
+
+        public void ParryReceive(IParryGiver giver, RectangleF box)
+        {
+            //NOOP
         }
 
         protected override void UpdateDelta(float delta)
@@ -307,7 +332,7 @@ namespace RogueTower
 
         protected override void OnCollision(IHit hit)
         {
-            if (Destroyed || CheckFriendlyFire(hit.Box.Data))
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data) || hit.Box.Data is Bullet)
                 return;
             bool bounced = true;
             
@@ -315,9 +340,13 @@ namespace RogueTower
                 tile.HandleTileDamage(knifeDamage);
             if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
-                if (enemy.CanDamage)
-                    bounced = false;
-                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, knifeDamage);
+                bool parried = Util.Parry(this, enemy, Box.Bounds);
+                if (!parried)
+                {
+                    if (enemy.CanDamage)
+                        bounced = false;
+                    enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, knifeDamage);
+                }
             }
             if (bounced)
             {
@@ -471,12 +500,16 @@ namespace RogueTower
             
             if(hit.Box.Data is Enemy enemy)
             {
-                if (enemy.CanDamage)
+                bool parried = Util.Parry(this, enemy, Box.Bounds);
+                if (!parried)
                 {
-                    enemy.AddStatusEffect(new Stun(enemy, 120));
-                    enemy.Hit(Velocity, 0, 20, Boomerang.Damage);
+                    if (enemy.CanDamage)
+                    {
+                        enemy.AddStatusEffect(new Stun(enemy, 120));
+                        enemy.Hit(Velocity, 0, 20, Boomerang.Damage);
+                    }
+                    Bounced = true;
                 }
-                Bounced = true;
             }
             if(hit.Box.Data is Tile tile)
             {

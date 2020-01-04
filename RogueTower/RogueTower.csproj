@@ -48,6 +48,7 @@
     <Compile Include="Healthbar.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="InputAction.cs" />
+    <Compile Include="IParryable.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ItemMemory.cs" />
     <Compile Include="MessageHistory.cs" />
