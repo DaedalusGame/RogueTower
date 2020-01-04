@@ -471,7 +471,7 @@ namespace RogueTower
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
-            SpriteBatch.Begin(SpriteSortMode.Deferred, samplerState: SamplerState.PointWrap, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, blendState: BlendState.NonPremultiplied, samplerState: SamplerState.PointWrap, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
             foreach(Background bg in Backgrounds)
             {
                 bg.Draw(SpriteBatch);
