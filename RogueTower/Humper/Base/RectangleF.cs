@@ -430,6 +430,11 @@ namespace Humper.Base
 			return rectangle;
 		}
 
+        public static RectangleF Centered(Vector2 center, Vector2 size)
+        {
+            return new RectangleF(center - size / 2, size);
+        }
+
 		/// <summary>
 		/// Calculates the signed depth of intersection between two rectangles.
 		/// </summary>
