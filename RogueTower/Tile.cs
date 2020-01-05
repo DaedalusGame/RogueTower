@@ -410,6 +410,28 @@ namespace RogueTower
         }
     }
 
+    class DoomTrap : Trap
+    {
+        public override float RetriggerTime => 30;
+
+        public DoomTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            //NOOP
+        }
+
+        public override void StepOn(EnemyHuman human)
+        {
+            base.StepOn(human);
+
+            if(!human.Dead)
+                human.AddStatusEffect(new Doom(human, 1, 30));
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;

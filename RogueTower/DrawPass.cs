@@ -12,5 +12,6 @@ namespace RogueTower
         Foreground,
         Bullet,
         Effect,
+        EffectDeath,
     }
 }

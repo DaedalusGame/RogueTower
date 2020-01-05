@@ -187,7 +187,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             scene.DrawSprite(magicOrange, (int)Frame, Position - magicOrange.Middle, SpriteEffects.None, 0);
@@ -229,7 +229,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var snakeSpit = SpriteLoader.Instance.AddSprite("content/snake_poison");
             scene.DrawSprite(snakeSpit, 0, Position - snakeSpit.Middle, SpriteEffects.None, 0);
@@ -263,7 +263,7 @@ namespace RogueTower
             enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var spriteExplosion = SpriteLoader.Instance.AddSprite("content/explosion");
             scene.DrawSprite(spriteExplosion, scene.AnimationFrame(spriteExplosion, Frame, FrameEnd), Position - spriteExplosion.Middle, SpriteEffects.None, 0);
@@ -282,7 +282,7 @@ namespace RogueTower
             //enemy.Health = Math.Max(enemy.Health - 1, 1);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var breathPoison = SpriteLoader.Instance.AddSprite("content/breath_poison");
             scene.DrawSpriteExt(breathPoison, scene.AnimationFrame(breathPoison, Frame, FrameEnd), Position - breathPoison.Middle, breathPoison.Middle, (float)Math.Atan2(Velocity.X, Velocity.Y)+MathHelper.Pi, SpriteEffects.None, 0);
@@ -307,7 +307,7 @@ namespace RogueTower
             enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var fireball = SpriteLoader.Instance.AddSprite("content/fireball");
             scene.DrawSpriteExt(fireball, 0, Position - fireball.Middle, fireball.Middle, -MathHelper.PiOver2 * (int)(Frame * 0.5), SpriteEffects.None, 0);
@@ -356,7 +356,7 @@ namespace RogueTower
             Destroy();
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
             scene.DrawSpriteExt(knife, 0, Position - knife.Middle, knife.Middle, (float)Math.Atan2(Velocity.Y, Velocity.X), SpriteEffects.None, 0);
@@ -428,7 +428,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var spriteShockwave = SpriteLoader.Instance.AddSprite("content/shockwave");
             scene.DrawSpriteExt(spriteShockwave, (int)Frame, Position - new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height) + new Vector2(0, Box.Height / 2), new Vector2(spriteShockwave.Middle.X, spriteShockwave.Height), 0, new Vector2(1, (ScalingFactor > 1) ? 1 + ScalingFactor / 5 : 1), SpriteEffects.None, Color.White, 0);
@@ -521,7 +521,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var spriteBoomerang = SpriteLoader.Instance.AddSprite("content/boomerang");
             scene.DrawSpriteExt(spriteBoomerang, 0, Position - spriteBoomerang.Middle, spriteBoomerang.Middle, Angle, SpriteEffects.None, 0);

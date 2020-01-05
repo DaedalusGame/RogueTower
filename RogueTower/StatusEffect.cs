@@ -210,6 +210,54 @@ namespace RogueTower
         }
     }
 
+    class Doom : StatusEffect
+    {
+        public float BuildUp;
+        public float Threshold => 500;
+        public float Fill => MathHelper.Clamp(BuildUp / Threshold, 0, 1);
+
+        public Doom(Enemy enemy, float buildup, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+            BuildUp = buildup;
+        }
+
+        protected override void OnAdd()
+        {
+            new StatusDeathEffect(Enemy.World, this);
+        }
+
+        protected override void OnRemove()
+        {
+
+        }
+
+        public override StatusEffect[] Combine(StatusEffect other)
+        {
+            if (other is Doom doom)
+            {
+                BuildUp += doom.BuildUp;
+                Duration = Math.Min(Duration, doom.Duration);
+                DurationMax = Math.Max(DurationMax, doom.DurationMax);
+            }
+            return new[] { this };
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            //NOOP
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if(BuildUp >= Threshold)
+            {
+                Enemy.Health = 0;
+                Enemy.Death();
+                Remove();
+            }
+        }
+    }
+
     class Curse : StatusEffect
     {
         public float CurseTick;

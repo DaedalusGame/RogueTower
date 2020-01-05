@@ -670,7 +670,7 @@ namespace RogueTower
             yield return DrawPass.Foreground;
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             scene.DrawHuman(this);
         }
@@ -1831,7 +1831,7 @@ namespace RogueTower
             yield return DrawPass.Foreground;
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
             var snakeHeadClosed = SpriteLoader.Instance.AddSprite("content/snake_closed");
@@ -2190,7 +2190,7 @@ namespace RogueTower
                 CurrentAction = new ActionDeath(this,50);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var hydraBody = SpriteLoader.Instance.AddSprite("content/hydra_body");
             scene.DrawSprite(hydraBody, (int)WalkFrame, Position - hydraBody.Middle + new Vector2(0, -4) + VisualOffset(), Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 1);
@@ -2281,7 +2281,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var wallGun = SpriteLoader.Instance.AddSprite("content/wall_gun");
             var wallGunBase = SpriteLoader.Instance.AddSprite("content/wall_gun_base");
@@ -2446,7 +2446,7 @@ namespace RogueTower
             yield return Position + Offset;
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var spikeball = SpriteLoader.Instance.AddSprite("content/spikeball");
             var chain = SpriteLoader.Instance.AddSprite("content/chain");
