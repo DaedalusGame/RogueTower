@@ -997,7 +997,8 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Angular(5),
                 ArmState.Angular(3),
-                Weapon.GetWeaponState(MathHelper.ToRadians(270 - 20))
+                Weapon.GetWeaponState(MathHelper.ToRadians(270 - 20)),
+                ShieldState.None
             );
             Weapon.GetPose(pose);
             return pose;

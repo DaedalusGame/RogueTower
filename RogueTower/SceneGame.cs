@@ -72,6 +72,60 @@ namespace RogueTower
         public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle);
     }
 
+    class ShieldState
+    {
+        public string Sprite;
+        public int Frame;
+        public Vector2 Origin;
+        public Vector2 Offset;
+        public float Angle;
+        public float Depth;
+
+        public ShieldState(string sprite, int frame, Vector2 origin, float angle, Vector2 offset, float depth)
+        {
+            Sprite = sprite;
+            Frame = frame;
+            Origin = origin;
+            Offset = offset;
+            Angle = angle;
+            Depth = depth;
+        }
+
+        public virtual void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
+        {
+            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{Sprite}", false);
+
+            Vector2 offset = Offset;
+            float angle = Angle;
+            if (mirror == SpriteEffects.FlipHorizontally)
+            {
+                offset.X = 16 - offset.X;
+                angle = Util.MirrorAngle(angle);
+                mirror = SpriteEffects.FlipVertically;
+            }
+
+            game.DrawSpriteExt(sprite, Frame, position + offset - Origin, Origin, angle, mirror, Depth);
+        }
+
+        public class NoneState : ShieldState
+        {
+            public NoneState() : base("", 0, Vector2.Zero, 0, Vector2.Zero, 0)
+            {
+            }
+
+            public override void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
+            {
+                //NOOP
+            }
+        }
+
+        public static ShieldState None => new NoneState();
+        public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.9f);
+        public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.9f);
+        public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.1f);
+        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheath", 0, new Vector2(13, 2), angle, new Vector2(6, 10), 0.9f);
+    }
+
     class ArmState
     {
         public enum Type
@@ -190,25 +244,9 @@ namespace RogueTower
         public static ArmState Pray => new ArmState("pray", 0, new Vector2(10, 10), new Vector2(8, 10));
         public static ArmState Up => new ArmState("up", 0, new Vector2(13, 2), new Vector2(4, 2));
         public static ArmState Low => new ArmState("low", 0, new Vector2(), new Vector2(7, 10));
-        public static ArmState Shield => new ShieldState();
+        public static ArmState Shield => new ArmState("shield", 0, new Vector2(13, 8), new Vector2());
         public static ArmState Angular(int frame) => new ArmState("angular", frame, HoldOffsetAngularLeft, HoldOffsetAngularRight);
         public static ArmState Angular(float angle) => Angular(GetFrameFromAngle(angle));
-
-        public class ShieldState : ArmState
-        {
-            public ShieldState() : base("shield", 0, new Vector2(13, 8), new Vector2())
-            {
-
-            }
-
-            public override void Draw(SceneGame game, Type type, Vector2 position, SpriteEffects mirror, float depth)
-            {
-                SpriteReference shield = SpriteLoader.Instance.AddSprite($"content/char_shield", true);
-
-                base.Draw(game, type, position, mirror, depth);
-                game.DrawSprite(shield, 0, position, mirror, 0.9f);
-            }
-        }
     }
 
     class BodyState
@@ -283,15 +321,17 @@ namespace RogueTower
         public ArmState LeftArm;
         public ArmState RightArm;
         public WeaponState Weapon;
+        public ShieldState Shield;
         public WeaponHold WeaponHold = WeaponHold.Right;
 
-        public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon)
+        public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon, ShieldState shield)
         {
             Head = head;
             Body = body;
             LeftArm = leftArm;
             RightArm = rightArm;
             Weapon = weapon;
+            Shield = shield;
         }
     }
 
@@ -1049,6 +1089,7 @@ namespace RogueTower
             state.Body.Draw(this, position + offset, mirror, 0.5f);
             state.LeftArm.Draw(this, ArmState.Type.Left, position + offset, mirror, 0.6f);
             state.RightArm.Draw(this, ArmState.Type.Right, position + offset, mirror, 0.8f);
+            state.Shield.Draw(this, position + offset, mirror, 0f);
 
             Vector2 weaponHold;
             float weaponDepth;

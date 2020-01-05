@@ -305,6 +305,19 @@ namespace RogueTower
             }
         }
 
+        public static int GetX(this HorizontalFacing facing)
+        {
+            switch (facing)
+            {
+                default:
+                    return 0;
+                case HorizontalFacing.Left:
+                    return -1;
+                case HorizontalFacing.Right:
+                    return 1;
+            }
+        }
+
         public static Connectivity Rotate(this Connectivity connectivity, int halfTurns)
         {
             return (Connectivity)(ShiftWrap((int)connectivity,PositiveMod(halfTurns,8),8) & 255);

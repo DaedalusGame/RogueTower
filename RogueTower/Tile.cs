@@ -279,7 +279,7 @@ namespace RogueTower
 
         public override bool Connects(Tile other)
         {
-            return other is Wall;
+            return other is Wall && !(other is Ladder);
         }
     }
 

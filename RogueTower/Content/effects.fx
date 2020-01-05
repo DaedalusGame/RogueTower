@@ -13,6 +13,7 @@ static const float TAU = 6.28318530f;
 matrix WorldViewProjection;
 
 sampler s0;
+sampler s1;
 
 float4 gradient_topleft;
 float4 gradient_topright;
@@ -75,6 +76,14 @@ float4 ClockPS(VertexShaderOutput input) : COLOR
 	float anglediff = abs((2 * da) % TAU - da);
 	if (anglediff > angle_spread)
 		return float4(0, 0, 0, 0);
+	return color;
+}
+
+float4 DistortPS(VertexShaderOutput input) : COLOR
+{
+	float4 mask = tex2D(s1, input.TextureCoordinates);
+	float2 offset = float2(mask.r * 30, mask.r * 30);
+	float4 color = tex2D(s0, input.TextureCoordinates + offset) * input.Color;
 	return color;
 }
 
