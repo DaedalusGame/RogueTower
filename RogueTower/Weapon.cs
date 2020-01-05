@@ -253,6 +253,7 @@ namespace RogueTower
 
     class WeaponKatana : Weapon
     {
+        public bool Sheathed = true;
         protected WeaponKatana() : base()
         {
 
@@ -262,9 +263,16 @@ namespace RogueTower
         {
             CanParry = true;
         }
+        public override void GetPose(PlayerState pose)
+        {
+            Sheathed = true;
+            pose.WeaponHold = WeaponHold.Right;
+            pose.Weapon = GetWeaponState(MathHelper.ToRadians(-20));
+        }
+
         public override WeaponState GetWeaponState(float angle)
         {
-            return WeaponState.Katana(angle * 45);
+            return Sheathed ? WeaponState.KatanaSheathed(angle) : WeaponState.Katana(angle);
         }
         public override void HandleAttack(Player player)
         {
@@ -272,14 +280,9 @@ namespace RogueTower
             {
                 DashAttack(player, new ActionTwohandSlash(player, 6, 4, this), dashFactor: 4);
             }
-            else if (player.Controls.Attack)
+            else if (player.Controls.Attack && Sheathed)
             {
-                if (player.CurrentAction.GetType() == typeof(ActionSlashUp))
-                    Slash(player);
-                else
-                {
-                    SlashUp(player);
-                }
+                player.CurrentAction = new ActionKatanaSlash(player, 2, 4, 12, 10, this);
             }
         }
 
@@ -390,6 +393,14 @@ namespace RogueTower
             FinesseLimit = finesseLimit;
         }
 
+        public override void GetPose(PlayerState pose)
+        {
+            pose.WeaponHold = WeaponHold.Left;
+            pose.LeftArm = ArmState.Angular(1);
+            pose.RightArm = ArmState.Angular(9);
+            pose.Weapon = GetWeaponState(MathHelper.ToRadians(-22.5f));
+
+        }
         public override WeaponState GetWeaponState(float angle)
         {
             return WeaponState.Rapier(angle);

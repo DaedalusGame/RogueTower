@@ -63,8 +63,8 @@ namespace RogueTower
 
         public static WeaponState None => new NoneState();
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle);
-        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(18, 2), angle);
-        public static WeaponState KatanaSheathed(float angle) => new WeaponState("katana", 0, new Vector2(18, 1), angle);
+        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle);
+        public static WeaponState KatanaSheathed(float angle) => new WeaponState("katana_sheathed", 0, new Vector2(13, 1), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
@@ -379,7 +379,7 @@ namespace RogueTower
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
 
             Backgrounds = new List<Background>();
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), () => new Vector2(10, 10), new Vector2(0.10f, 0.02f)) {XLooping = true, YLooping = true});
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), () => new Vector2(10, 10), new Vector2(-0.5f, 0.02f)) {XLooping = true, YLooping = true});
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
