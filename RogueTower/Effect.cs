@@ -36,6 +36,31 @@ namespace RogueTower
         }
     }
 
+    class ScreenFlash : VisualEffect
+    {
+        public Func<ColorMatrix> Color = () => ColorMatrix.Identity;
+        public float FrameEnd;
+
+        public ScreenFlash(GameWorld world, Func<ColorMatrix> color, float time) : base(world)
+        {
+            Color = color;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            //NOOP
+        }
+    }
+
     class ScreenShake : VisualEffect
     {
         public Vector2 Offset;
@@ -44,6 +69,14 @@ namespace RogueTower
         public ScreenShake(GameWorld world, float time) : base(world)
         {
             FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
         }
 
         public override void Draw(SceneGame scene, DrawPass pass)
@@ -71,14 +104,6 @@ namespace RogueTower
             int y = (int)Math.Round(Math.Sin(shakeAngle) * amount);
             Offset = new Vector2(x, y);
         }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
-        }
     }
 
     class ScreenShakeJerk : ScreenShake
@@ -96,14 +121,6 @@ namespace RogueTower
 
             float amount = (1 - Frame / FrameEnd);
             Offset = Jerk * amount;
-        }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
         }
     }
 

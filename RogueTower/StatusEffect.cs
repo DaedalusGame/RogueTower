@@ -213,7 +213,7 @@ namespace RogueTower
     class Doom : StatusEffect
     {
         public float BuildUp;
-        public float Threshold => 500;
+        public float Threshold => 200;
         public float Fill => MathHelper.Clamp(BuildUp / Threshold, 0, 1);
 
         public Doom(Enemy enemy, float buildup, float duration = float.PositiveInfinity) : base(enemy, duration)
@@ -249,8 +249,20 @@ namespace RogueTower
 
         protected override void UpdateDiscrete()
         {
-            if(BuildUp >= Threshold)
+            if (BuildUp >= Threshold)
             {
+                Enemy.World.Hitstop = 10;
+                Enemy.World.Flash((slide) => {
+                    float quadSlide = (float)LerpHelper.QuadraticOut(0, 1, slide);
+                    float i = MathHelper.Lerp(10, 1, quadSlide);
+                    float e = MathHelper.Lerp(i, i - 1, quadSlide);
+                    return new ColorMatrix(new Matrix(
+                        i, 0, 0, 0,
+                        0, i, 0, 0,
+                        0, 0, i, 0,
+                        0, 0, 0, 1.0f),
+                        new Vector4(-e, -e, -e, 0));
+                }, 40);
                 Enemy.Health = 0;
                 Enemy.Death();
                 Remove();

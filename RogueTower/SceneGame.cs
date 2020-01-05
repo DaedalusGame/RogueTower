@@ -327,6 +327,7 @@ namespace RogueTower
         public GameWorld World;
         public Map Map => World.Map;
 
+        public RenderTarget2D CameraTarget;
         public Vector2 Camera;
         public Vector2 CameraSize => new Vector2(Viewport.Width / 2, Viewport.Height / 2);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
@@ -446,6 +447,13 @@ namespace RogueTower
 
         public override void Draw(GameTime gameTime)
         {
+            if(CameraTarget == null || CameraTarget.IsContentLost)
+            {
+                CameraTarget = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
+            }
+
+            GraphicsDevice.SetRenderTarget(CameraTarget);
+
             Projection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, -1);
             WorldTransform = CreateViewMatrix();
 
@@ -510,29 +518,23 @@ namespace RogueTower
             {
                 DrawObject(obj, drawZone, DrawPass.EffectDeath);
             }
+
+            GraphicsDevice.SetRenderTarget(null);
+
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
+            ColorMatrix color = ColorMatrix.Identity;
+
+            IEnumerable<ScreenFlash> screenFlashes = World.Effects.OfType<ScreenFlash>();
+            foreach(ScreenFlash screenFlash in screenFlashes)
+            {
+                color *= screenFlash.Color();
+            }
+
+            SetupColorMatrix(color, Matrix.Identity);
+            SpriteBatch.Draw(CameraTarget, CameraTarget.Bounds, Color.White);
+            SpriteBatch.End();
+
             StartNormalBatch();
-
-            /*foreach (GameObject obj in World.Objects.OrderBy(x => x.DrawOrder))
-            {
-                if(obj is Enemy enemy)
-                {
-                    if(!enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
-                    {
-                        continue;
-                    }
-                    enemy.Draw(this);
-                }
-            }
-
-            foreach (Bullet bullet in World.Bullets)
-            {
-                bullet.Draw(this);
-            }
-
-            foreach (VisualEffect effect in World.Effects)
-            {
-                effect.Draw(this);
-            }*/
 
             if (Keyboard.GetState().IsKeyDown(Keys.RightControl) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.LeftTrigger))
             {
@@ -611,7 +613,7 @@ namespace RogueTower
                 $"OnWall: {World.Player.OnWall}\n" +
                 $"Room: {(int)(World.Player.Position.X / 8 / 16)},{(int)(World.Player.Position.Y / 8 / 16)}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
 
-            foreach(var inputAction in GetOrderedInputActions(InputAction))
+            foreach (var inputAction in GetOrderedInputActions(InputAction))
                 inputAction.Draw(this);
 
             //Pause Screen
