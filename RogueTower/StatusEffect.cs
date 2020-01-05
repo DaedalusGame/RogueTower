@@ -214,6 +214,8 @@ namespace RogueTower
     {
         public float BuildUp;
         public float Threshold => 200;
+        public bool Triggered = false;
+        public Slider TriggerSlide = new Slider(0, 30);
         public float Fill => MathHelper.Clamp(BuildUp / Threshold, 0, 1);
 
         public Doom(Enemy enemy, float buildup, float duration = float.PositiveInfinity) : base(enemy, duration)
@@ -244,17 +246,27 @@ namespace RogueTower
 
         protected override void UpdateDelta(float delta)
         {
-            //NOOP
+            if (Triggered)
+            {
+                Duration = 0;
+                TriggerSlide += delta;
+            }
         }
 
         protected override void UpdateDiscrete()
         {
-            if (BuildUp >= Threshold)
+            if (BuildUp >= Threshold && !Triggered)
+            {
+
+                Triggered = true;
+            }
+
+            if(Triggered && TriggerSlide.Done)
             {
                 Enemy.World.Hitstop = 10;
                 Enemy.World.Flash((slide) => {
                     float quadSlide = (float)LerpHelper.QuadraticOut(0, 1, slide);
-                    float i = MathHelper.Lerp(10, 1, quadSlide);
+                    float i = MathHelper.Lerp(5, 1, quadSlide);
                     float e = MathHelper.Lerp(i, i - 1, quadSlide);
                     return new ColorMatrix(new Matrix(
                         i, 0, 0, 0,
@@ -262,7 +274,7 @@ namespace RogueTower
                         0, 0, i, 0,
                         0, 0, 0, 1.0f),
                         new Vector4(-e, -e, -e, 0));
-                }, 40);
+                }, 20);
                 Enemy.Health = 0;
                 Enemy.Death();
                 Remove();

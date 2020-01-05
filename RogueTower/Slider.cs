@@ -13,6 +13,7 @@ namespace RogueTower
         public float Time;
         public float EndTime;
         public float Slide => Time / EndTime;
+        public bool Done => Time >= EndTime;
 
         public Slider(float time, float endTime)
         {
