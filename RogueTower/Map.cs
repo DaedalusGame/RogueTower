@@ -16,6 +16,7 @@ namespace RogueTower
             { (map,x,y) => new BumpTrap(map, x, y), 1 },
             { (map,x,y) => new PoisonTrap(map, x, y), 5 },
             { (map,x,y) => new SlowTrap(map, x, y), 5 },
+            { (map,x,y) => new DoomTrap(map, x, y), 5 },
         };
 
         public int Width, Height;

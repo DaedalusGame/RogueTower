@@ -36,6 +36,31 @@ namespace RogueTower
         }
     }
 
+    class ScreenFlash : VisualEffect
+    {
+        public Func<ColorMatrix> Color = () => ColorMatrix.Identity;
+        public float FrameEnd;
+
+        public ScreenFlash(GameWorld world, Func<ColorMatrix> color, float time) : base(world)
+        {
+            Color = color;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            //NOOP
+        }
+    }
+
     class ScreenShake : VisualEffect
     {
         public Vector2 Offset;
@@ -46,7 +71,15 @@ namespace RogueTower
             FrameEnd = time;
         }
 
-        public override void Draw(SceneGame scene)
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             //NOOP
         }
@@ -71,14 +104,6 @@ namespace RogueTower
             int y = (int)Math.Round(Math.Sin(shakeAngle) * amount);
             Offset = new Vector2(x, y);
         }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
-        }
     }
 
     class ScreenShakeJerk : ScreenShake
@@ -96,14 +121,6 @@ namespace RogueTower
 
             float amount = (1 - Frame / FrameEnd);
             Offset = Jerk * amount;
-        }
-
-        protected override void UpdateDiscrete()
-        {
-            if (Frame >= FrameEnd)
-            {
-                Destroy();
-            }
         }
     }
 
@@ -144,7 +161,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var slash = SpriteLoader.Instance.AddSprite("content/slash_round");
             var slashAngle = Angle;
@@ -162,7 +179,7 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var stab = SpriteLoader.Instance.AddSprite("content/slash_straight");
             var slashAngle = Angle;
@@ -178,7 +195,7 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var punchStraight = SpriteLoader.Instance.AddSprite("content/punch");
             var punchAngle = Angle;
@@ -226,7 +243,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var crit = SpriteLoader.Instance.AddSprite("content/crit");
             scene.DrawSpriteExt(crit, scene.AnimationFrame(crit, Frame, FrameEnd), Position - crit.Middle, crit.Middle, Angle, SpriteEffects.None, 0);
@@ -252,7 +269,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var fire = SpriteLoader.Instance.AddSprite("content/fire_small");
             var middle = new Vector2(8, 12);
@@ -266,7 +283,7 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var fireBig = SpriteLoader.Instance.AddSprite("content/fire_big");
             var middle = new Vector2(8, 12);
@@ -285,7 +302,7 @@ namespace RogueTower
             base.Update(1.0f);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var bloodSpatter = SpriteLoader.Instance.AddSprite("content/blood_spatter");
             scene.DrawSpriteExt(bloodSpatter, scene.AnimationFrame(bloodSpatter, Frame, FrameEnd), Position - bloodSpatter.Middle, bloodSpatter.Middle, Angle, SpriteEffects.None, 0);
@@ -320,7 +337,7 @@ namespace RogueTower
             Velocity += new Vector2(0, 0.4f);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             throw new NotImplementedException();
         }
@@ -354,7 +371,7 @@ namespace RogueTower
             Velocity += new Vector2(0, 0.4f);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var knife = SpriteLoader.Instance.AddSprite("content/knife");
             scene.DrawSpriteExt(knife, 0, Position - knife.Middle, knife.Middle, Rotation * Frame, SpriteEffects.None, 0);
@@ -391,7 +408,7 @@ namespace RogueTower
             Velocity += new Vector2(0, 0.4f);
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var snakeHeadOpen = SpriteLoader.Instance.AddSprite("content/snake_open");
             scene.DrawSpriteExt(snakeHeadOpen, 0, Position - snakeHeadOpen.Middle, snakeHeadOpen.Middle, Rotation * Frame, Mirror, 0);
@@ -422,7 +439,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var calcParams = new TextParameters().SetColor(FontColor, BorderColor).SetConstraints(128, 64);
             string fit = FontUtil.FitString(Game.ConvertToSmallPixelText(Text), calcParams);
@@ -462,7 +479,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var posBag = Vector2.Transform(PositionBag, Matrix.Invert(scene.WorldTransform));
             var offset = Offset * (float)Math.Sin(Frame / FrameEnd * Math.PI);
@@ -491,7 +508,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             scene.SpriteBatch.Draw(scene.Pixel, Rectangle.ToRectangle(), Color);
         }
@@ -561,7 +578,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var charge = SpriteLoader.Instance.AddSprite("content/charge");
             scene.DrawSpriteExt(charge, (int)-Frame, Position - charge.Middle, charge.Middle, Angle, SpriteEffects.None, 0);
@@ -588,7 +605,7 @@ namespace RogueTower
             }
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var aimingreticule = SpriteLoader.Instance.AddSprite("content/aim_reticule");
             scene.DrawSpriteExt(aimingreticule, 0, Position - aimingreticule.Middle, aimingreticule.Middle, 0, SpriteEffects.None, 0);
@@ -599,16 +616,17 @@ namespace RogueTower
     {
         protected T Effect;
         protected Enemy Enemy => Effect.Enemy;
-        protected Vector2 Position
+        protected Vector2 HeadPosition
         {
             get
             {
                 if (Enemy is EnemyHuman enemy)
                     return new Vector2(enemy.Box.Bounds.Center.X, enemy.Box.Bounds.Top - 16);
                 else
-                    return Enemy.Position - new Vector2(0, 16);
+                    return Enemy.HomingTarget - new Vector2(0, 16);
             }
         }
+        protected Vector2 Position => Enemy.HomingTarget;
 
         public StatusEffectVisual(GameWorld world, T effect) : base(world)
         {
@@ -630,10 +648,10 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var statusPoisoned = SpriteLoader.Instance.AddSprite("content/status_poisoned");
-            scene.DrawSpriteExt(statusPoisoned, (int)(Frame * 0.25f), Position - statusPoisoned.Middle, statusPoisoned.Middle, 0, SpriteEffects.None, 0);
+            scene.DrawSpriteExt(statusPoisoned, (int)(Frame * 0.25f), HeadPosition - statusPoisoned.Middle, statusPoisoned.Middle, 0, SpriteEffects.None, 0);
         }
     }
 
@@ -643,7 +661,7 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var statusSlowed = SpriteLoader.Instance.AddSprite("content/status_slowed");
             float slide = (Frame * 0.01f) % 1;
@@ -652,7 +670,7 @@ namespace RogueTower
             {
                 angle = MathHelper.Lerp(0, MathHelper.Pi, slide / 0.1f);
             }
-            scene.DrawSpriteExt(statusSlowed, 0, Position - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
+            scene.DrawSpriteExt(statusSlowed, 0, HeadPosition - statusSlowed.Middle, statusSlowed.Middle, angle, SpriteEffects.None, 0);
         }
     }
 
@@ -662,13 +680,115 @@ namespace RogueTower
         {
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             var statusStunned = SpriteLoader.Instance.AddSprite("content/status_stunned");
             float radius = 8;
             float circleSpeed = 0.15f;
             var offset = new Vector2(radius * (float)Math.Sin(Frame * Math.PI * circleSpeed), (radius / 2) * (float)Math.Cos(Frame * Math.PI * circleSpeed));
-            scene.DrawSpriteExt(statusStunned, (int)(Frame * 0.3f), Position + offset - statusStunned.Middle, statusStunned.Middle, 0, SpriteEffects.None, 0);
+            scene.DrawSpriteExt(statusStunned, (int)(Frame * 0.3f), HeadPosition + offset - statusStunned.Middle, statusStunned.Middle, 0, SpriteEffects.None, 0);
+        }
+    }
+
+    class StatusDeathEffect : StatusEffectVisual<Doom>
+    {
+        public StatusDeathEffect(GameWorld world, Doom effect) : base(world, effect)
+        {
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+
+            if (Effect.Triggered)
+            {
+                new DeathEffect(World, Effect.Enemy, 30);
+                Destroy();
+            }
+        }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Effect;
+            yield return DrawPass.EffectDeath;
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            var runeBackground = SpriteLoader.Instance.AddSprite("content/magic_death3");
+            var runeA = SpriteLoader.Instance.AddSprite("content/magic_death2");
+            var runeB = SpriteLoader.Instance.AddSprite("content/magic_death");
+            if (pass == DrawPass.EffectDeath)
+            {
+                float fill = Effect.Fill;
+                scene.SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, transformMatrix: scene.WorldTransform, effect: scene.Shader);
+                scene.SetupClockBetween(0, fill * MathHelper.TwoPi);
+                scene.DrawSprite(runeA, 0, Position - runeA.Middle, SpriteEffects.None, 0);
+                scene.SpriteBatch.End();
+                scene.SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, transformMatrix: scene.WorldTransform, effect: scene.Shader);
+                scene.SetupClockBetween(fill * MathHelper.TwoPi, MathHelper.TwoPi);
+                scene.DrawSprite(runeB, 0, Position - runeB.Middle, SpriteEffects.None, 0);
+                scene.SpriteBatch.End();
+            }
+            else
+            {
+                scene.DrawSprite(runeBackground, 0, Position - runeBackground.Middle, SpriteEffects.None, 0);
+            }
+        }
+    }
+
+    class DeathEffect : Particle
+    {
+        public override Vector2 Position
+        {
+            get { return Enemy.HomingTarget; }
+            set { }
+        }
+
+        public Enemy Enemy;
+        public float FrameEnd;
+
+        public DeathEffect(GameWorld world, Enemy enemy, float time) : base(world, Vector2.Zero)
+        {
+            Enemy = enemy;
+            FrameEnd = time;
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Frame >= FrameEnd)
+            {
+                Destroy();
+            }
+        }
+
+        public override IEnumerable<DrawPass> GetDrawPasses()
+        {
+            yield return DrawPass.Effect;
+            yield return DrawPass.EffectDeath;
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            var runeBackground = SpriteLoader.Instance.AddSprite("content/magic_death3");
+            var runeA = SpriteLoader.Instance.AddSprite("content/magic_death2");
+            var runeB = SpriteLoader.Instance.AddSprite("content/magic_death");
+
+            float lerp = (float)LerpHelper.CubicOut(1, 0, Frame / FrameEnd);
+            Color color = new Color(1, 1, 1, lerp);
+
+            if (pass == DrawPass.EffectDeath)
+            {
+                scene.SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, transformMatrix: scene.WorldTransform);
+                scene.DrawSpriteExt(runeA, 0, Position - runeA.Middle, runeA.Middle, 0, Vector2.One, SpriteEffects.None, color, 0);
+                scene.DrawSpriteExt(runeA, 0, Position - runeA.Middle, runeA.Middle, 0, Vector2.One, SpriteEffects.None, color, 0);
+                scene.DrawSpriteExt(runeB, 0, Position - runeB.Middle, runeB.Middle, 0, Vector2.One, SpriteEffects.None, color, 0);
+                scene.SpriteBatch.End();
+            }
+            else
+            {
+                scene.DrawSpriteExt(runeBackground, 0, Position - runeBackground.Middle, runeBackground.Middle, 0, Vector2.One, SpriteEffects.None, color, 0);
+            }
         }
     }
 }

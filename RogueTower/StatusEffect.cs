@@ -210,6 +210,78 @@ namespace RogueTower
         }
     }
 
+    class Doom : StatusEffect
+    {
+        public float BuildUp;
+        public float Threshold => 200;
+        public bool Triggered = false;
+        public Slider TriggerSlide = new Slider(0, 30);
+        public float Fill => MathHelper.Clamp(BuildUp / Threshold, 0, 1);
+
+        public Doom(Enemy enemy, float buildup, float duration = float.PositiveInfinity) : base(enemy, duration)
+        {
+            BuildUp = buildup;
+        }
+
+        protected override void OnAdd()
+        {
+            new StatusDeathEffect(Enemy.World, this);
+        }
+
+        protected override void OnRemove()
+        {
+
+        }
+
+        public override StatusEffect[] Combine(StatusEffect other)
+        {
+            if (other is Doom doom)
+            {
+                BuildUp += doom.BuildUp;
+                Duration = Math.Min(Duration, doom.Duration);
+                DurationMax = Math.Max(DurationMax, doom.DurationMax);
+            }
+            return new[] { this };
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            if (Triggered)
+            {
+                Duration = 0;
+                TriggerSlide += delta;
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (BuildUp >= Threshold && !Triggered)
+            {
+
+                Triggered = true;
+            }
+
+            if(Triggered && TriggerSlide.Done)
+            {
+                Enemy.World.Hitstop = 10;
+                Enemy.World.Flash((slide) => {
+                    float quadSlide = (float)LerpHelper.QuadraticOut(0, 1, slide);
+                    float i = MathHelper.Lerp(5, 1, quadSlide);
+                    float e = MathHelper.Lerp(i, i - 1, quadSlide);
+                    return new ColorMatrix(new Matrix(
+                        i, 0, 0, 0,
+                        0, i, 0, 0,
+                        0, 0, i, 0,
+                        0, 0, 0, 1.0f),
+                        new Vector4(-e, -e, -e, 0));
+                }, 20);
+                Enemy.Health = 0;
+                Enemy.Death();
+                Remove();
+            }
+        }
+    }
+
     class Curse : StatusEffect
     {
         public float CurseTick;

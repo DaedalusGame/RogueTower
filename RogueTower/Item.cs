@@ -999,7 +999,7 @@ namespace RogueTower
             yield return DrawPass.Foreground;
         }
 
-        public override void Draw(SceneGame scene)
+        public override void Draw(SceneGame scene, DrawPass pass)
         {
             Item.DrawIcon(scene, Position + new Vector2(0,-Box.Height/2));
         }

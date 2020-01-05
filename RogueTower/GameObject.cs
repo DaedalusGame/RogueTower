@@ -66,6 +66,6 @@ namespace RogueTower
 
         public abstract IEnumerable<DrawPass> GetDrawPasses();
 
-        public abstract void Draw(SceneGame scene);
+        public abstract void Draw(SceneGame scene, DrawPass pass);
     }
 }

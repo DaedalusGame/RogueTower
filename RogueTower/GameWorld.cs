@@ -57,6 +57,16 @@ namespace RogueTower
             return FindBoxes(area).Where(box => box.Data is Tile).Select(box => (Tile)box.Data);
         }
 
+        public void Flash(Func<float,ColorMatrix> color, float time)
+        {
+            float startTime = Frame;
+            new ScreenFlash(this, () =>
+            {
+                float slide = (Frame - startTime) / time;
+                return color(slide);
+            }, time);
+        }
+
         public void Update(float delta)
         {
             Map.Update();

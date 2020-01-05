@@ -37,6 +37,7 @@ namespace RogueTower
         public virtual void GetPose(PlayerState pose)
         {
             pose.LeftArm = ArmState.Shield;
+            pose.Shield = ShieldState.ShieldForward;
             pose.Weapon = GetWeaponState(MathHelper.ToRadians(0));
         }
 
@@ -274,6 +275,13 @@ namespace RogueTower
         {
             return Sheathed ? WeaponState.KatanaSheathed(angle) : WeaponState.Katana(angle);
         }
+
+        public override void GetPose(PlayerState pose)
+        {
+            pose.Shield = ShieldState.KatanaSheath(0.05f);
+            pose.Weapon = GetWeaponState(MathHelper.ToRadians(0));
+        }
+
         public override void HandleAttack(Player player)
         {
             if (player.Controls.DownAttack && player.OnGround)

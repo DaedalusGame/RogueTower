@@ -73,6 +73,60 @@ namespace RogueTower
         public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle);
     }
 
+    class ShieldState
+    {
+        public string Sprite;
+        public int Frame;
+        public Vector2 Origin;
+        public Vector2 Offset;
+        public float Angle;
+        public float Depth;
+
+        public ShieldState(string sprite, int frame, Vector2 origin, float angle, Vector2 offset, float depth)
+        {
+            Sprite = sprite;
+            Frame = frame;
+            Origin = origin;
+            Offset = offset;
+            Angle = angle;
+            Depth = depth;
+        }
+
+        public virtual void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
+        {
+            SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{Sprite}", false);
+
+            Vector2 offset = Offset;
+            float angle = Angle;
+            if (mirror == SpriteEffects.FlipHorizontally)
+            {
+                offset.X = 16 - offset.X;
+                angle = Util.MirrorAngle(angle);
+                mirror = SpriteEffects.FlipVertically;
+            }
+
+            game.DrawSpriteExt(sprite, Frame, position + offset - Origin, Origin, angle, mirror, Depth);
+        }
+
+        public class NoneState : ShieldState
+        {
+            public NoneState() : base("", 0, Vector2.Zero, 0, Vector2.Zero, 0)
+            {
+            }
+
+            public override void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
+            {
+                //NOOP
+            }
+        }
+
+        public static ShieldState None => new NoneState();
+        public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.9f);
+        public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.9f);
+        public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.1f);
+        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheath", 0, new Vector2(13, 2), angle, new Vector2(6, 10), 0.9f);
+    }
+
     class ArmState
     {
         public enum Type
@@ -191,25 +245,9 @@ namespace RogueTower
         public static ArmState Pray => new ArmState("pray", 0, new Vector2(10, 10), new Vector2(8, 10));
         public static ArmState Up => new ArmState("up", 0, new Vector2(13, 2), new Vector2(4, 2));
         public static ArmState Low => new ArmState("low", 0, new Vector2(), new Vector2(7, 10));
-        public static ArmState Shield => new ShieldState();
+        public static ArmState Shield => new ArmState("shield", 0, new Vector2(13, 8), new Vector2());
         public static ArmState Angular(int frame) => new ArmState("angular", frame, HoldOffsetAngularLeft, HoldOffsetAngularRight);
         public static ArmState Angular(float angle) => Angular(GetFrameFromAngle(angle));
-
-        public class ShieldState : ArmState
-        {
-            public ShieldState() : base("shield", 0, new Vector2(13, 8), new Vector2())
-            {
-
-            }
-
-            public override void Draw(SceneGame game, Type type, Vector2 position, SpriteEffects mirror, float depth)
-            {
-                SpriteReference shield = SpriteLoader.Instance.AddSprite($"content/char_shield", true);
-
-                base.Draw(game, type, position, mirror, depth);
-                game.DrawSprite(shield, 0, position, mirror, 0.9f);
-            }
-        }
     }
 
     class BodyState
@@ -284,15 +322,17 @@ namespace RogueTower
         public ArmState LeftArm;
         public ArmState RightArm;
         public WeaponState Weapon;
+        public ShieldState Shield;
         public WeaponHold WeaponHold = WeaponHold.Right;
 
-        public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon)
+        public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon, ShieldState shield)
         {
             Head = head;
             Body = body;
             LeftArm = leftArm;
             RightArm = rightArm;
             Weapon = weapon;
+            Shield = shield;
         }
     }
 
@@ -328,6 +368,7 @@ namespace RogueTower
         public GameWorld World;
         public Map Map => World.Map;
 
+        public RenderTarget2D CameraTarget;
         public Vector2 Camera;
         public Vector2 CameraSize => new Vector2(Viewport.Width / 2, Viewport.Height / 2);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
@@ -447,6 +488,13 @@ namespace RogueTower
 
         public override void Draw(GameTime gameTime)
         {
+            if(CameraTarget == null || CameraTarget.IsContentLost)
+            {
+                CameraTarget = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
+            }
+
+            GraphicsDevice.SetRenderTarget(CameraTarget);
+
             Projection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, -1);
             WorldTransform = CreateViewMatrix();
 
@@ -462,12 +510,7 @@ namespace RogueTower
             SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
             Color bg1 = new Color(32, 19, 48);
             Color bg2 = new Color(126, 158, 153);
-            Shader.CurrentTechnique = Shader.Techniques["Gradient"];
-            Shader.Parameters["gradient_topleft"].SetValue(bg1.ToVector4());
-            Shader.Parameters["gradient_topright"].SetValue(bg1.ToVector4());
-            Shader.Parameters["gradient_bottomleft"].SetValue(bg2.ToVector4());
-            Shader.Parameters["gradient_bottomright"].SetValue(bg2.ToVector4());
-            Shader.Parameters["WorldViewProjection"].SetValue(Projection);
+            SetupGradient(bg1, bg1, bg2, bg2, Matrix.Identity);
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
@@ -489,7 +532,7 @@ namespace RogueTower
             //Pass lower enemy
             foreach (GameObject obj in passes[DrawPass.Background])
             {
-                DrawObject(obj, drawZone);
+                DrawObject(obj, drawZone, DrawPass.Background);
             }
             DepthShear = Shear.All;
             DrawMap(World.Map);
@@ -497,41 +540,42 @@ namespace RogueTower
             //Pass upper enemy
             foreach (GameObject obj in passes[DrawPass.Foreground])
             {
-                DrawObject(obj, drawZone);
+                DrawObject(obj, drawZone, DrawPass.Foreground);
             }
             DepthShear = Shear.All;
 
             foreach(GameObject obj in passes[DrawPass.Bullet])
             {
-                DrawObject(obj, drawZone);
+                DrawObject(obj, drawZone, DrawPass.Bullet);
             }
 
             foreach (GameObject obj in passes[DrawPass.Effect])
             {
-                DrawObject(obj, drawZone);
+                DrawObject(obj, drawZone, DrawPass.Effect);
             }
 
-            /*foreach (GameObject obj in World.Objects.OrderBy(x => x.DrawOrder))
+            SpriteBatch.End();
+            foreach (GameObject obj in passes[DrawPass.EffectDeath])
             {
-                if(obj is Enemy enemy)
-                {
-                    if(!enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
-                    {
-                        continue;
-                    }
-                    enemy.Draw(this);
-                }
+                DrawObject(obj, drawZone, DrawPass.EffectDeath);
             }
 
-            foreach (Bullet bullet in World.Bullets)
+            GraphicsDevice.SetRenderTarget(null);
+
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
+            ColorMatrix color = ColorMatrix.Identity;
+
+            IEnumerable<ScreenFlash> screenFlashes = World.Effects.OfType<ScreenFlash>();
+            foreach(ScreenFlash screenFlash in screenFlashes)
             {
-                bullet.Draw(this);
+                color *= screenFlash.Color();
             }
 
-            foreach (VisualEffect effect in World.Effects)
-            {
-                effect.Draw(this);
-            }*/
+            SetupColorMatrix(color, Matrix.Identity);
+            SpriteBatch.Draw(CameraTarget, CameraTarget.Bounds, Color.White);
+            SpriteBatch.End();
+
+            StartNormalBatch();
 
             if (Keyboard.GetState().IsKeyDown(Keys.RightControl) || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.LeftTrigger))
             {
@@ -610,7 +654,7 @@ namespace RogueTower
                 $"OnWall: {World.Player.OnWall}\n" +
                 $"Room: {(int)(World.Player.Position.X / 8 / 16)},{(int)(World.Player.Position.Y / 8 / 16)}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
 
-            foreach(var inputAction in GetOrderedInputActions(InputAction))
+            foreach (var inputAction in GetOrderedInputActions(InputAction))
                 inputAction.Draw(this);
 
             //Pause Screen
@@ -831,11 +875,15 @@ namespace RogueTower
             }
         }
 
-        private int GetPass(Tile tile)
+        private IEnumerable<int> GetPasses(Tile tile)
         {
             if (tile is WallIce)
-                return 1;
-            return 0;
+            {
+                yield return 1;
+                yield return 2;
+            }
+            else
+                yield return 0;
         }
 
         private void DrawMap(Map map)
@@ -845,22 +893,28 @@ namespace RogueTower
             int drawY = (int)(Camera.Y / 16);
             int drawRadius = 30;
 
-            var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).ToLookup(tile => GetPass(tile));
+            var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).SelectMany(tile => GetPasses(tile).Select(pass => Tuple.Create(tile, pass))).ToLookup(tile => tile.Item2, tile => tile.Item1);
             DrawMapPass(passes[0]);
             SpriteBatch.End();
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform, effect: Shader);
+            ColorMatrix iceBackground = new ColorMatrix(new Matrix(
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0.3f),
+              new Vector4(0, 0, 0, 0));
+            SetupColorMatrix(iceBackground);
+            DrawMapPass(passes[1]);
+            SpriteBatch.End();
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform, effect: Shader);
-            Matrix testMatrix = new Matrix(
+            ColorMatrix iceForeground = new ColorMatrix(new Matrix(
               1.2f, 0, 0, 0,
               0, 1.2f, 0, 0,
               0, 0, 1.2f, 0,
-              0, 0, 0, 1);
-            Vector4 testAdd = new Vector4(-0.8f * 0.7f, -0.3f * 0.7f, -0.1f * 0.7f, 0);
-            ColorMatrix test = new ColorMatrix(testMatrix, testAdd);
-            Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
-            Shader.Parameters["color_matrix"].SetValue(test.Matrix);
-            Shader.Parameters["color_add"].SetValue(test.Add);
-            Shader.Parameters["WorldViewProjection"].SetValue(WorldTransform * Projection);
-            DrawMapPass(passes[1]);
+              0, 0, 0, 1),
+              new Vector4(-0.8f * 0.7f, -0.3f * 0.7f, -0.1f * 0.7f, 0));
+            SetupColorMatrix(iceForeground);
+            DrawMapPass(passes[2]);
             SpriteBatch.End();
             StartNormalBatch();
         }
@@ -968,14 +1022,14 @@ namespace RogueTower
             return drawZone;
         }
 
-        public void DrawObject(GameObject obj, Rectangle drawZone)
+        public void DrawObject(GameObject obj, Rectangle drawZone, DrawPass pass)
         {
             if (obj is Enemy enemy && !enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
             {
                 return;
             }
 
-            obj.Draw(this);
+            obj.Draw(this, pass);
         }
 
         public void DrawHuman(EnemyHuman human)
@@ -1025,11 +1079,7 @@ namespace RogueTower
 
             SpriteBatch.End();
 
-            Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
-            Shader.Parameters["color_matrix"].SetValue(color.Matrix);
-            Shader.Parameters["color_add"].SetValue(color.Add);
-            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
-
+            SetupColorMatrix(color, transform);
             SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: transform, effect: Shader);
 
             Vector2 offset = state.Body.Offset;
@@ -1040,6 +1090,7 @@ namespace RogueTower
             state.Body.Draw(this, position + offset, mirror, 0.5f);
             state.LeftArm.Draw(this, ArmState.Type.Left, position + offset, mirror, 0.6f);
             state.RightArm.Draw(this, ArmState.Type.Right, position + offset, mirror, 0.8f);
+            state.Shield.Draw(this, position + offset, mirror, 0f);
 
             Vector2 weaponHold;
             float weaponDepth;
@@ -1090,6 +1141,59 @@ namespace RogueTower
         public void StartNormalBatch()
         {
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState:BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
+        }
+
+        public void SetupColorMatrix(ColorMatrix matrix)
+        {
+            SetupColorMatrix(matrix,WorldTransform);
+        }
+
+        public void SetupColorMatrix(ColorMatrix matrix, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
+            Shader.Parameters["color_matrix"].SetValue(matrix.Matrix);
+            Shader.Parameters["color_add"].SetValue(matrix.Add);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+        }
+
+        public void SetupGradient(Color topleft, Color topright, Color bottomleft, Color bottomright)
+        {
+            SetupGradient(topleft, topright, bottomleft, bottomright, WorldTransform);
+        }
+
+        public void SetupGradient(Color topleft, Color topright, Color bottomleft, Color bottomright, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["Gradient"];
+            Shader.Parameters["gradient_topleft"].SetValue(topleft.ToVector4());
+            Shader.Parameters["gradient_topright"].SetValue(topright.ToVector4());
+            Shader.Parameters["gradient_bottomleft"].SetValue(bottomleft.ToVector4());
+            Shader.Parameters["gradient_bottomright"].SetValue(bottomright.ToVector4());
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+        }
+
+        public void SetupClockBetween(float lower, float upper)
+        {
+            SetupClockBetween(lower, upper, WorldTransform);
+        }
+
+        public void SetupClockBetween(float lower, float upper, Matrix transform)
+        {
+            float target = (lower + upper) / 2;
+            float spread = (upper - lower) / 2;
+            SetupClockRay(target, spread, transform);
+        }
+
+        public void SetupClockRay(float target, float spread)
+        {
+            SetupClockRay(target, spread, WorldTransform);
+        }
+
+        public void SetupClockRay(float target, float spread, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["Clock"];
+            Shader.Parameters["angle_target"].SetValue(target - MathHelper.PiOver2);
+            Shader.Parameters["angle_spread"].SetValue(spread);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
         }
 
         public float CalculateHeightSlide(float transitionStart, float transitionEnd, Player player, bool clamp = false)

@@ -285,7 +285,8 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Neutral,
                 ArmState.Neutral,
-                WeaponState.None
+                WeaponState.None,
+                ShieldState.None
             );
             Weapon.GetPose(pose);
             return pose;

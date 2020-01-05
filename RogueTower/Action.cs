@@ -1223,6 +1223,7 @@ namespace RogueTower
         public override void GetPose(PlayerState basePose)
         {
             basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
+            basePose.Shield = ShieldState.None;
 
             switch (SlashAction)
             {

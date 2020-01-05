@@ -279,7 +279,7 @@ namespace RogueTower
 
         public override bool Connects(Tile other)
         {
-            return other is Wall;
+            return other is Wall && !(other is Ladder);
         }
     }
 
@@ -407,6 +407,28 @@ namespace RogueTower
             yield return new WaitDelta(World, 1);
 
             human.AddStatusEffect(new Slow(human, 0.6f, 1000));
+        }
+    }
+
+    class DoomTrap : Trap
+    {
+        public override float RetriggerTime => 30;
+
+        public DoomTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            //NOOP
+        }
+
+        public override void StepOn(EnemyHuman human)
+        {
+            base.StepOn(human);
+
+            if(!human.Dead)
+                human.AddStatusEffect(new Doom(human, 1, 30));
         }
     }
 
