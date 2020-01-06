@@ -674,16 +674,12 @@ namespace RogueTower
 
         public virtual void Swing()
         {
-            Vector2 Position = Human.Position;
-            HorizontalFacing Facing = Human.Facing;
-            Vector2 FacingVector = GetFacingVector(Facing);
-            Vector2 PlayerWeaponOffset = Position + FacingVector * Weapon.WeaponSizeMult;
-            Vector2 WeaponSize = Weapon.WeaponSize;
-            RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
+            Vector2 WeaponSize = new Vector2(16,24) * Weapon.LengthModifier;
+            RectangleF weaponMask = RectangleF.Centered(Human.Position + new Vector2(Human.Facing.GetX() * 0.5f * WeaponSize.X, 0), WeaponSize);
             if (Weapon.CanParry == true)
             {
                 Vector2 parrySize = new Vector2(22, 22);
-                bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                bool success = Human.Parry(new RectangleF(Human.Position + GetFacingVector(Human.Facing) * 8 - parrySize / 2, parrySize));
                 if(success)
                     Parried = true;
             }
@@ -695,7 +691,8 @@ namespace RogueTower
 
         public virtual void SwingVisual(bool parry)
         {
-            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            float swingSize = 0.7f * Weapon.LengthModifier;
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -743,7 +740,8 @@ namespace RogueTower
 
         public override void SwingVisual(bool parry)
         {
-            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
+            float swingSize = 0.7f * Weapon.LengthModifier;
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, swingSize, MathHelper.ToRadians(45), SpriteEffects.FlipVertically | (Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None), 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -831,15 +829,16 @@ namespace RogueTower
 
         public virtual void Swing()
         {
-            float sizeMult = (Human.Random.NextFloat() * 3 - 0.5f) + 1;
-            Vector2 weaponSize = new Vector2(12, 4) * sizeMult;
+            float sizeMult = 1;
+            Vector2 weaponSize = new Vector2(16, 8);
+            weaponSize.X *= Weapon.LengthModifier;
+            weaponSize.Y *= Weapon.WidthModifier;
             RectangleF weaponMask = new RectangleF(Human.Position
                 + GetFacingVector(Human.Facing) * 8
                 + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
                 + new Vector2(0, 1)
                 - weaponSize / 2f,
                 weaponSize);
-            new RectangleDebug(Human.World, weaponMask, Color.Red, 10);
             /*
             Vector2 PlayerWeaponOffset = Position + FacingVector * 14;
             Vector2 WeaponSize = new Vector2(14 / 2, 14 * 2);
@@ -865,7 +864,8 @@ namespace RogueTower
         public virtual void SwingVisual(bool parry)
         {
             Vector2 FacingVector = GetFacingVector(Human.Facing);
-            var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 6, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            float swingSize = 0.5f * Weapon.LengthModifier;
+            var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -899,7 +899,8 @@ namespace RogueTower
         public override void SwingVisual(bool parry)
         {
             Vector2 FacingVector = GetFacingVector(Human.Facing);
-            var effect = new SlashEffectStraight(Human.World, () => Human.Position + new Vector2(0,2) + FacingVector * 6, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            float swingSize = 0.5f * Weapon.LengthModifier;
+            var effect = new SlashEffectStraight(Human.World, () => Human.Position + new Vector2(0,2) + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
@@ -989,10 +990,27 @@ namespace RogueTower
 
         }
 
+        protected void HandleDamage(double damageIn)
+        {
+            var hitsize = new Vector2(8, 8);
+            hitsize.X *= Weapon.WidthModifier;
+            hitsize.Y *= Weapon.LengthModifier;
+            var hitmask = RectangleF.Centered(Human.Position + new Vector2(0, 8 + hitsize.Y * 0.5f), hitsize);
+            if (SceneGame.DebugMasks)
+                new RectangleDebug(Human.World, hitmask, new Color(Color.Lime, 0.5f), 1);
+            foreach (var box in Human.World.FindBoxes(hitmask))
+            {
+                if (box.Data is Enemy enemy && box.Data != Human)
+                    enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
+            }
+        }
+
         public override void UpdateDiscrete()
         {
+            double damageIn = Weapon.Damage * 1.5;
             if (PlungeStartTime <= 0)
                 Human.Velocity.Y = 5;
+            HandleDamage(damageIn);
             if (Human.OnGround)
             {
                 Human.Velocity.Y = -4;
@@ -1001,14 +1019,10 @@ namespace RogueTower
                 PlaySFX(sfx_sword_bink, 1.0f, 0.1f, 0.4f);
                 Human.CurrentAction = new ActionJump(Human, true, false);
                 PlungeFinished = true;
-
-                double damageIn = Weapon.Damage * 1.5;
                 foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
                 {
                     if(box.Data is Tile tile)
                         tile.HandleTileDamage(damageIn);
-                    if (box.Data is Enemy enemy && box.Data != Human)
-                        enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
                 }
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
@@ -1050,10 +1064,11 @@ namespace RogueTower
         {
             if (PlungeStartTime <= 0)
                 Human.Velocity.Y += 0.5f;
+            double damageIn = Math.Floor(Weapon.Damage * 1.5);
+            HandleDamage(damageIn);
             if (Human.OnGround)
             {
                 PlungeFinished = true;
-                double damageIn = Math.Floor(Weapon.Damage * 1.5);
                 float? floorY = null;
                 foreach (var box in Human.World.FindBoxes(Human.Box.Bounds.Offset(0, 1)))
                 {
@@ -1063,11 +1078,6 @@ namespace RogueTower
                             floorY = box.Bounds.Top;
                         tile.HandleTileDamage(damageIn);
                     }
-                    if (box.Data is Enemy enemy)
-                        if (enemy != Human)
-                        {
-                            enemy.Hit(new Vector2(0, 2), 20, 50, damageIn);
-                        }
                 }
                 //Console.WriteLine(TaggedVelocity);
                 if (!ShockwaveFinished && floorY.HasValue)
@@ -1090,7 +1100,7 @@ namespace RogueTower
             }
             else
             {
-                if(Human.Velocity.Y > TaggedVelocity)
+                if (Human.Velocity.Y > TaggedVelocity)
                     TaggedVelocity = Human.Velocity.Y;
             }
             if (PlungeFinished && PlungeFinishTime <= 0)
@@ -1181,16 +1191,12 @@ namespace RogueTower
 
         public virtual void Swing()
         {
-            Vector2 Position = Human.Position;
-            HorizontalFacing Facing = Human.Facing;
-            Vector2 FacingVector = GetFacingVector(Facing);
-            Vector2 PlayerWeaponOffset = Position + FacingVector * Weapon.WeaponSizeMult;
-            Vector2 WeaponSize = Weapon.WeaponSize;
-            RectangleF weaponMask = new RectangleF(PlayerWeaponOffset - WeaponSize / 2, WeaponSize);
+            Vector2 WeaponSize = new Vector2(16, 24) * Weapon.LengthModifier;
+            RectangleF weaponMask = RectangleF.Centered(Human.Position + new Vector2(Human.Facing.GetX() * 0.5f * WeaponSize.X, 0), WeaponSize);
             if (Human.Weapon.CanParry)
             {
                 Vector2 parrySize = new Vector2(22, 22);
-                bool success = Human.Parry(new RectangleF(Position + FacingVector * 8 - parrySize / 2, parrySize));
+                bool success = Human.Parry(weaponMask);
                 if (success)
                     Parried = true;
             }
@@ -1204,7 +1210,8 @@ namespace RogueTower
 
         private void SwingVisual(bool parried)
         {
-            var effect = new SlashEffectRound(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            float swingSize = 0.7f * Weapon.LengthModifier;
+            var effect = new SlashEffectRound(Human.World, () => Human.Position, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
             if (parried)
                 effect.Frame = effect.FrameEnd / 2;
@@ -1585,7 +1592,7 @@ namespace RogueTower
 
         public virtual void PunchVisual()
         {
-            new PunchEffectStraight(Human.World, () => Human.Position, Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            new PunchEffectStraight(Human.World, () => Human.Position, 1, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
         }
     }
 
@@ -1629,7 +1636,7 @@ namespace RogueTower
 
         public override void PunchVisual()
         {
-            new PunchEffectStraight(Human.World, () => Human.Position + new Vector2(0, 2), Weapon.SwingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            new PunchEffectStraight(Human.World, () => Human.Position + new Vector2(0, 2), 1, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
         }
     }
 

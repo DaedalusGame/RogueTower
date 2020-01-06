@@ -362,6 +362,9 @@ namespace RogueTower
 
     class SceneGame : Scene
     {
+        public static bool DebugWeapons = false; //Makes every weapon appear as the sword, for normalization
+        public static bool DebugMasks = false; //Show hitmasks
+
         const float ViewScale = 2f;
 
         public GameWorld World;
@@ -1043,6 +1046,9 @@ namespace RogueTower
             PlayerState state = human.GetBasePose();
             human.CurrentAction.GetPose(state);
             human.SetPhenoType(state);
+
+            if (DebugWeapons)
+                state.Weapon = WeaponState.Sword(state.Weapon.Angle);
 
             if (state.Body == BodyState.Kneel)
             {
