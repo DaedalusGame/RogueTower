@@ -707,7 +707,8 @@ namespace RogueTower
             //Weapon = new WeaponWandOrange(10, 16, new Vector2(8, 32));
             //Weapon = new WeaponUnarmed(10, 14, new Vector2(7, 28));
 
-            Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
+            //Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
+            Weapon = new WeaponKatana(15, 20, new Vector2(10, 40));
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
         }
@@ -896,6 +897,13 @@ namespace RogueTower
                             if(boomerang.BoomerProjectile == null || boomerang.BoomerProjectile.Destroyed)
                             {
                                 CurrentAction = new ActionSlash(this, 2, 4, 4, 2, Weapon);
+                            }
+                        }
+                        else if (Weapon is WeaponKatana katana)
+                        {
+                            if (katana.Sheathed)
+                            {
+                                CurrentAction = new ActionKatanaSlash(this, 2, 4, 12, 10, katana);
                             }
                         }
                         else if (Weapon is WeaponKnife || Weapon is WeaponRapier)

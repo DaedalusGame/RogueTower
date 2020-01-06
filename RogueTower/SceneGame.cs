@@ -64,7 +64,6 @@ namespace RogueTower
         public static WeaponState None => new NoneState();
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle);
         public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle);
-        public static WeaponState KatanaSheathed(float angle) => new WeaponState("katana_sheathed", 0, new Vector2(13, 1), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
@@ -124,7 +123,8 @@ namespace RogueTower
         public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.9f);
         public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.9f);
         public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.1f);
-        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheath", 0, new Vector2(13, 2), angle, new Vector2(6, 10), 0.9f);
+        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheathed", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
+        public static ShieldState KatanaSheathEmpty(float angle) => new ShieldState("katana_sheathed_empty", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
     }
 
     class ArmState

@@ -767,6 +767,7 @@ namespace RogueTower
         {
             basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
             Katana.Sheathed = false;
+            basePose.Shield = ShieldState.KatanaSheathEmpty(MathHelper.ToRadians(-20));
             basePose.WeaponHold = WeaponHold.Left;
             switch (SlashAction)
             {
