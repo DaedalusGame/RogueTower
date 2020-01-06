@@ -415,7 +415,7 @@ namespace RogueTower
             {
                 if (enemy.CanDamage)
                     hitwall = false;
-                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, ShockwaveForce);
+                enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, Math.Floor(ShockwaveForce * 0.20));
                 ShockwaveForce -= 20;
             }
             if (hitwall)
