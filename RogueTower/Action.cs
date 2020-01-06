@@ -1717,7 +1717,7 @@ namespace RogueTower
             if (!(Victim.Weapon is WeaponUnarmed) && !(Victim.Weapon is null) && Victim.Invincibility <= 0)
             {
                 Human.Weapon = Victim.Weapon;
-                Victim.Weapon = new WeaponUnarmed(10, 14, new Vector2(14, 10));
+                Victim.Weapon = new WeaponUnarmed(10, new Vector2(14, 10));
                 Victim.Hit(GetFacingVector(Human.Facing) * 0.5f, 30, 30, 0);
                 new ParryEffect(Human.World, Victim.Position, 0, 10);
                 PlaySFX(sfx_player_disappointed, 1.0f);

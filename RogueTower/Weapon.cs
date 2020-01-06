@@ -17,7 +17,6 @@ namespace RogueTower
 
         public bool CanParry = false;
         public double Damage;
-        public float WeaponSizeMult = 0;
         public Vector2 WeaponSize;
         public float LengthModifier = 1;
         public float WidthModifier = 1;
@@ -27,10 +26,9 @@ namespace RogueTower
 
         }
 
-        public Weapon(string name, string description, double damage, float weaponSizeMult, Vector2 weaponSize, float width, float length) : base(name, description)
+        public Weapon(string name, string description, double damage, Vector2 weaponSize, float width, float length) : base(name, description)
         {
             Damage = damage;
-            WeaponSizeMult = weaponSizeMult;
             WeaponSize = weaponSize;
             LengthModifier = length;
             WidthModifier = width;
@@ -45,15 +43,15 @@ namespace RogueTower
 
         public static Weapon[] PresetWeaponList =
         {
-            new WeaponSword(15, 20, new Vector2(10, 40)),
-            new WeaponKnife(15, 14, new Vector2(14 / 2, 14 * 2)),
-            new WeaponKatana(15, 20, new Vector2(10, 40)),
-            new WeaponRapier(15, 20, new Vector2(10, 40)),
-            new WeaponWandOrange(10, 16, new Vector2(8, 32)),
-            new WeaponLance(20, 38, new Vector2(19, 76)),
-            new WeaponWarhammer(30, 36, new Vector2(18, 72)),
-            new WeaponBoomerang(10, 8, new Vector2(8, 8)),
-            new WeaponUnarmed(10, 14, new Vector2(14, 10))
+            new WeaponSword(15, new Vector2(10, 40)),
+            new WeaponKnife(15, new Vector2(14 / 2, 14 * 2)),
+            new WeaponKatana(15, new Vector2(10, 40)),
+            new WeaponRapier(15, new Vector2(10, 40)),
+            new WeaponWandOrange(10, new Vector2(8, 32)),
+            new WeaponLance(20, new Vector2(19, 76)),
+            new WeaponWarhammer(30, new Vector2(18, 72)),
+            new WeaponBoomerang(10, new Vector2(8, 8)),
+            new WeaponUnarmed(10, new Vector2(14, 10))
         };
         public Vector2 Input2Direction(Player player)
         {
@@ -142,7 +140,6 @@ namespace RogueTower
             if (item is Weapon weapon) {
                 weapon.CanParry = CanParry;
                 weapon.Damage = Damage;
-                weapon.WeaponSizeMult = WeaponSizeMult;
                 weapon.WeaponSize = WeaponSize;
                 weapon.WidthModifier = WidthModifier;
                 weapon.LengthModifier = LengthModifier;
@@ -157,7 +154,7 @@ namespace RogueTower
 
         }
 
-        public WeaponUnarmed(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Unarmed", "", damage, weaponSizeMult, weaponSize, 1.0f, 1.0f)
+        public WeaponUnarmed(double damage, Vector2 weaponSize) : base("Unarmed", "", damage, weaponSize, 1.0f, 1.0f)
         {
             CanParry = false;
         }
@@ -214,7 +211,7 @@ namespace RogueTower
 
         }
 
-        public WeaponSword(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Sword", "", damage, weaponSizeMult, weaponSize, 1.0f, 1.0f)
+        public WeaponSword(double damage, Vector2 weaponSize) : base("Sword", "", damage, weaponSize, 1.0f, 1.0f)
         {
             CanParry = true;
         }
@@ -262,7 +259,7 @@ namespace RogueTower
 
         }
 
-        public WeaponKatana(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Katana", "", damage, weaponSizeMult, weaponSize, 1.0f, 1.5f)
+        public WeaponKatana(double damage, Vector2 weaponSize) : base("Katana", "", damage, weaponSize, 1.0f, 1.5f)
         {
             CanParry = true;
         }
@@ -313,7 +310,7 @@ namespace RogueTower
 
         }
 
-        public WeaponKnife(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Knife", "", damage, weaponSizeMult, weaponSize, 1.0f, 0.8f)
+        public WeaponKnife(double damage, Vector2 weaponSize) : base("Knife", "", damage, weaponSize, 1.0f, 0.8f)
         {
             CanParry = true;
         }
@@ -357,7 +354,7 @@ namespace RogueTower
 
         }
 
-        public WeaponLance(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Lance", "", damage, weaponSizeMult, weaponSize, 1.5f, 1.5f)
+        public WeaponLance(double damage, Vector2 weaponSize) : base("Lance", "", damage, weaponSize, 1.5f, 1.5f)
         {
             CanParry = true;
         }
@@ -396,7 +393,7 @@ namespace RogueTower
         public int FinesseCounter = 0;
         public float LastCombo;
         public int FinesseLimit;
-        public WeaponRapier(double damage, float weaponSizeMult, Vector2 weaponSize, int finesseLimit = 2) : base("Rapier", "", damage, weaponSizeMult, weaponSize, 1.0f, 1.2f)
+        public WeaponRapier(double damage, Vector2 weaponSize, int finesseLimit = 2) : base("Rapier", "", damage, weaponSize, 1.0f, 1.2f)
         {
             CanParry = true;
             FinesseLimit = finesseLimit;
@@ -469,7 +466,7 @@ namespace RogueTower
 
         }
 
-        public WeaponWandOrange(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Orange Wand", "", damage, weaponSizeMult, weaponSize, 1.0f, 1.0f)
+        public WeaponWandOrange(double damage, Vector2 weaponSize) : base("Orange Wand", "", damage, weaponSize, 1.0f, 1.0f)
         {
             CanParry = true;
         }
@@ -539,7 +536,7 @@ namespace RogueTower
 
         }
 
-        public WeaponWarhammer(double damage, float weaponSizeMult, Vector2 weaponSize) : base("Warhammer", "", damage, weaponSizeMult, weaponSize, 2.0f, 2.0f)
+        public WeaponWarhammer(double damage, Vector2 weaponSize) : base("Warhammer", "", damage, weaponSize, 2.0f, 2.0f)
         {
         }
 
@@ -586,7 +583,7 @@ namespace RogueTower
 
         }
 
-        public WeaponBoomerang(float damage, float weaponSizeMult, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSizeMult, weaponSize, 0.8f, 0.8f)
+        public WeaponBoomerang(float damage, Vector2 weaponSize) : base("Boomerang", "", damage, weaponSize, 0.8f, 0.8f)
         {
         }
 
