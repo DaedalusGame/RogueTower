@@ -13,5 +13,6 @@ namespace RogueTower
         Bullet,
         Effect,
         EffectDeath,
+        Invisible,
     }
 }

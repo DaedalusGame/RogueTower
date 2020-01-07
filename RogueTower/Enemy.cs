@@ -38,7 +38,8 @@ namespace RogueTower
         public float Hitstop;
         public Func<Vector2> VisualOffset = () => Vector2.Zero;
         public Func<ColorMatrix> VisualFlash = () => ColorMatrix.Identity;
-        public ColorMatrix VisualBaseColor => ColorMatrix.Identity;
+        public virtual ColorMatrix VisualBaseColor => ColorMatrix.Identity;
+        public virtual bool VisualInvisible => true;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 
@@ -239,7 +240,10 @@ namespace RogueTower
 
         public override IEnumerable<DrawPass> GetDrawPasses()
         {
-            yield return DrawPass.Foreground;
+            if(VisualInvisible)
+                yield return DrawPass.Invisible;
+            else
+                yield return DrawPass.Foreground;
         }
     }
     
@@ -441,6 +445,8 @@ namespace RogueTower
         public override bool CanParry => CurrentAction.CanParry;
         public override bool Incorporeal => CurrentAction.Incorporeal;
         public override bool Dead => CurrentAction is ActionEnemyDeath;
+
+        public override bool VisualInvisible => false;
 
         public Action CurrentAction;
 
@@ -667,8 +673,13 @@ namespace RogueTower
 
         public override IEnumerable<DrawPass> GetDrawPasses()
         {
-            yield return DrawPass.Background;
-            yield return DrawPass.Foreground;
+            if (VisualInvisible)
+                yield return DrawPass.Invisible;
+            else
+            {
+                yield return DrawPass.Background;
+                yield return DrawPass.Foreground;
+            }
         }
 
         public override void Draw(SceneGame scene, DrawPass pass)
@@ -1826,11 +1837,6 @@ namespace RogueTower
         {
             yield return Position;
             yield return Position + Head.Offset;
-        }
-
-        public override IEnumerable<DrawPass> GetDrawPasses()
-        {
-            yield return DrawPass.Foreground;
         }
 
         public override void Draw(SceneGame scene, DrawPass pass)
