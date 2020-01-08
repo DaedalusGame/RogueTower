@@ -24,7 +24,10 @@ namespace RogueTower
         public static Sound bgm_title_theme;
         public static Sound bgm_title_theme_epiano_accompaniment;
         public static SoundChannel Accompaniment1;
+        public static Sound sfx_clack;
         public static Sound sfx_explosion1;
+        public static Sound sfx_generic_buff;
+        public static Sound sfx_generic_debuff;
         public static Sound sfx_impact_blunt;
         public static Sound sfx_knife_throw;
         public static Sound sfx_player_charging;
@@ -157,7 +160,10 @@ namespace RogueTower
             bgm_title_theme_epiano_accompaniment = AudioMgr.LoadStreamedSound("sounds/bgm/generic_theme_for_roguetower_epiano_accompaniment.ogg");
             sfx_player_charging = AudioMgr.LoadStreamedSound("sounds/sfx/player_charge.wav");
 
+            sfx_clack = AudioMgr.LoadSound("sounds/sfx/clack.wav");
             sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
+            sfx_generic_buff = AudioMgr.LoadSound("sounds/sfx/buff_generic.wav");
+            sfx_generic_debuff = AudioMgr.LoadSound("sounds/sfx/debuff_generic.wav");
             sfx_impact_blunt = AudioMgr.LoadSound("sounds/sfx/impact_blunt.wav");
             sfx_knife_throw = AudioMgr.LoadSound("sounds/sfx/knife_throw.wav");
             sfx_player_disappointed = AudioMgr.LoadSound("sounds/sfx/player_disappointed.wav");
