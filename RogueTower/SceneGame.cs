@@ -64,7 +64,7 @@ namespace RogueTower
 
         public static WeaponState None => new NoneState();
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle);
-        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(18, 2), angle);
+        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
         public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
@@ -128,7 +128,8 @@ namespace RogueTower
         public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.9f);
         public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.9f);
         public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.1f);
-        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheath", 0, new Vector2(13, 2), angle, new Vector2(6, 10), 0.9f);
+        public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheathed", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
+        public static ShieldState KatanaSheathEmpty(float angle) => new ShieldState("katana_sheathed_empty", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
     }
 
     class ArmState
@@ -467,11 +468,11 @@ namespace RogueTower
             HealthShadow = new Healthbar(() => World.Player.Health, LerpHelper.Linear, 1.0);
 
             Backgrounds = new List<Background>();
-            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), () => new Vector2(10, 10), new Vector2(0.10f, 0.02f)) {XLooping = true, YLooping = true});
+            Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer2"), () => new Vector2(10, 10), new Vector2(-0.5f, 0.02f)) {XLooping = true, YLooping = true});
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.05f, -1f)) { XLooping = true, YLooping = false });
             //Backgrounds.Add(new Background(this, SpriteLoader.Instance.AddSprite("content/bg_parallax_layer3"), () => new Vector2(0, World.Height - CameraSize.Y), new Vector2(0.20f, -1f)) { XLooping = true, YLooping = false });
-            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1"), new Vector2(0, 192 - 24), new Vector2(-0.2f, 0.4f));
+            AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer1_new"), new Vector2(0, 192 - 24), new Vector2(-0.2f, 0.4f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer4"), new Vector2(0, 192 - 56), new Vector2(-0.2f, 0.4f));
             //AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer6"), new Vector2(0, 46), new Vector2(-0.15f, 0.4f)); //trees
             //AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer7"), new Vector2(0, 134), new Vector2(0.025f, -0.4f)); //trees close

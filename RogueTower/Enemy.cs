@@ -720,6 +720,8 @@ namespace RogueTower
             //Weapon = new WeaponUnarmed(10, 14, new Vector2(7, 28));
 
             Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
+            //Weapon = new WeaponKatana(15, new Vector2(10, 40));
+            //Weapon = new WeaponRapier(15, new Vector2(10, 40));
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
         }
@@ -910,7 +912,14 @@ namespace RogueTower
                                 CurrentAction = new ActionSlash(this, 2, 4, 4, 2, Weapon);
                             }
                         }
-                        else if (Weapon is WeaponKnife || Weapon is WeaponRapier)
+                        else if (Weapon is WeaponKatana katana)
+                        {
+                            if (katana.Sheathed)
+                            {
+                                CurrentAction = new ActionKatanaSlash(this, 2, 4, 12, 4, katana);
+                            }
+                        }
+                        else if (Weapon is WeaponKnife)
                         {
                             Action[] actionHolder =
                             {
@@ -918,6 +927,16 @@ namespace RogueTower
                                     new ActionDownStab(this, 4, 10, Weapon)
                             };
                             CurrentAction = actionHolder[Random.Next(0, actionHolder.Length - 1)];
+                        }
+                        else if (Weapon is WeaponRapier)
+                        {
+                            Velocity.X += OnGround ? GetFacingVector(Facing).X * 0.75f : GetFacingVector(Facing).X * 0.5f;
+                            if (OnGround)
+                            {
+                                Velocity.Y = -GetJumpVelocity(8);
+                                OnGround = false;
+                            }
+                            CurrentAction = new ActionRapierThrust(this, 4, 8, Weapon);
                         }
                         else if (Weapon is WeaponWandOrange)
                         {

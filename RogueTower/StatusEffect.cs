@@ -277,6 +277,7 @@ namespace RogueTower
                 }, 20);
                 Enemy.Health = 0;
                 Enemy.Death();
+                Message(Enemy, new Message("Your time has ran out!"));
                 Remove();
             }
         }
