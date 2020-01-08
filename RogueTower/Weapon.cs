@@ -34,11 +34,11 @@ namespace RogueTower
             WidthModifier = width;
         }
 
-        public virtual void GetPose(PlayerState pose)
+        public virtual void GetPose(EnemyHuman human, PlayerState pose)
         {
             pose.LeftArm = ArmState.Shield;
             pose.Shield = ShieldState.ShieldForward;
-            pose.Weapon = GetWeaponState(MathHelper.ToRadians(0));
+            pose.Weapon = GetWeaponState(human,MathHelper.ToRadians(0));
         }
 
         public static Weapon[] PresetWeaponList =
@@ -63,7 +63,7 @@ namespace RogueTower
             return new Vector2(left + right, up + down);
         }
 
-        public abstract WeaponState GetWeaponState(float angle);
+        public abstract WeaponState GetWeaponState(EnemyHuman human, float angle);
 
         public abstract void HandleAttack(Player player);
 
@@ -159,12 +159,12 @@ namespace RogueTower
             CanParry = false;
         }
 
-        public override void GetPose(PlayerState pose)
+        public override void GetPose(EnemyHuman human, PlayerState pose)
         {
             //NOOP
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.None;
         }
@@ -216,7 +216,14 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override void GetPose(EnemyHuman human, PlayerState pose)
+        {
+            pose.LeftArm = ArmState.Shield;
+            pose.Shield = ShieldState.ShieldForward;
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-90-22));
+        }
+
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Sword(angle);
         }
@@ -238,7 +245,7 @@ namespace RogueTower
                 else
                     Slash(player);
             }
-            
+
         }
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
@@ -249,6 +256,32 @@ namespace RogueTower
         protected override Item MakeCopy()
         {
             return new WeaponSword();
+        }
+    }
+
+    class WeaponFireSword : WeaponSword
+    {
+        public WeaponFireSword() : base()
+        {
+        }
+
+        public WeaponFireSword(double damage, Vector2 weaponSize) : base(damage, weaponSize)
+        {
+        }
+
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
+        {
+            return WeaponState.FireSword(angle, (int)(human.Lifetime * 0.5f));
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword_flame"), position);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponFireSword();
         }
     }
 
@@ -264,15 +297,15 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Katana(angle * 45);
         }
 
-        public override void GetPose(PlayerState pose)
+        public override void GetPose(EnemyHuman human, PlayerState pose)
         {
             pose.Shield = ShieldState.KatanaSheath(0.05f);
-            pose.Weapon = GetWeaponState(MathHelper.ToRadians(0));
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(0));
         }
 
         public override void HandleAttack(Player player)
@@ -315,7 +348,7 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Knife(angle);
         }
@@ -359,7 +392,7 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Lance(angle);
         }
@@ -399,7 +432,7 @@ namespace RogueTower
             FinesseLimit = finesseLimit;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Rapier(angle);
         }
@@ -471,13 +504,13 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override void GetPose(PlayerState pose)
+        public override void GetPose(EnemyHuman human, PlayerState pose)
         {
-            pose.Weapon = GetWeaponState(MathHelper.ToRadians(-45));
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-45));
             pose.WeaponHold = WeaponHold.Left;
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.WandOrange(angle);
         }
@@ -488,6 +521,10 @@ namespace RogueTower
             {
                 //TwoHandSlash(player, 3, 12);
                 player.CurrentAction = new ActionWandSwing(player, 10, 5, 20);
+            }
+            else if(player.Controls.AltAttack)
+            {
+                player.CurrentAction = new ActionWandBlast(player, 24, 12, this);
             }
             /*else if (player.Controls.AltAttack)
             {
@@ -540,7 +577,7 @@ namespace RogueTower
         {
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Warhammer(angle);
         }
@@ -587,7 +624,7 @@ namespace RogueTower
         {
         }
 
-        public override WeaponState GetWeaponState(float angle)
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Boomerang(angle);
         }

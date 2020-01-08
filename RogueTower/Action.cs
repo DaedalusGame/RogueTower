@@ -614,20 +614,20 @@ namespace RogueTower
                 default:
                 case (SwingAction.StartSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 22));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90 - 22));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90 - 45));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(45 + 22));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(4);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(45 + 22));
                     break;
             }
             
@@ -720,20 +720,20 @@ namespace RogueTower
                 case (SwingAction.StartSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(100));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(100));
                     break;
                 case (SwingAction.UpSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(125));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(125));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-75));
                     break;
                 case (SwingAction.FinishSwing):
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-75));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-75));
                     break;
             }
         }
@@ -783,12 +783,12 @@ namespace RogueTower
                 default:
                 case (SwingAction.UpSwing):
                     basePose.RightArm = ArmState.Angular(8);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 + 22.5f));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90 + 22.5f));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(0);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
             }
         }
@@ -886,12 +886,12 @@ namespace RogueTower
                 case (SwingAction.UpSwing):
                     basePose.Body = BodyState.Crouch(2);
                     basePose.RightArm = ArmState.Angular(6);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.RightArm = ArmState.Angular(1);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
             }
         }
@@ -1043,7 +1043,7 @@ namespace RogueTower
             basePose.Body = BodyState.Crouch(1);
             basePose.LeftArm = ArmState.Angular(4);
             basePose.RightArm = ArmState.Angular(2);
-            basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(90));
+            basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(90));
         }
     }
 
@@ -1144,13 +1144,13 @@ namespace RogueTower
                 case (SwingAction.UpSwing):
                     basePose.LeftArm = ArmState.Angular(9);
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90 - 45));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.LeftArm = ArmState.Angular(5);
                     basePose.RightArm = ArmState.Angular(3);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(45 + 22));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(45 + 22));
                     break;
             }
         }
@@ -1257,13 +1257,13 @@ namespace RogueTower
                 case (SwingAction.UpSwing):
                     basePose.LeftArm = ArmState.Angular(9);
                     basePose.RightArm = ArmState.Angular(11);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90 - 45));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90 - 45));
                     break;
                 case (SwingAction.DownSwing):
                     basePose.Body = BodyState.Crouch(1);
                     basePose.LeftArm = ArmState.Angular(0);
                     basePose.RightArm = ArmState.Angular(0);
-                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
             }
         }
@@ -1493,7 +1493,7 @@ namespace RogueTower
             basePose.Body = BodyState.Walk((int)WalkFrame);
             basePose.LeftArm = ArmState.Up;
             basePose.RightArm = ArmState.Up;
-            basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-90));
+            basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90));
 
         }
     }
@@ -1860,7 +1860,7 @@ namespace RogueTower
                     basePose.RightArm = ArmState.Angular(armAngle);
                     break;
             }
-            basePose.Weapon = Human.Weapon.GetWeaponState(armAngle);
+            basePose.Weapon = Human.Weapon.GetWeaponState(Human, armAngle);
         }
 
         public override void UpdateDiscrete()

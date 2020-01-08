@@ -183,6 +183,7 @@ namespace RogueTower
                     Shooter = Shooter,
                     FrameEnd = 20,
                 };
+                new Ring(World, Position, 0, 64, new Color(50, 50, 50), new Color(0,0,0), 15);
                 Destroy();
             }
         }

@@ -1009,10 +1009,10 @@ namespace RogueTower
                 BodyState.Stand,
                 ArmState.Angular(5),
                 ArmState.Angular(3),
-                Weapon.GetWeaponState(MathHelper.ToRadians(270 - 20)),
+                Weapon.GetWeaponState(this, MathHelper.ToRadians(270 - 20)),
                 ShieldState.None
             );
-            Weapon.GetPose(pose);
+            Weapon.GetPose(this, pose);
             return pose;
         }
 
@@ -1041,6 +1041,46 @@ namespace RogueTower
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
         {
             base.Hit(velocity, hurttime, invincibility / 10, damageIn);
+        }
+    }
+
+    class BlueDemon : EnemyHuman
+    {
+        public BlueDemon(GameWorld world, Vector2 position) : base(world, position)
+        {
+            Weapon = new WeaponFireSword(20, new Vector2(10, 40));
+            CurrentAction = new ActionIdle(this);
+            InitHealth(80);
+        }
+
+        public override void Create(float x, float y)
+        {
+            Box = World.Create(x, y, 12, 14);
+            Box.Data = this;
+            Box.AddTags(CollisionTag.Character);
+        }
+
+        public override PlayerState GetBasePose()
+        {
+            PlayerState pose = new PlayerState(
+                HeadState.Forward,
+                BodyState.Stand,
+                ArmState.Neutral,
+                ArmState.Neutral,
+                WeaponState.None,
+                ShieldState.None
+            );
+            Weapon.GetPose(this, pose);
+            return pose;
+        }
+
+        public override void SetPhenoType(PlayerState pose)
+        {
+            pose.Head.SetPhenoType("demon_blue");
+            pose.Body.SetPhenoType("armor");
+            pose.Body.Color = new Color(255, 128, 75);
+            pose.LeftArm.SetPhenoType("armor");
+            pose.RightArm.SetPhenoType("armor");
         }
     }
 
