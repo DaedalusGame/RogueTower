@@ -25,6 +25,7 @@ namespace RogueTower
         public string Sprite;
         public int Frame;
         public Vector2 Origin;
+        public Color Color = Color.White;
         public float Angle;
 
         public WeaponState(string sprite, int frame, Vector2 origin, float angle)
@@ -46,7 +47,7 @@ namespace RogueTower
                 mirror = SpriteEffects.FlipVertically;
             }
 
-            game.DrawSpriteExt(sprite, Frame, position - Origin, Origin, angle, mirror, depth);
+            game.DrawSpriteExt(sprite, Frame, position - Origin, Origin, angle, Vector2.One, mirror, Color, depth);
         }
 
         public class NoneState : WeaponState
@@ -78,6 +79,7 @@ namespace RogueTower
         public int Frame;
         public Vector2 Origin;
         public Vector2 Offset;
+        public Color Color = Color.White;
         public float Angle;
         public float Depth;
 
@@ -104,7 +106,7 @@ namespace RogueTower
                 mirror = SpriteEffects.FlipVertically;
             }
 
-            game.DrawSpriteExt(sprite, Frame, position + offset - Origin, Origin, angle, mirror, Depth);
+            game.DrawSpriteExt(sprite, Frame, position + offset - Origin, Origin, angle, Vector2.One, mirror, Color, Depth);
         }
 
         public class NoneState : ShieldState
@@ -171,6 +173,7 @@ namespace RogueTower
         };
 
         public string Pose;
+        public Color Color = Color.White;
         public string PhenoType = "char";
         public int Frame;
         public Vector2[] HoldOffsetLeft;
@@ -237,7 +240,7 @@ namespace RogueTower
         {
             SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_{GetTypeString(type)}arm_{Pose}", true);
 
-            game.DrawSprite(sprite, Frame, position, mirror, depth);
+            game.DrawSprite(sprite, Frame, position, mirror, Color, depth);
         }
 
         public static ArmState Neutral => new ArmState("neutral", 0, new Vector2(13, 10), new Vector2(3, 10));
@@ -255,6 +258,7 @@ namespace RogueTower
         public string Pose;
         public int Frame;
         public Vector2 Offset;
+        public Color Color = Color.White;
         public string PhenoType = "char";
 
         public BodyState(string pose, int frame, Vector2 offset)
@@ -274,7 +278,7 @@ namespace RogueTower
         {
             SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_body_{Pose}", true);
 
-            game.DrawSprite(sprite, Frame, position, mirror, depth);
+            game.DrawSprite(sprite, Frame, position, mirror, Color, depth);
         }
 
         public static BodyState Stand => new BodyState("walk", 0, Vector2.Zero);
@@ -289,6 +293,7 @@ namespace RogueTower
     {
         public string Pose;
         public int Frame;
+        public Color Color = Color.White;
         public string PhenoType = "char";
 
         public HeadState(string pose, int frame)
@@ -307,7 +312,7 @@ namespace RogueTower
         {
             SpriteReference sprite = SpriteLoader.Instance.AddSprite($"content/{PhenoType}_head_{Pose}", true);
 
-            game.DrawSprite(sprite, Frame, position + new Vector2(0,16 - sprite.Height), mirror, depth);
+            game.DrawSprite(sprite, Frame, position + new Vector2(0,16 - sprite.Height), mirror, Color, depth);
         }
 
         public static HeadState Forward => new HeadState("front", 0);
@@ -361,6 +366,32 @@ namespace RogueTower
         }
     }
 
+    class DrawStackFrame
+    {
+        public SpriteSortMode SortMode;
+        public BlendState BlendState;
+        public SamplerState SamplerState;
+        public Matrix Transform;
+        public Effect Shader;
+        public Action<Matrix> ShaderSetup;
+
+        public DrawStackFrame(SpriteSortMode sortMode, BlendState blendState, SamplerState samplerState, Matrix transform, Effect shader, Action<Matrix> shaderSetup)
+        {
+            SortMode = sortMode;
+            BlendState = blendState;
+            SamplerState = samplerState;
+            Transform = transform;
+            Shader = shader;
+            ShaderSetup = shaderSetup;
+        }
+
+        public void Apply(SceneGame scene)
+        {
+            ShaderSetup(Transform);
+            scene.SpriteBatch.Begin(SortMode, BlendState, SamplerState, null, RasterizerState.CullNone, Shader, Transform);
+        }
+    }
+
     class SceneGame : Scene
     {
         public static bool DebugWeapons = false; //Makes every weapon appear as the sword, for normalization
@@ -371,7 +402,9 @@ namespace RogueTower
         public GameWorld World;
         public Map Map => World.Map;
 
-        public RenderTarget2D CameraTarget;
+        public RenderTarget2D CameraTargetA;
+        public RenderTarget2D CameraTargetB;
+        public RenderTarget2D DistortionMap;
         public Vector2 Camera;
         public Vector2 CameraSize => new Vector2(Viewport.Width / 2, Viewport.Height / 2);
         public Vector2 CameraPosition => FitCamera(Camera - CameraSize / 2);
@@ -390,6 +423,15 @@ namespace RogueTower
         public InputAction InputAction;
 
         List<Background> Backgrounds;
+        Stack<DrawStackFrame> SpriteBatchStack = new Stack<DrawStackFrame>();
+
+        BlendState NonPremultiplied = new BlendState
+        {
+            ColorSourceBlend = Blend.SourceAlpha,
+            ColorDestinationBlend = Blend.InverseSourceAlpha,
+            AlphaSourceBlend = Blend.One,
+            AlphaDestinationBlend = Blend.InverseSourceAlpha,
+        };
 
         private Matrix CreateViewMatrix()
         {
@@ -489,14 +531,32 @@ namespace RogueTower
             }
         }
 
+        private void SwapBuffers()
+        {
+            var helper = CameraTargetA;
+            CameraTargetA = CameraTargetB;
+            CameraTargetB = helper;
+        }
+
         public override void Draw(GameTime gameTime)
         {
-            if(CameraTarget == null || CameraTarget.IsContentLost)
+            if (CameraTargetA == null || CameraTargetA.IsContentLost)
             {
-                CameraTarget = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
+                CameraTargetA = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
             }
 
-            GraphicsDevice.SetRenderTarget(CameraTarget);
+            if (CameraTargetB == null || CameraTargetB.IsContentLost)
+            {
+                CameraTargetB = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
+            }
+
+            if (DistortionMap == null || DistortionMap.IsContentLost)
+            {
+                DistortionMap = new RenderTarget2D(GraphicsDevice, Viewport.Width, Viewport.Height);
+            }
+
+
+            GraphicsDevice.SetRenderTarget(CameraTargetA);
 
             Projection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, 0, -1);
             WorldTransform = CreateViewMatrix();
@@ -510,21 +570,21 @@ namespace RogueTower
             }
 
             //Background Gradient
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
+            SpriteBatch.Begin(blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
             Color bg1 = new Color(32, 19, 48);
             Color bg2 = new Color(126, 158, 153);
             SetupGradient(bg1, bg1, bg2, bg2, Matrix.Identity);
             SpriteBatch.Draw(Pixel, new Rectangle(0, 0, (int)Viewport.Width, (int)Viewport.Height), Color.White);
             SpriteBatch.End();
 
-            SpriteBatch.Begin(SpriteSortMode.Deferred, blendState: BlendState.NonPremultiplied, samplerState: SamplerState.PointWrap, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
-            foreach(Background bg in Backgrounds)
+            SpriteBatch.Begin(SpriteSortMode.Deferred, blendState: NonPremultiplied, samplerState: SamplerState.PointWrap, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
+            foreach (Background bg in Backgrounds)
             {
                 bg.Draw(SpriteBatch);
             }
             SpriteBatch.End();
 
-            StartNormalBatch();
+            PushSpriteBatch(samplerState: SamplerState.PointClamp, blendState: NonPremultiplied, transform: WorldTransform);
 
             Rectangle drawZone = GetDrawZone();
 
@@ -547,7 +607,7 @@ namespace RogueTower
             }
             DepthShear = Shear.All;
 
-            foreach(GameObject obj in passes[DrawPass.Bullet])
+            foreach (GameObject obj in passes[DrawPass.Bullet])
             {
                 DrawObject(obj, drawZone, DrawPass.Bullet);
             }
@@ -557,25 +617,61 @@ namespace RogueTower
                 DrawObject(obj, drawZone, DrawPass.Effect);
             }
 
-            SpriteBatch.End();
+            PopSpriteBatch();
             foreach (GameObject obj in passes[DrawPass.EffectDeath])
             {
                 DrawObject(obj, drawZone, DrawPass.EffectDeath);
             }
 
+            GraphicsDevice.SetRenderTarget(DistortionMap);
+            var testNoise = SpriteLoader.Instance.AddSprite("content/testnoise2");
+
+
+
+            PushSpriteBatch(samplerState: SamplerState.LinearWrap, blendState: BlendState.Additive, transform: WorldTransform, shader: Shader, shaderSetup: (matrix) =>
+            {
+                float blur = 20f / 255;
+                SetupColorMatrix(new ColorMatrix(new Matrix(
+                    0, 0, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 0, 1),
+                    new Vector4(blur, blur, blur, 0)), matrix);
+            });
+            foreach (GameObject obj in passes[DrawPass.Invisible])
+            {
+                DrawObject(obj, drawZone, DrawPass.Invisible);
+            }
+            PopSpriteBatch();
+            SpriteBatch.Begin(samplerState: SamplerState.LinearWrap, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone);
+            //var noiseOffset = AngleToVector(Frame * 0.1f) * 30;
+            //noiseOffset = new Vector2(-Frame * 0.4f, -Frame*2);
+            //SpriteBatch.Draw(testNoise.Texture, DistortionMap.Bounds, new Rectangle((int)noiseOffset.X, (int)noiseOffset.Y, DistortionMap.Width / 2,DistortionMap.Height / 2), Color.Gray);
+            //SpriteBatch.Draw(Pixel, new Rectangle(0,0, DistortionMap.Width / 2, DistortionMap.Height), Color.White);
+            SpriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(CameraTargetB);
+         
+            SpriteBatch.Begin(samplerState: SamplerState.LinearClamp, blendState: BlendState.Additive, rasterizerState: RasterizerState.CullNone, effect: Shader);
+            SetupDistortion(DistortionMap, new Vector2(30f / DistortionMap.Width, 30f / DistortionMap.Height), Matrix.Identity, Matrix.Identity);
+            SpriteBatch.Draw(CameraTargetA, CameraTargetA.Bounds, Color.White);
+            SpriteBatch.End();
+            SwapBuffers();
+
             GraphicsDevice.SetRenderTarget(null);
 
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, effect: Shader);
             ColorMatrix color = ColorMatrix.Identity;
 
             IEnumerable<ScreenFlash> screenFlashes = World.Effects.OfType<ScreenFlash>();
-            foreach(ScreenFlash screenFlash in screenFlashes)
+            foreach (ScreenFlash screenFlash in screenFlashes)
             {
                 color *= screenFlash.Color();
             }
 
             SetupColorMatrix(color, Matrix.Identity);
-            SpriteBatch.Draw(CameraTarget, CameraTarget.Bounds, Color.White);
+            SpriteBatch.Draw(CameraTargetA, CameraTargetA.Bounds, Color.White);
+            //SpriteBatch.Draw(DistortionMap, DistortionMap.Bounds, Color.White);
             SpriteBatch.End();
 
             StartNormalBatch();
@@ -591,8 +687,12 @@ namespace RogueTower
                 }
             }
             SpriteBatch.End();
+            DrawHUD();
+        }
 
-            SpriteBatch.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, samplerState: SamplerState.PointWrap);
+        private void DrawHUD()
+        {
+            SpriteBatch.Begin(blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, samplerState: SamplerState.PointWrap);
 
             //This twisted game needs to be reset, and with this health bar we're one step closer to a world without undying borders.
             //Also, please clean this up if you can, if not that's okay too lmao. - Church
@@ -899,7 +999,7 @@ namespace RogueTower
             var passes = EnumerateCloseTiles(map, drawX, drawY, drawRadius).SelectMany(tile => GetPasses(tile).Select(pass => Tuple.Create(tile, pass))).ToLookup(tile => tile.Item2, tile => tile.Item1);
             DrawMapPass(passes[0]);
             SpriteBatch.End();
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform, effect: Shader);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform, effect: Shader);
             ColorMatrix iceBackground = new ColorMatrix(new Matrix(
               0, 0, 0, 0,
               0, 0, 0, 0,
@@ -1042,19 +1142,9 @@ namespace RogueTower
             if (human.Facing == HorizontalFacing.Left)
                 mirror = SpriteEffects.FlipHorizontally;
 
-            Vector2 position = human.Position;
-
             PlayerState state = human.GetBasePose();
             human.CurrentAction.GetPose(state);
             human.SetPhenoType(state);
-
-            if (DebugWeapons)
-                state.Weapon = WeaponState.Sword(state.Weapon.Angle);
-
-            if (state.Body == BodyState.Kneel)
-            {
-                position += new Vector2(0, 1);
-            }
 
             if(human.Invincibility > 0 && (int)human.Lifetime % 2 == 0)
             {
@@ -1068,7 +1158,7 @@ namespace RogueTower
             }
             color *= human.VisualFlash();
 
-            DrawPlayerState(state, position - new Vector2(8, 8) + human.VisualOffset(), mirror, color);
+            DrawPlayerState(state, human.Position - new Vector2(8, 8) + human.VisualOffset(), mirror, color);
         }
 
         public int AnimationFrame(SpriteReference sprite, float frame, float frameEnd)
@@ -1083,10 +1173,18 @@ namespace RogueTower
             //FORBIDDEN KNOWLEDGE
             //transform = transform * Matrix.CreateTranslation(-origin.X-16,-origin.Y-16, 0)  * Matrix.CreateRotationZ(MathHelper.Pi * Frame * 0.00f) * Matrix.CreateScale(3.0f, 1.0f, 1.0f) * Matrix.CreateTranslation(origin.X+16, origin.Y+16, 0);
 
-            SpriteBatch.End();
+            PushSpriteBatch(sortMode: SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, shader: Shader, shaderSetup: (matrix) =>
+            {
+                SetupColorMatrix(color, matrix);
+            });
 
-            SetupColorMatrix(color, transform);
-            SpriteBatch.Begin(SpriteSortMode.FrontToBack, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: transform, effect: Shader);
+            if (DebugWeapons)
+                state.Weapon = WeaponState.Sword(state.Weapon.Angle);
+
+            if (state.Body == BodyState.Kneel)
+            {
+                position += new Vector2(0, 1);
+            }
 
             Vector2 offset = state.Body.Offset;
             if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
@@ -1121,15 +1219,19 @@ namespace RogueTower
                 weaponHold.X = 16 - weaponHold.X;
             state.Weapon.Draw(this, position + offset + weaponHold, mirror, weaponDepth);
 
-            SpriteBatch.End();
-            StartNormalBatch();
+            PopSpriteBatch();
         }
 
         public void DrawSprite(SpriteReference sprite, int frame, Vector2 position, SpriteEffects mirror, float depth)
         {
+            DrawSprite(sprite, frame, position, mirror, Color.White, depth);
+        }
+
+        public void DrawSprite(SpriteReference sprite, int frame, Vector2 position, SpriteEffects mirror, Color color, float depth)
+        {
             if (!DepthShear.Contains(depth))
                 return;
-            SpriteBatch.Draw(sprite.Texture, position, sprite.GetFrameRect(frame), Color.White, 0, Vector2.Zero, Vector2.One, mirror, depth);
+            SpriteBatch.Draw(sprite.Texture, position, sprite.GetFrameRect(frame), color, 0, Vector2.Zero, Vector2.One, mirror, depth);
         }
 
         public void DrawSpriteExt(SpriteReference sprite, int frame, Vector2 position, Vector2 origin, float angle, SpriteEffects mirror, float depth)
@@ -1144,9 +1246,27 @@ namespace RogueTower
             SpriteBatch.Draw(sprite.Texture, position + origin, sprite.GetFrameRect(frame), color, angle, origin, scale.Mirror(mirror), SpriteEffects.None, depth);
         }
 
+        public void DrawCircle(SpriteReference sprite, int frame, Vector2 position, float radius, Color color)
+        {
+            PushSpriteBatch(samplerState: SamplerState.LinearClamp, shader: Shader, shaderSetup: (transform) =>
+            {
+                SetupCircle(sprite.GetFrameMatrix(frame), transform);
+            });
+            int intRadius = (int)radius;
+            var area = new Rectangle((int)position.X - intRadius, (int)position.Y - intRadius, intRadius * 2 + 1, intRadius * 2 + 1);
+            SpriteBatch.Draw(sprite.Texture, area, sprite.GetFrameRect(0), color);
+            PopSpriteBatch();
+        }
+
         public void StartNormalBatch()
         {
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState:BlendState.NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, transformMatrix: WorldTransform);
+        }
+
+        public void SetupNormal(Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["BasicColorDrawing"];
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
         }
 
         public void SetupColorMatrix(ColorMatrix matrix)
@@ -1159,6 +1279,24 @@ namespace RogueTower
             Shader.CurrentTechnique = Shader.Techniques["ColorMatrix"];
             Shader.Parameters["color_matrix"].SetValue(matrix.Matrix);
             Shader.Parameters["color_add"].SetValue(matrix.Add);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+        }
+
+        public void SetupColorMatrixThreshold(ColorMatrix matrixA, ColorMatrix matrixB, Texture2D map, Matrix mapTransform, float threshold)
+        {
+            SetupColorMatrixThreshold(matrixA, matrixB, map, mapTransform, threshold, WorldTransform);
+        }
+
+        public void SetupColorMatrixThreshold(ColorMatrix matrixA, ColorMatrix matrixB, Texture2D map, Matrix mapTransform, float threshold, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["ColorMatrixThreshold"];
+            Shader.Parameters["color_matrix"].SetValue(matrixA.Matrix);
+            Shader.Parameters["color_add"].SetValue(matrixA.Add);
+            Shader.Parameters["threshold_color_matrix"].SetValue(matrixB.Matrix);
+            Shader.Parameters["threshold_color_add"].SetValue(matrixB.Add);
+            Shader.Parameters["threshold"].SetValue(threshold);
+            Shader.Parameters["texture_map"].SetValue(map);
+            Shader.Parameters["map_transform"].SetValue(mapTransform);
             Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
         }
 
@@ -1202,12 +1340,68 @@ namespace RogueTower
             Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
         }
 
+        public void SetupCircle(Matrix mapTransform)
+        {
+            SetupCircle(mapTransform, WorldTransform);
+        }
+
+        public void SetupCircle(Matrix mapTransform, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["Circle"];
+            Shader.Parameters["map_transform"].SetValue(mapTransform);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+        }
+
+        public void SetupDistortion(Texture2D map, Vector2 offset, Matrix mapTransform)
+        {
+            SetupDistortion(map, offset, mapTransform, WorldTransform);
+        }
+
+        public void SetupDistortion(Texture2D map, Vector2 offset, Matrix mapTransform, Matrix transform)
+        {
+            Shader.CurrentTechnique = Shader.Techniques["Distort"];
+            Shader.Parameters["distort_offset"].SetValue(offset);
+            Shader.Parameters["texture_map"].SetValue(map);
+            Shader.Parameters["map_transform"].SetValue(mapTransform);
+            Shader.Parameters["WorldViewProjection"].SetValue(transform * Projection);
+        }
+
         public float CalculateHeightSlide(float transitionStart, float transitionEnd, Player player, bool clamp = false)
         {
             var transitionSize = transitionStart - transitionEnd;
             var yRelative = player.Position.Y - transitionEnd;
             return clamp? MathHelper.Clamp(1 - (yRelative / transitionSize), 0, 1) : 1 - (yRelative / transitionSize);
+        }
 
+        public void PushSpriteBatch(SpriteSortMode? sortMode = null, BlendState blendState = null, SamplerState samplerState = null, Matrix? transform = null, Effect shader = null, Action<Matrix> shaderSetup = null)
+        {
+            var lastState = SpriteBatchStack.Any() ? SpriteBatchStack.Peek() : null;
+            if (sortMode == null)
+                sortMode = lastState?.SortMode ?? SpriteSortMode.Deferred;
+            if (blendState == null)
+                blendState = lastState?.BlendState ?? NonPremultiplied;
+            if (samplerState == null)
+                samplerState = lastState?.SamplerState ?? SamplerState.PointClamp;
+            if (transform == null)
+                transform = lastState?.Transform ?? Matrix.Identity;
+            if (shaderSetup == null)
+                shaderSetup = SetupNormal;
+            var newState = new DrawStackFrame(sortMode.Value, blendState, samplerState, transform.Value, shader, shaderSetup);
+            if (!SpriteBatchStack.Empty())
+                SpriteBatch.End();
+            newState.Apply(this);
+            SpriteBatchStack.Push(newState);
+        }
+
+        public void PopSpriteBatch()
+        {
+            SpriteBatch.End();
+            SpriteBatchStack.Pop();
+            if (!SpriteBatchStack.Empty())
+            {
+                var lastState = SpriteBatchStack.Peek();
+                lastState.Apply(this);
+            }
         }
     }
 }

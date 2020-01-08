@@ -276,6 +276,9 @@ namespace RogueTower
                 if (nearest.AutoPickup)
                     Pickup(nearest);
             }
+
+            if ((int)Lifetime % 20 == 0)
+                new Ring(World, Position, 10, 60, Color.Gray, new Color(Color.Gray,0), 30);
         }
 
         public override PlayerState GetBasePose()
@@ -294,6 +297,12 @@ namespace RogueTower
 
         public override void SetPhenoType(PlayerState pose)
         {
+            pose.Body.SetPhenoType("armor");
+            pose.Body.Color = Color.PaleVioletRed;
+            pose.LeftArm.SetPhenoType("armor");
+            pose.LeftArm.Color = Color.PaleVioletRed;
+            pose.RightArm.SetPhenoType("armor");
+            pose.RightArm.Color = Color.PaleVioletRed;
             //NOOP
         }
 

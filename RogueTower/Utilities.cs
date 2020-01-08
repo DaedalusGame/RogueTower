@@ -127,6 +127,11 @@ namespace RogueTower
             return enumerable.Aggregate((i1, i2) => selector(i1).CompareTo(selector(i2)) > 0 ? i1 : i2);
         }
 
+        public static bool Empty<T>(this IEnumerable<T> enumerable)
+        {
+            return !enumerable.Any();
+        }
+
         public static DijkstraTile[,] Dijkstra(Point start, int width, int height, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
         {
             var dijkstraMap = new DijkstraTile[width, height];

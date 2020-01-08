@@ -136,6 +136,13 @@ namespace RogueTower
             return new Rectangle((frame % SubImageCount) * Width, 0, Width, Height);
         }
 
+        public Matrix GetFrameMatrix(int frame)
+        {
+            var w = GetFrameMaxU(frame) - GetFrameMinU(frame);
+            var h = GetFrameMaxV(frame) - GetFrameMinV(frame);
+            return Matrix.CreateScale(w, h, 1) * Matrix.CreateTranslation(GetFrameMinU(frame), GetFrameMinV(frame), 0);
+        }
+
         public float GetFrameMinU(int frame)
         {
             return (frame % SubImageCount) * Width / Texture.Width;

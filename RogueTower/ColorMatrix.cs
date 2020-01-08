@@ -101,6 +101,25 @@ namespace RogueTower
               new Vector4(0, 0, 0, 0));
         }
 
+        public static ColorMatrix TwoColor(Color black, Color white)
+        {
+            float aR = black.R / 255f;
+            float aG = black.G / 255f;
+            float aB = black.B / 255f;
+            float aA = black.A / 255f;
+            float bR = white.R / 255f;
+            float bG = white.G / 255f;
+            float bB = white.B / 255f;
+            float bA = white.A / 255f;
+
+            return new ColorMatrix(new Matrix(
+              (bR - aR), 0, 0, 0,
+              0, (bG - aG), 0, 0,
+              0, 0, (bB - aB), 0,
+              0, 0, 0, (bA - aA)),
+              new Vector4(aR, aG, aB, aA));
+        }
+
         public static ColorMatrix Saturate(float saturation)
         {
             return Lerp(Greyscale(), Identity, saturation);
