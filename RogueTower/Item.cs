@@ -40,6 +40,8 @@ namespace RogueTower
         public string Description;
         public bool Destroyed;
 
+        public Random WeaponRandomVal = new Random();
+
         public virtual ItemMemoryKey MemoryKey => MemoryKnown;
         public virtual string FakeName => Name;
         public virtual string FakeDescription => Description;

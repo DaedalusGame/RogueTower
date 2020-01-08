@@ -285,7 +285,9 @@ namespace RogueTower
             }
             else if (player.Controls.Attack && Sheathed)
             {
-                player.CurrentAction = new ActionKatanaSlash(player, 2, 4, 12, 10, this);
+                player.CurrentAction = new ActionKatanaSlash(player, 2, 4, 12, 4, this);
+                if (player.OnGround)
+                    player.Velocity.X += GetFacingVector(player.Facing).X * 2;
             }
         }
 
@@ -387,13 +389,9 @@ namespace RogueTower
 
         }
 
-        public int FinesseCounter = 0;
-        public float LastCombo;
-        public int FinesseLimit;
-        public WeaponRapier(double damage, Vector2 weaponSize, int finesseLimit = 2) : base("Rapier", "", damage, weaponSize, 1.0f, 1.2f)
+        public WeaponRapier(double damage, Vector2 weaponSize) : base("Rapier", "", damage, weaponSize, 1.0f, 1.2f)
         {
             CanParry = true;
-            FinesseLimit = finesseLimit;
         }
 
         public override void GetPose(PlayerState pose)
@@ -409,47 +407,17 @@ namespace RogueTower
             return WeaponState.Rapier(angle);
         }
 
-        public void IncrementFinesse(Player player)
-        {
-            LastCombo = player.Lifetime;
-            FinesseCounter++;
-        }
         public override void HandleAttack(Player player)
         {
-            if (player.Lifetime - LastCombo > 45)
-                FinesseCounter = 0;
-            if (player.Controls.Attack && FinesseCounter < FinesseLimit)
+            if (player.Controls.Attack && !(player.CurrentAction is ActionRapierThrust))
             {
-                IncrementFinesse(player);
-
-                if (player.CurrentAction.GetType() == typeof(ActionSlash))
-                    SlashUp(player);
-                else
+                player.Velocity.X += player.OnGround ? GetFacingVector(player.Facing).X * 0.75f : GetFacingVector(player.Facing).X * 0.5f;
+                if (player.OnGround && !player.Controls.ClimbDown)
                 {
-                    Slash(player);
+                    player.Velocity.Y = -player.GetJumpVelocity(8);
+                    player.OnGround = false;
                 }
-            }
-            else if (player.Controls.Attack && FinesseCounter >= FinesseLimit)
-            {
-                if (FinesseCounter == FinesseLimit)
-                {
-                    DashAttack(player, new ActionDownStab(player, 4, 2, this), dashFactor: 4, reversed: true);
-                    IncrementFinesse(player);
-                }
-                else if (FinesseCounter == FinesseLimit + 1)
-                {
-                    if (player.OnGround)
-                    {
-                        player.Velocity.Y = -2.5f;
-                        player.OnGround = false;
-                    }
-                    DashAttack(player, new ActionStab(player, 4, 2, this), dashTime: 6, dashFactor: 4);
-                    FinesseCounter = 0;
-                }
-            }
-            if (player.Controls.AltAttack)
-            {
-                player.CurrentAction = new ActionDash(player, 2, 4, 2, 3, false, true);
+                player.CurrentAction = new ActionRapierThrust(player, 4, 8, this);                    
             }
         }
 

@@ -1005,6 +1005,34 @@ namespace RogueTower
         }
     }
 
+    class ActionRapierThrust : ActionStab
+    {
+        public int ArmAttackAngle;
+        public ActionRapierThrust(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
+        {
+            ArmAttackAngle = Human.Weapon.WeaponRandomVal.Next(-3, 3);
+        }
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
+            switch (SlashAction)
+            {
+                default:
+                case (SwingAction.UpSwing):
+                    basePose.Body = BodyState.Crouch(2);
+                    basePose.LeftArm = ArmState.Angular(0);
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(-45));
+                    break;
+                case (SwingAction.DownSwing):
+                    basePose.Body = BodyState.Crouch(1);
+                    basePose.LeftArm = ArmState.Angular(ArmAttackAngle);
+                    basePose.RightArm = ArmState.Angular(8);
+                    basePose.Weapon = Weapon.GetWeaponState(MathHelper.ToRadians(0));
+                    break;
+            }
+        }
+    }
+
     class ActionKnifeThrow : ActionSlash
     {
         public override bool CanParry => false;
