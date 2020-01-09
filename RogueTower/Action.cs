@@ -860,6 +860,8 @@ namespace RogueTower
         public float SlashUpTime;
         public float SlashDownTime;
 
+        public Sound SwingSound = sfx_sword_swing;
+
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
         public override bool CanParry => IsUpSwing;
@@ -967,7 +969,7 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1028,6 +1030,38 @@ namespace RogueTower
                     basePose.Body = BodyState.Crouch(1);
                     basePose.LeftArm = ArmState.Angular(ArmAttackAngle);
                     basePose.RightArm = ArmState.Angular(8);
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
+                    break;
+            }
+        }
+    }
+
+    class ActionLanceThrust : ActionStab
+    {
+        public ActionLanceThrust(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
+        {
+            SwingSound = sfx_sword_stab;
+            new ScreenShakeRandom(Human.World, 5, 5);
+            Human.Velocity.X += GetFacingVector(Human.Facing).X * 1.5f;
+            if (!Human.OnGround)
+                Human.Velocity.Y += 1;
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
+            switch (SlashAction)
+            {
+                default:
+                case (SwingAction.UpSwing):
+                    basePose.Body = BodyState.Crouch(1);
+                    basePose.RightArm = ArmState.Angular(4);
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-135f));
+                    break;
+                case (SwingAction.DownSwing):
+                    basePose.Body = BodyState.Crouch(2);
+                    basePose.LeftArm = ArmState.Angular(7);
+                    basePose.RightArm = ArmState.Angular(0);
                     basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
             }

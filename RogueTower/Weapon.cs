@@ -392,6 +392,13 @@ namespace RogueTower
             CanParry = true;
         }
 
+        public override void GetPose(EnemyHuman human, PlayerState pose)
+        {
+            pose.RightArm = ArmState.Angular(7);
+            pose.Shield = ShieldState.ShieldForward;
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-90));
+        }
+
         public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Lance(angle);
@@ -399,9 +406,13 @@ namespace RogueTower
 
         public override void HandleAttack(Player player)
         {
-            if (player.Controls.AltAttack)
+            if (player.Controls.Attack)
             {
-                player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)), this, false, 0) { CanJump = true, CanMove = true };
+                player.CurrentAction = new ActionLanceThrust(player, 2, 12, this);
+            }
+            else if (player.Controls.AltAttack)
+            {
+                player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionLanceThrust(player, 2, 6, this)), this, false, 0) { CanJump = true, CanMove = true };
             }
         }
 

@@ -35,6 +35,7 @@ namespace RogueTower
         public static Sound sfx_player_hurt;
         public static Sound sfx_player_jump;
         public static Sound sfx_player_land;
+        public static Sound sfx_sword_stab;
         public static Sound sfx_sword_swing;
         public static Sound sfx_sword_bink;
         public static Sound sfx_tile_break;
@@ -171,6 +172,7 @@ namespace RogueTower
             sfx_player_jump = AudioMgr.LoadSound("sounds/sfx/jump_sfx.wav");
             sfx_player_land = AudioMgr.LoadSound("sounds/sfx/player_land.wav");
             sfx_sword_bink = AudioMgr.LoadSound("sounds/sfx/sword_bink.wav");
+            sfx_sword_stab = AudioMgr.LoadSound("sounds/sfx/sword_stab.wav");
             sfx_sword_swing = AudioMgr.LoadSound("sounds/sfx/sword_swing.wav");
             sfx_tile_break = AudioMgr.LoadSound("sounds/sfx/tilebreak_default.wav");
             sfx_tile_icebreak = AudioMgr.LoadSound("sounds/sfx/icetile_swordbreak.wav");

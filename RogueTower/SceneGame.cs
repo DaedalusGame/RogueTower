@@ -68,7 +68,7 @@ namespace RogueTower
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle, 6);
         public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle, 16);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle, 6);
-        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle, 32);
+        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(8, 3), angle, 32);
         public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle, 16);
         public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle, 10);
         public static WeaponState FireSword(float angle, int frame) => new WeaponState("sword_flame", frame, new Vector2(1, 4), angle, 14);
