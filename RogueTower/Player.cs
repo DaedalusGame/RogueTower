@@ -123,12 +123,21 @@ namespace RogueTower
 
         }
 
-        public void Reset()
+        public void ResetHeld()
         {
             MoveLeft = false;
             MoveRight = false;
-            Jump = false;
             JumpHeld = false;
+
+            AltAttackHeld = false;
+
+            ClimbUp = false;
+            ClimbDown = false;
+        }
+
+        public void ResetPress()
+        {
+            Jump = false;
 
             Attack = false;
             ForwardAttack = false;
@@ -136,11 +145,7 @@ namespace RogueTower
             DownAttack = false;
             UpAttack = false;
             AltAttack = false;
-            AltAttackHeld = false;
             Pickup = false;
-
-            ClimbUp = false;
-            ClimbDown = false;
 
             AimFire = false;
         }
@@ -252,7 +257,7 @@ namespace RogueTower
         protected override void HandleInput()
         {
             CurrentAction.OnInput();
-            Controls.Reset();
+            Controls.ResetPress();
         }
 
         public override void Update(float delta)
@@ -262,11 +267,6 @@ namespace RogueTower
             int removed = Inventory.RemoveAll(item => item.Destroyed);
             if (removed > 0)
                 InventoryChanged = true;
-
-            if((int)Lifetime % 1 == 0)
-            {
-                new FireEffect(World, Position - new Vector2(8,8) + Pose.GetWeaponOffset(Facing.ToMirror()) + Pose.Weapon.GetOffset(Facing.ToMirror(),Random.NextFloat()), 0, 10);
-            }
         }
 
         protected override void UpdateDiscrete()
