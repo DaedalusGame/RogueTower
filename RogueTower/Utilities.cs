@@ -310,6 +310,18 @@ namespace RogueTower
             }
         }
 
+        public static SpriteEffects ToMirror(this HorizontalFacing facing)
+        {
+            switch(facing)
+            {
+                default:
+                case HorizontalFacing.Right:
+                    return SpriteEffects.None;
+                case HorizontalFacing.Left:
+                    return SpriteEffects.FlipHorizontally;
+            }
+        }
+
         public static int GetX(this HorizontalFacing facing)
         {
             switch (facing)

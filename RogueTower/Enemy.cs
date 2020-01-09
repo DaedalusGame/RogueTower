@@ -429,6 +429,7 @@ namespace RogueTower
     abstract class EnemyHuman : EnemyGravity
     {
         public HorizontalFacing Facing;
+        public PlayerState Pose;
 
         public override float Gravity => CurrentAction.HasGravity ? base.Gravity : 0;
         public override float Friction => CurrentAction.Friction;
@@ -491,6 +492,8 @@ namespace RogueTower
         protected override void UpdateDelta(float delta)
         {
             Lifetime += delta;
+
+            UpdatePose();
 
             HandleMovement(delta);
 
@@ -555,6 +558,13 @@ namespace RogueTower
                     steppedTile.StepOn(this);
                 }
             }
+        }
+
+        public void UpdatePose()
+        {
+            Pose = GetBasePose();
+            CurrentAction.GetPose(Pose);
+            SetPhenoType(Pose);
         }
 
         public abstract PlayerState GetBasePose();

@@ -27,13 +27,15 @@ namespace RogueTower
         public Vector2 Origin;
         public Color Color = Color.White;
         public float Angle;
+        public float Length;
 
-        public WeaponState(string sprite, int frame, Vector2 origin, float angle)
+        public WeaponState(string sprite, int frame, Vector2 origin, float angle, float length)
         {
             Sprite = sprite;
             Frame = frame;
             Origin = origin;
             Angle = angle;
+            Length = length;
         }
 
         public virtual void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
@@ -52,7 +54,7 @@ namespace RogueTower
 
         public class NoneState : WeaponState
         {
-            public NoneState() : base("", 0, Vector2.Zero, 0)
+            public NoneState() : base("", 0, Vector2.Zero, 0, 0)
             {
             }
 
@@ -63,17 +65,32 @@ namespace RogueTower
         }
 
         public static WeaponState None => new NoneState();
-        public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle);
-        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle);
-        public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle);
-        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle);
-        public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle);
-        public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle);
-        public static WeaponState FireSword(float angle, int frame) => new WeaponState("sword_flame", frame, new Vector2(1, 4), angle);
-        public static WeaponState WandOrange(float angle) => new WeaponState("wand_orange", 0, new Vector2(2, 4), angle);
-        public static WeaponState WandAzure(float angle) => new WeaponState("wand_azure", 0, new Vector2(2, 4), angle);
-        public static WeaponState WandJade(float angle, int frame) => new WeaponState("wand_jade", frame, new Vector2(2, 4), angle);
-        public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle);
+        public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle, 6);
+        public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle, 16);
+        public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle, 6);
+        public static WeaponState Lance(float angle) => new WeaponState("lance", 0, new Vector2(4, 4), angle, 32);
+        public static WeaponState Rapier(float angle) => new WeaponState("rapier", 0, new Vector2(5, 3), angle, 16);
+        public static WeaponState Sword(float angle) => new WeaponState("sword", 0, new Vector2(4, 4), angle, 10);
+        public static WeaponState FireSword(float angle, int frame) => new WeaponState("sword_flame", frame, new Vector2(1, 4), angle, 14);
+        public static WeaponState WandOrange(float angle) => new WeaponState("wand_orange", 0, new Vector2(2, 4), angle, 14);
+        public static WeaponState WandAzure(float angle) => new WeaponState("wand_azure", 0, new Vector2(2, 4), angle, 14);
+        public static WeaponState WandJade(float angle, int frame) => new WeaponState("wand_jade", frame, new Vector2(2, 4), angle, 14);
+        public static WeaponState Warhammer(float angle) => new WeaponState("warhammer", 0, new Vector2(14, 6), angle, 32);
+
+        public float GetAngle(SpriteEffects mirror)
+        {
+            var angle = Angle;
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+            {
+                angle = MirrorAngle(angle);
+            }
+            return angle + MathHelper.PiOver2;
+        }
+
+        public Vector2 GetOffset(SpriteEffects mirror, float slide)
+        {
+            return AngleToVector(GetAngle(mirror)) * Length * slide;
+        }
     }
 
     class ShieldState
@@ -125,9 +142,9 @@ namespace RogueTower
         }
 
         public static ShieldState None => new NoneState();
-        public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.9f);
-        public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.9f);
-        public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.1f);
+        public static ShieldState ShieldForward => new ShieldState("shield", 0, new Vector2(8,8), 0, new Vector2(8, 8), 0.65f);
+        public static ShieldState ShieldUp => new ShieldState("shield_up", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.65f);
+        public static ShieldState ShieldBack => new ShieldState("shield_back", 0, new Vector2(8, 8), 0, new Vector2(8, 8), 0.55f);
         public static ShieldState KatanaSheath(float angle) => new ShieldState("katana_sheathed", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
         public static ShieldState KatanaSheathEmpty(float angle) => new ShieldState("katana_sheathed_empty", 0, new Vector2(15, 2), angle, new Vector2(6, 10), 0.9f);
     }
@@ -208,7 +225,7 @@ namespace RogueTower
                 case Type.Left:
                     return HoldOffsetLeft[PositiveMod(Frame, HoldOffsetLeft.Length)];
                 case Type.Right:
-                    return HoldOffsetRight[PositiveMod(Frame, HoldOffsetLeft.Length)];
+                    return HoldOffsetRight[PositiveMod(Frame, HoldOffsetRight.Length)];
             }
         }
 
@@ -333,6 +350,23 @@ namespace RogueTower
         public ShieldState Shield;
         public WeaponHold WeaponHold = WeaponHold.Right;
 
+        public float WeaponDepth
+        {
+            get
+            {
+                switch (WeaponHold)
+                {
+                    default:
+                    case (WeaponHold.Left):
+                        return 0.55f;
+                    case (WeaponHold.Right):
+                        return 0.9f;
+                    case (WeaponHold.TwoHand):
+                        return (0.9f + 0.55f) / 2;
+                }
+            }
+        }
+
         public PlayerState(HeadState head, BodyState body, ArmState leftArm, ArmState rightArm, WeaponState weapon, ShieldState shield)
         {
             Head = head;
@@ -341,6 +375,54 @@ namespace RogueTower
             RightArm = rightArm;
             Weapon = weapon;
             Shield = shield;
+        }
+
+        public Vector2 GetWeaponOffset(SpriteEffects mirror)
+        {
+            Vector2 offset;
+            
+            switch (WeaponHold)
+            {
+                default:
+                case (WeaponHold.Left):
+                    offset = LeftArm.GetHoldOffset(ArmState.Type.Left);
+                    break;
+                case (WeaponHold.Right):
+                    offset = RightArm.GetHoldOffset(ArmState.Type.Right);
+                    break;
+                case (WeaponHold.TwoHand):
+                    offset = (LeftArm.GetHoldOffset(ArmState.Type.Left) + RightArm.GetHoldOffset(ArmState.Type.Right)) / 2;
+                    break;
+            }
+
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                offset.X = 16 - offset.X;
+
+            return GetBodyOffset(mirror) + offset;
+        }
+
+        public Vector2 GetBodyOffset(SpriteEffects mirror)
+        {
+            Vector2 offset = Body.Offset;
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                offset.X *= -1;
+            return offset;
+        }
+
+        public Vector2 GetLeftHandOffset(SpriteEffects mirror)
+        {
+            Vector2 offset = GetBodyOffset(mirror) + LeftArm.GetHoldOffset(ArmState.Type.Left);
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                offset.X = 16 - offset.X;
+            return offset;
+        }
+
+        public Vector2 GetRightHandOffset(SpriteEffects mirror)
+        {
+            Vector2 offset = GetBodyOffset(mirror) + RightArm.GetHoldOffset(ArmState.Type.Right);
+            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
+                offset.X = 16 - offset.X;
+            return offset;
         }
     }
 
@@ -1145,9 +1227,7 @@ namespace RogueTower
             if (human.Facing == HorizontalFacing.Left)
                 mirror = SpriteEffects.FlipHorizontally;
 
-            PlayerState state = human.GetBasePose();
-            human.CurrentAction.GetPose(state);
-            human.SetPhenoType(state);
+            PlayerState state = human.Pose;
 
             if(human.Invincibility > 0 && (int)human.Lifetime % 2 == 0)
             {
@@ -1184,14 +1264,7 @@ namespace RogueTower
             if (DebugWeapons)
                 state.Weapon = WeaponState.Sword(state.Weapon.Angle);
 
-            if (state.Body == BodyState.Kneel)
-            {
-                position += new Vector2(0, 1);
-            }
-
-            Vector2 offset = state.Body.Offset;
-            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
-                offset.X *= -1;
+            Vector2 offset = state.GetBodyOffset(mirror);
 
             state.Head.Draw(this, position + offset, mirror, 0.7f);
             state.Body.Draw(this, position + offset, mirror, 0.5f);
@@ -1199,28 +1272,10 @@ namespace RogueTower
             state.RightArm.Draw(this, ArmState.Type.Right, position + offset, mirror, 0.8f);
             state.Shield.Draw(this, position + offset, mirror, 0f);
 
-            Vector2 weaponHold;
-            float weaponDepth;
-            switch(state.WeaponHold)
-            {
-                default:
-                case (WeaponHold.Left):
-                    weaponHold = state.LeftArm.GetHoldOffset(ArmState.Type.Left);
-                    weaponDepth = 0.55f;
-                    break;
-                case (WeaponHold.Right):
-                    weaponHold = state.RightArm.GetHoldOffset(ArmState.Type.Right);
-                    weaponDepth = 0.9f;
-                    break;
-                case (WeaponHold.TwoHand):
-                    weaponHold = (state.LeftArm.GetHoldOffset(ArmState.Type.Left) + state.RightArm.GetHoldOffset(ArmState.Type.Right)) / 2;
-                    weaponDepth = (0.9f + 0.55f) / 2;
-                    break;
-            }
+            Vector2 weaponHold = state.GetWeaponOffset(mirror);
+            float weaponDepth = state.WeaponDepth;
 
-            if (mirror.HasFlag(SpriteEffects.FlipHorizontally))
-                weaponHold.X = 16 - weaponHold.X;
-            state.Weapon.Draw(this, position + offset + weaponHold, mirror, weaponDepth);
+            state.Weapon.Draw(this, position + weaponHold, mirror, weaponDepth);
 
             PopSpriteBatch();
         }

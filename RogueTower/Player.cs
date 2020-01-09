@@ -262,6 +262,11 @@ namespace RogueTower
             int removed = Inventory.RemoveAll(item => item.Destroyed);
             if (removed > 0)
                 InventoryChanged = true;
+
+            if((int)Lifetime % 1 == 0)
+            {
+                new FireEffect(World, Position - new Vector2(8,8) + Pose.GetWeaponOffset(Facing.ToMirror()) + Pose.Weapon.GetOffset(Facing.ToMirror(),Random.NextFloat()), 0, 10);
+            }
         }
 
         protected override void UpdateDiscrete()
