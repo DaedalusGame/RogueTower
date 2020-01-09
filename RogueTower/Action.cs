@@ -1013,7 +1013,7 @@ namespace RogueTower
         public int ArmAttackAngle;
         public ActionRapierThrust(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
         {
-            ArmAttackAngle = Human.Weapon.WeaponRandomVal.Next(-3, 3);
+            ArmAttackAngle = Human.Weapon.Random.Next(-3, 3);
         }
         public override void GetPose(PlayerState basePose)
         {
@@ -1033,6 +1033,16 @@ namespace RogueTower
                     basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
                     break;
             }
+        }
+
+        public override void SwingVisual(bool parry)
+        {
+            Vector2 FacingVector = GetFacingVector(Human.Facing);
+            float swingSize = 0.5f * Weapon.LengthModifier;
+            var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 9 + new Vector2(0,ArmAttackAngle*2), swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
+            if (parry)
+                effect.Frame = effect.FrameEnd / 2;
+            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1387,15 +1397,15 @@ namespace RogueTower
             DownSwing,
         }
 
-        public Vector2 FirePosition => Human.Position + GetFacingVector(Human.Facing) * 10;
+        public Vector2 FirePosition => Human.Position - new Vector2(8, 8) + Human.Pose.GetWeaponOffset(Human.Facing.ToMirror()) + Human.Pose.Weapon.GetOffset(Human.Facing.ToMirror(),1.0f);
         public virtual Vector2 TargetOffset => GetFacingVector(Human.Facing);
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
-        public Weapon Weapon;
+        public WeaponWand Weapon;
         public bool FireReady = true;
 
-        public ActionWandBlast(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human)
+        public ActionWandBlast(EnemyHuman human, float upTime, float downTime, WeaponWand weapon) : base(human)
         {
             SlashUpTime = upTime;
             SlashDownTime = downTime;
@@ -1454,15 +1464,10 @@ namespace RogueTower
         public void Fire()
         {
             SlashAction = SwingAction.DownSwing;
-            var homing = TargetOffset;
-            homing.Normalize();
-            new SpellOrange(Human.World, FirePosition)
-            {
-                Velocity = homing * 3,
-                FrameEnd = 70,
-                Shooter = Human
-            };
-            PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
+            Human.UpdatePose();
+            var direction = TargetOffset;
+            direction.Normalize();
+            Weapon.Shoot(Human, FirePosition, direction);
         }
     }
 
@@ -1472,7 +1477,7 @@ namespace RogueTower
 
         public override Vector2 TargetOffset => Target.Position - FirePosition;
 
-        public ActionWandBlastHoming(EnemyHuman human, Enemy target, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
+        public ActionWandBlastHoming(EnemyHuman human, Enemy target, float upTime, float downTime, WeaponWand weapon) : base(human, upTime, downTime, weapon)
         {
             Target = target;
         }
@@ -1485,10 +1490,22 @@ namespace RogueTower
 
         public override Vector2 TargetOffset => AngleToVector(AimAngle);
 
-        public ActionWandBlastAim(Player player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
+        public ActionWandBlastAim(Player player, float upTime, float downTime, WeaponWand weapon) : base(player, upTime, downTime, weapon)
         {
             FireReady = false;
             AimFX = new AimingReticule(player.World, Vector2.Zero, this);
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            if(Human is Player player)
+            {
+                if(!FireReady)
+                    AimAngle = player.Controls.AimAngle;
+                AimFX.Position = Human.Position + (AngleToVector(AimAngle) * 100);
+            }
+
+            base.UpdateDelta(delta);
         }
 
         public override void OnInput()
@@ -1496,15 +1513,17 @@ namespace RogueTower
             var player = (Player)Human;
             if (!FireReady)
             {
-                AimAngle = player.Controls.AimAngle;
                 var aimVector = AngleToVector(AimAngle);
-                Human.Facing = (aimVector.X < 0) ? HorizontalFacing.Left : HorizontalFacing.Right;
+                if (aimVector.X < -0.1)
+                    Human.Facing = HorizontalFacing.Left;
+                if (aimVector.X > 0.1)
+                    Human.Facing = HorizontalFacing.Right;
                 if (player.Controls.AimFire)
                 {
                     FireReady = true;
                 }
             }
-            AimFX.Position = player.Position + (AngleToVector(AimAngle) * 100);
+            
         }
     }
 

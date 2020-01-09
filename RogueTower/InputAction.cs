@@ -98,6 +98,7 @@ namespace RogueTower
                 return;
             }
 
+            Player.Controls.ResetHeld();
             Player.Controls.Update(scene);
 
             DroppedItem nearest = null;

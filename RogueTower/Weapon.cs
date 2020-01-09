@@ -48,6 +48,7 @@ namespace RogueTower
             new WeaponKatana(15, new Vector2(10, 40)),
             new WeaponRapier(15, new Vector2(10, 40)),
             new WeaponWandOrange(10, new Vector2(8, 32)),
+            new WeaponWandAzure(10, new Vector2(8, 32)),
             new WeaponLance(20, new Vector2(19, 76)),
             new WeaponWarhammer(30, new Vector2(18, 72)),
             new WeaponBoomerang(10, new Vector2(8, 8)),
@@ -112,11 +113,6 @@ namespace RogueTower
         public void TwoHandSlash(Player player, float upTime, float downTime)
         {
             player.CurrentAction = new ActionTwohandSlash(player, upTime, downTime, this);
-        }
-
-        public void WandBlast(Player player, Enemy target, float upTime, float downTime)
-        {
-            player.CurrentAction = new ActionWandBlastHoming(player, target, upTime, downTime, this);
         }
 
         public void ChargeAttack(Player player, float chargeTime, Action chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
@@ -478,7 +474,42 @@ namespace RogueTower
         }
     }
 
-    class WeaponWandOrange : Weapon
+    abstract class WeaponWand : Weapon
+    {
+        protected WeaponWand() : base()
+        {
+        }
+
+        public WeaponWand(string name, string description, double damage, Vector2 weaponSize, float width, float length) : base(name, description, damage, weaponSize, width, length)
+        {
+        }
+
+        public override void GetPose(EnemyHuman human, PlayerState pose)
+        {
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-45));
+            pose.WeaponHold = WeaponHold.Left;
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if (player.Controls.Attack)
+            {
+                player.CurrentAction = new ActionWandSwing(player, 10, 5, 20);
+            }
+            else if (player.Controls.AltAttack)
+            {
+                player.CurrentAction = new ActionWandBlast(player, 24, 12, this);
+            }
+            else if (player.Controls.IsAiming)
+            {
+                player.CurrentAction = new ActionWandBlastAim(player, 24, 12, this);
+            }
+        }
+
+        public abstract void Shoot(EnemyHuman shooter, Vector2 position, Vector2 direction);
+    }
+
+    class WeaponWandOrange : WeaponWand
     {
         protected WeaponWandOrange() : base()
         {
@@ -490,55 +521,20 @@ namespace RogueTower
             CanParry = true;
         }
 
-        public override void GetPose(EnemyHuman human, PlayerState pose)
-        {
-            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-45));
-            pose.WeaponHold = WeaponHold.Left;
-        }
-
         public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.WandOrange(angle);
         }
 
-        public override void HandleAttack(Player player)
+        public override void Shoot(EnemyHuman shooter, Vector2 position, Vector2 direction)
         {
-            if (player.Controls.Attack)
+            new SpellOrange(shooter.World, position)
             {
-                //TwoHandSlash(player, 3, 12);
-                player.CurrentAction = new ActionWandSwing(player, 10, 5, 20);
-            }
-            else if(player.Controls.AltAttack)
-            {
-                player.CurrentAction = new ActionWandBlast(player, 24, 12, this);
-            }
-            /*else if (player.Controls.AltAttack)
-            {
-                var SuccessOrFail = false;
-                Vector2 ScanBox = new Vector2(96, 96);
-                //new RectangleDebug(player.World, new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox), Color.Red, 10);
-                foreach (var Box in player.World.FindBoxes(new RectangleF(player.Position + GetFacingVector(player.Facing) * 8 + GetFacingVector(player.Facing) * (ScanBox.X / 2) + new Vector2(0, 1) - ScanBox / 2f, ScanBox)))
-                {
-                    if(Box.Data is Enemy enemy && Box.Data != player && enemy.CanDamage)
-                    {
-                        WandBlast(player, enemy, 24, 12);
-                        SuccessOrFail = true;
-                        break;
-                        //With my ability to control the projectile's direciton, it's up to you if they should still have homing.
-                    }
-
-                }
-                if (!SuccessOrFail)
-                {
-                    Vector2 Direction = Input2Direction(player);
-                    bool NoDirection = Direction.Equals(new Vector2(0, 0));
-                    WandBlastUntargeted(player, 24, 12);
-                }
-            }*/
-            else if(player.Controls.IsAiming)
-            {
-                player.CurrentAction = new ActionWandBlastAim(player, 24, 12, this);
-            }
+                Velocity = direction * 3,
+                FrameEnd = 70,
+                Shooter = shooter
+            };
+            PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
         }
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
@@ -549,6 +545,44 @@ namespace RogueTower
         protected override Item MakeCopy()
         {
             return new WeaponWandOrange();
+        }
+    }
+
+    class WeaponWandAzure : WeaponWand
+    {
+        protected WeaponWandAzure() : base()
+        {
+
+        }
+
+        public WeaponWandAzure(double damage, Vector2 weaponSize) : base("Azure Wand", "", damage, weaponSize, 1.0f, 1.0f)
+        {
+            CanParry = true;
+        }
+
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
+        {
+            return WeaponState.WandAzure(angle);
+        }
+
+        public override void Shoot(EnemyHuman shooter, Vector2 position, Vector2 direction)
+        {
+            new SpellAzure(shooter.World, position)
+            {
+                Velocity = direction * 3,
+                FrameEnd = 70,
+                Shooter = shooter
+            };
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_azure"), position);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponWandAzure();
         }
     }
 
