@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RogueTower.Game;
 using static RogueTower.Util;
 
 namespace RogueTower
@@ -97,6 +98,8 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
+            if(Enemy is Player player)
+                PlaySFX(sfx_generic_debuff, 1);
             PoisonFX = new StatusPoisonEffect(Enemy.World, this);
             Message(Enemy, new Message("You have been poisoned!"));
             //if (Enemy is Player player)
@@ -187,6 +190,8 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
+            if (Enemy is Player player)
+                PlaySFX(sfx_generic_debuff, 1);
             SlowFX = new StatusSlowEffect(Enemy.World, this);
             Message(Enemy, new Message("You slow down!"));
             //You slow down!
@@ -300,6 +305,8 @@ namespace RogueTower
 
         protected override void OnAdd()
         {
+            if (Enemy is Player player)
+                PlaySFX(sfx_generic_debuff, 1);
             Message(Enemy, new Message("You have been cursed!"));
             //You're cursed!
         }

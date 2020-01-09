@@ -819,6 +819,7 @@ namespace RogueTower
                     {
                         if(SlashFinishTime == InitialTime)
                         {
+                            PlaySFX(sfx_clack, 1, 0.45f, 0.5f);
                             new ParryEffect(Human.World, Human.Position, 0, InitialTime);
                         }
                         ArmAngle = MathHelper.Clamp(ArmAngle + 1, 0, 4);
