@@ -44,6 +44,7 @@ namespace RogueTower
         public static Weapon[] PresetWeaponList =
         {
             new WeaponSword(15, new Vector2(10, 40)),
+            new WeaponFireSword(20, new Vector2(10, 40)),
             new WeaponKnife(15, new Vector2(14 / 2, 14 * 2)),
             new WeaponKatana(15, new Vector2(10, 40)),
             new WeaponRapier(15, new Vector2(10, 40)),
@@ -52,7 +53,7 @@ namespace RogueTower
             new WeaponLance(20, new Vector2(19, 76)),
             new WeaponWarhammer(30, new Vector2(18, 72)),
             new WeaponBoomerang(10, new Vector2(8, 8)),
-            new WeaponUnarmed(10, new Vector2(14, 10))
+            new WeaponUnarmed(10, new Vector2(14, 10)),
         };
         public Vector2 Input2Direction(Player player)
         {
@@ -67,6 +68,27 @@ namespace RogueTower
         public abstract WeaponState GetWeaponState(EnemyHuman human, float angle);
 
         public abstract void HandleAttack(Player player);
+
+        public virtual void OnAttack(Action action, RectangleF hitmask)
+        {
+            //NOOP
+        }
+
+        public virtual void OnHit(Action action, Enemy target)
+        {
+            EnemyHuman attacker = action.Human;
+            target.Hit(Util.GetFacingVector(attacker.Facing) + new Vector2(0, -2), 20, 20, Damage);
+        }
+
+        public virtual void UpdateDelta(EnemyHuman holder, float delta)
+        {
+            //NOOP
+        }
+
+        public virtual void UpdateDiscrete(EnemyHuman holder)
+        {
+            //NOOP
+        }
 
         public void Slash(Player player, float slashStartTime = 2, float slashUpTime = 4, float slashDownTime = 8, float slashFinishTime = 2)
         {
@@ -257,12 +279,44 @@ namespace RogueTower
 
     class WeaponFireSword : WeaponSword
     {
+        bool FireballReady;
+        Bullet LastFireball;
+
         public WeaponFireSword() : base()
         {
         }
 
         public WeaponFireSword(double damage, Vector2 weaponSize) : base(damage, weaponSize)
         {
+        }
+
+        public override void OnAttack(Action action, RectangleF hitmask)
+        {
+            if (FireballReady)
+            {
+                EnemyHuman attacker = action.Human;
+                for (int i = -1; i <= 1; i++)
+                {
+                    var time = Random.NextFloat() * 10;
+                    LastFireball = new FireballBig(attacker.World, hitmask.Center + new Vector2(0, i * hitmask.Height / 2))
+                    {
+                        Velocity = GetFacingVector(attacker.Facing) * 3,
+                        Shooter = attacker,
+                        FrameEnd = 30 + time,
+                        Frame = time,
+                    };
+                }
+                FireballReady = false;
+            }
+        }
+
+        public override void UpdateDiscrete(EnemyHuman holder)
+        {
+            if(!FireballReady && !(holder.CurrentAction is ActionAttack) && (LastFireball == null || LastFireball.Destroyed))
+            {
+                new WeaponFlash(holder, 20);
+                FireballReady = true;
+            }
         }
 
         public override WeaponState GetWeaponState(EnemyHuman human, float angle)
