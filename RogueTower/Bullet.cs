@@ -166,32 +166,69 @@ namespace RogueTower
         {
             if (Destroyed || CheckFriendlyFire(hit.Box.Data))
                 return;
-            bool explode = false;
             if (hit.Box.Data is Enemy enemy && enemy.CanHit)
             {
-                explode = true;
+                Explode();
             }
             if(hit.Box.Data is Tile tile)
             {
-                explode = true;
+                Explode();
             }
-            if (explode)
+        }
+
+        private void Explode()
+        {
+            new ScreenShakeRandom(World, 5, 10);
+            new Explosion(World, Position)
             {
-                new ScreenShakeRandom(World, 5, 10);
-                new Explosion(World, Position)
-                {
-                    Shooter = Shooter,
-                    FrameEnd = 20,
-                };
-                new Ring(World, Position, 0, 64, new Color(50, 50, 50), new Color(0,0,0), 15);
-                Destroy();
-            }
+                Shooter = Shooter,
+                FrameEnd = 20,
+            };
+            new Ring(World, Position, 0, 64, new Color(50, 50, 50), new Color(0, 0, 0), 15);
+            Destroy();
         }
 
         public override void Draw(SceneGame scene, DrawPass pass)
         {
             var magicOrange = SpriteLoader.Instance.AddSprite("content/magic_orange");
             scene.DrawSprite(magicOrange, (int)Frame, Position - magicOrange.Middle, SpriteEffects.None, 0);
+        }
+    }
+    
+    class SpellAzure : BulletSolid
+    {
+        public SpellAzure(GameWorld world, Vector2 position) : base(world, position, new Vector2(12, 12))
+        {
+        }
+
+        protected override void OnCollision(IHit hit)
+        {
+            if (Destroyed || CheckFriendlyFire(hit.Box.Data))
+                return;
+            if (hit.Box.Data is Enemy enemy && enemy.CanHit)
+            {
+                enemy.AddStatusEffect(new Slow(enemy, 0.5f, 1000));
+                Destroy();
+            }
+            if (hit.Box.Data is Tile tile)
+            {
+                Destroy();
+            }
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            scene.PushSpriteBatch(blendState: BlendState.Additive, shader: scene.Shader, shaderSetup: (matrix) =>
+            {
+                scene.SetupColorMatrix(ColorMatrix.TwoColor(new Color(0, 16, 0), new Color(16, 64, 255)), matrix);
+            });
+            var magicSparkle = SpriteLoader.Instance.AddSprite("content/magic_sparkle");
+            int sparkles = 3;
+            for (int i = 0; i < sparkles; i++)
+            {
+                scene.DrawSprite(magicSparkle, (int)(Frame + (float)i / sparkles), Position - magicSparkle.Middle + Util.AngleToVector(MathHelper.TwoPi * (Frame / 10f + (float)i / sparkles)) * 4, SpriteEffects.None, 0);
+            }
+            scene.PopSpriteBatch();
         }
     }
 

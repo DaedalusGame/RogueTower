@@ -1368,10 +1368,10 @@ namespace RogueTower
         public SwingAction SlashAction;
         public float SlashUpTime;
         public float SlashDownTime;
-        public Weapon Weapon;
+        public WeaponWand Weapon;
         public bool FireReady = true;
 
-        public ActionWandBlast(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human)
+        public ActionWandBlast(EnemyHuman human, float upTime, float downTime, WeaponWand weapon) : base(human)
         {
             SlashUpTime = upTime;
             SlashDownTime = downTime;
@@ -1431,15 +1431,9 @@ namespace RogueTower
         {
             SlashAction = SwingAction.DownSwing;
             Human.UpdatePose();
-            var homing = TargetOffset;
-            homing.Normalize();
-            new SpellOrange(Human.World, FirePosition)
-            {
-                Velocity = homing * 3,
-                FrameEnd = 70,
-                Shooter = Human
-            };
-            PlaySFX(sfx_wand_orange_cast, 1.0f, 0.1f, 0.3f);
+            var direction = TargetOffset;
+            direction.Normalize();
+            Weapon.Shoot(Human, FirePosition, direction);
         }
     }
 
@@ -1449,7 +1443,7 @@ namespace RogueTower
 
         public override Vector2 TargetOffset => Target.Position - FirePosition;
 
-        public ActionWandBlastHoming(EnemyHuman human, Enemy target, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
+        public ActionWandBlastHoming(EnemyHuman human, Enemy target, float upTime, float downTime, WeaponWand weapon) : base(human, upTime, downTime, weapon)
         {
             Target = target;
         }
@@ -1462,7 +1456,7 @@ namespace RogueTower
 
         public override Vector2 TargetOffset => AngleToVector(AimAngle);
 
-        public ActionWandBlastAim(Player player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
+        public ActionWandBlastAim(Player player, float upTime, float downTime, WeaponWand weapon) : base(player, upTime, downTime, weapon)
         {
             FireReady = false;
             AimFX = new AimingReticule(player.World, Vector2.Zero, this);

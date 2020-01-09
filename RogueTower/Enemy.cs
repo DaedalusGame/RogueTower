@@ -172,6 +172,8 @@ namespace RogueTower
 
         public virtual void Death()
         {
+            Vector2 deathPosition = Position;
+            Scheduler.Instance.RunTimer(() => DropItems(deathPosition), new WaitDelta(World, 10));
             ClearStatusEffects();
             //NOOP
         }
@@ -863,8 +865,8 @@ namespace RogueTower
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3) //Ranged
                     {
                         //Begin Weapon Ranged Attack Checks
-                        if (Weapon is WeaponWandOrange)
-                            CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, Weapon);
+                        if (Weapon is WeaponWandOrange wand)
+                            CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, wand);
                         else if (Weapon is WeaponKnife)
                         {
                             if (Target.Position.Y < Position.Y)
@@ -1055,8 +1057,6 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
-            Vector2 deathPosition = Position;
-            Scheduler.Instance.RunTimer(() => DropItems(deathPosition), new WaitDelta(World, 10));
             if (!(CurrentAction is ActionEnemyDeath))
                 CurrentAction = new ActionEnemyDeath(this, 20);
         }
@@ -1110,6 +1110,38 @@ namespace RogueTower
             pose.Body.Color = new Color(255, 128, 75);
             pose.LeftArm.SetPhenoType("armor");
             pose.RightArm.SetPhenoType("armor");
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            if (Active)
+            {
+                base.UpdateDelta(delta);
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            if (Active)
+            {
+                base.UpdateDiscrete();
+            }
+        }
+
+        public override void Death()
+        {
+            base.Death();
+            if (!(CurrentAction is ActionEnemyDeath))
+                CurrentAction = new ActionEnemyDeath(this, 20);
+        }
+
+        public override void DropItems(Vector2 position)
+        {
+        }
+
+        public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)
+        {
+            base.Hit(velocity, hurttime, invincibility / 10, damageIn);
         }
     }
 
@@ -1887,8 +1919,6 @@ namespace RogueTower
         public override void Death()
         {
             base.Death();
-            Vector2 deathPosition = HeadPosition;
-            Scheduler.Instance.RunTimer(() => DropItems(deathPosition), new WaitDelta(World, 10));
             if (!(CurrentAction is ActionDeath))
             {
                 new SnakeHead(World, Position + Head.Offset, GetFacingVector(Facing)*2 + new Vector2(0, -4),Facing == HorizontalFacing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally, Facing == HorizontalFacing.Right ? 0.1f : -0.1f, 30);
