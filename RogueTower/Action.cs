@@ -1011,7 +1011,7 @@ namespace RogueTower
         public int ArmAttackAngle;
         public ActionRapierThrust(EnemyHuman player, float upTime, float downTime, Weapon weapon) : base(player, upTime, downTime, weapon)
         {
-            ArmAttackAngle = Human.Weapon.WeaponRandomVal.Next(-3, 3);
+            ArmAttackAngle = Human.Weapon.Random.Next(-3, 3);
         }
         public override void GetPose(PlayerState basePose)
         {
