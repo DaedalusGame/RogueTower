@@ -868,7 +868,7 @@ namespace RogueTower
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3) //Ranged
                     {
                         //Begin Weapon Ranged Attack Checks
-                        if (Weapon is WeaponWandOrange wand)
+                        if (Weapon is WeaponWand wand)
                             CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, wand);
                         else if (Weapon is WeaponKnife)
                         {
