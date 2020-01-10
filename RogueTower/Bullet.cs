@@ -352,6 +352,39 @@ namespace RogueTower
         }
     }
 
+    class FireballBig : Bullet
+    {
+        public FireballBig(GameWorld world, Vector2 position) : base(world, position, new Vector2(12, 12))
+        {
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            base.UpdateDiscrete();
+
+            HandleDamage();
+
+            if ((int) Frame % 2 == 0)
+            {
+                float angle = Random.NextFloat() * MathHelper.TwoPi;
+                float dist = Random.NextFloat() * 6;
+                new FireEffect(World, Position + Util.AngleToVector(angle) * dist, Util.VectorToAngle(-Velocity), Random.NextFloat() * 15 + 3);
+            }
+        }
+
+        protected override void ApplyEffect(Enemy enemy)
+        {
+            enemy.Hit(new Vector2(Math.Sign(Velocity.X), -2), 20, 50, 20);
+        }
+
+        public override void Draw(SceneGame scene, DrawPass pass)
+        {
+            var fireball = SpriteLoader.Instance.AddSprite("content/fireball_big");
+            var middle = new Vector2(8, 4);
+            scene.DrawSpriteExt(fireball, (int)Frame, Position - middle, middle, Util.VectorToAngle(Velocity), SpriteEffects.None, 0);
+        }
+    }
+
     class Knife : BulletSolid
     {
         double knifeDamage = 15.0;

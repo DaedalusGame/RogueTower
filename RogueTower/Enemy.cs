@@ -499,6 +499,7 @@ namespace RogueTower
 
             HandleMovement(delta);
 
+            Weapon.UpdateDelta(this, delta);
             CurrentAction.UpdateDelta(delta);
         }
 
@@ -543,6 +544,7 @@ namespace RogueTower
 
             HandleDamage();
 
+            Weapon.UpdateDiscrete(this);
             if (!Stunned)
             {
                 CurrentAction.UpdateDiscrete();
@@ -629,6 +631,7 @@ namespace RogueTower
         {
             if(SceneGame.DebugMasks)
                 new RectangleDebug(World, hitmask, new Color(Color.Lime,0.5f), 20);
+            Weapon.OnAttack(CurrentAction, hitmask);
             var affectedHitboxes = World.FindBoxes(hitmask);
             foreach (Box Box in affectedHitboxes)
             {
@@ -636,7 +639,7 @@ namespace RogueTower
                     continue;
                 if (Box.Data is Enemy enemy && enemy.CanHit)
                 {
-                    enemy.Hit(Util.GetFacingVector(Facing) + new Vector2(0, -2), 20, 50, damageIn);
+                    Weapon.OnHit(CurrentAction, enemy);
                 }
                 if (Box.Data is Tile tile)
                 {
@@ -865,7 +868,7 @@ namespace RogueTower
                     if ((Math.Abs(dx) >= 50 || Target.InAir || runningAway) && Math.Abs(dx) <= 70 && RangedCooldown < 0 && Target.Invincibility < 3) //Ranged
                     {
                         //Begin Weapon Ranged Attack Checks
-                        if (Weapon is WeaponWandOrange wand)
+                        if (Weapon is WeaponWand wand)
                             CurrentAction = new ActionWandBlastHoming(this, Target, 24, 12, wand);
                         else if (Weapon is WeaponKnife)
                         {
