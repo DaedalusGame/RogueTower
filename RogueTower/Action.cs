@@ -860,7 +860,7 @@ namespace RogueTower
         public float SlashUpTime;
         public float SlashDownTime;
 
-        public Sound SwingSound = sfx_sword_swing;
+        public Sound SwingSound = sfx_sword_stab;
 
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
@@ -1004,7 +1004,7 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + new Vector2(0,2) + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1042,7 +1042,7 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 9 + new Vector2(0,ArmAttackAngle*2), swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1050,7 +1050,6 @@ namespace RogueTower
     {
         public ActionLanceThrust(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
         {
-            SwingSound = sfx_sword_stab;
             new ScreenShakeRandom(Human.World, 5, 5);
             Human.Velocity.X += GetFacingVector(Human.Facing).X * 1.5f;
             if (!Human.OnGround)
