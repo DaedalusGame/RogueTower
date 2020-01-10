@@ -142,14 +142,14 @@ namespace RogueTower
             player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this, slowDown, slowDownAmount);
         }
 
-        protected void DrawWeaponAsIcon(SceneGame scene, SpriteReference sprite, Vector2 position)
+        protected void DrawWeaponAsIcon(SceneGame scene, SpriteReference sprite, int frame, Vector2 position)
         {
             Vector2 scale;
             if (sprite.Width >= 16)
                 scale = new Vector2(14 * Sqrt2 / sprite.Width);
             else
                 scale = Vector2.One;
-            scene.DrawSpriteExt(sprite, 0, position - sprite.Middle, sprite.Middle, MathHelper.ToRadians(-45), scale, SpriteEffects.None, Color.White, 0);
+            scene.DrawSpriteExt(sprite, frame, position - sprite.Middle, sprite.Middle, MathHelper.ToRadians(-45), scale, SpriteEffects.None, Color.White, 0);
         }
 
         protected override void CopyTo(Item item)
@@ -268,7 +268,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -326,7 +326,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword_flame"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/sword_flame"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -377,7 +377,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/katana"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/katana"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -421,7 +421,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/knife"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/knife"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -457,7 +457,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/lance"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/lance"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -508,7 +508,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/rapier"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/rapier"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -582,7 +582,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_orange"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_orange"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -620,7 +620,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_azure"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/wand_azure"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -665,7 +665,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/warhammer"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/warhammer"), 0, position);
         }
 
         protected override Item MakeCopy()
@@ -706,7 +706,7 @@ namespace RogueTower
 
         public override void DrawIcon(SceneGame scene, Vector2 position)
         {
-            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/boomerang"), position);
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/boomerang"), 0, position);
         }
 
         protected override Item MakeCopy()
