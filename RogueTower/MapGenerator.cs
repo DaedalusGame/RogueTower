@@ -582,7 +582,7 @@ namespace RogueTower
                 }
             }
 
-            var dijkstra = Util.Dijkstra(new Point(0, Height - 1), Width, Height, GetMainWeight, (pos) => GetRoom(pos.X, pos.Y).GetAdjacentNeighbors().Select(room => new Point(room.X, room.Y)));
+            var dijkstra = Util.Dijkstra(new Point(0, Height - 1), Width, Height, double.PositiveInfinity, GetMainWeight, (pos) => GetRoom(pos.X, pos.Y).GetAdjacentNeighbors().Select(room => new Point(room.X, room.Y)));
 
             Console.WriteLine("Generate Path");
             var path = dijkstra.FindPath(new Point(Random.Next(Width), 0)).ToList();
@@ -753,13 +753,60 @@ namespace RogueTower
                             break;
                     }
                     if (room.SelectedTemplate != null)
-                        BuildTemplate(map, origin + x * 8, y * 8, room.SelectedTemplate, color);
+                        BuildTemplate(map, origin + x * 8, y * 8, room, color);
                 }
+            }
+
+            var floors = map.EnumerateTiles().Where(x => x is EmptySpace && IsFloor(x.GetNeighbor(0, 1))).ToList();
+            var floorCheck = floors.ToHashSet();
+            var wallCheck = map.EnumerateTiles().Where(x => x is Wall && !x.GetAdjacentNeighbors().All(y => y is Wall) && !(floorCheck.Contains(x.GetNeighbor(1, 0)) || floorCheck.Contains(x.GetNeighbor(-1, 0)))).ToHashSet();
+
+            var components = floors.Where(x => x.Room != null).Select(x => x.Room.KComponent).Distinct().ToList();
+            var floorGroups = floors.ToLookup(x => x.Room?.KComponent);
+
+            var mainGroup = components.WithMax(x => x.Tiles.Count);
+            var mainComponents = new List<KComponent>() { mainGroup };
+            components.Remove(mainGroup);
+
+            while (components.Any())
+            {
+                var component = components.First();
+                var start = floorGroups[component].First();
+                var all = floorGroups[component];
+                var dijkstra = Util.Dijkstra(new Point(start.X, start.Y), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
+                    var tile = map.Tiles[b.X, b.Y];
+                    if (tile is Wall)
+                    {
+                        if (wallCheck.Contains(tile))
+                            return float.PositiveInfinity;
+                    }
+                    return 1;
+                }, (a) => {
+                    return map.Tiles[a.X, a.Y].GetDownNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
+                });
+                var ends = dijkstra.FindEnds(p => floorCheck.Contains(map.Tiles[p.X, p.Y]) && mainComponents.Contains(map.Tiles[p.X, p.Y].Room?.KComponent));
+                if (ends.Any())
+                {
+                    var end = ends.WithMin(p => dijkstra[p.X, p.Y].Distance);
+                    IEnumerable<Point> path = dijkstra.FindPath(end);
+                    foreach (var point in path)
+                    {
+                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                    }
+                }
+                components.Remove(component);
+                mainComponents.Add(component);
             }
         }
 
-        private void BuildTemplate(Map map, int px, int py, Template template, Color color)
+        private bool IsFloor(Tile tile)
         {
+            return tile is Wall && !(tile is Spike);
+        }
+
+        private void BuildTemplate(Map map, int px, int py, RoomTile room, Color color)
+        {
+            var template = room.SelectedTemplate;
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
@@ -844,6 +891,7 @@ namespace RogueTower
 
                     map.Tiles[px + x, py + y].Color = color;
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
+                    map.Tiles[px + x, py + y].Room = room;
                 }
             }
 

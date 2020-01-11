@@ -98,6 +98,7 @@ namespace RogueTower
         public Color Color = Color.White;
         public List<Box> Boxes = new List<Box>();
 
+        public RoomTile Room;
         public Connectivity Connectivity;
         public bool ConnectionDirty = true;
         public int BlobIndex
@@ -213,6 +214,11 @@ namespace RogueTower
         public IEnumerable<Tile> GetAdjacentNeighbors()
         {
             return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1) }.Shuffle();
+        }
+
+        public IEnumerable<Tile> GetDownNeighbors()
+        {
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0) }.Shuffle();
         }
 
         //Copy values over here

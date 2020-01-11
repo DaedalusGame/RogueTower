@@ -46,6 +46,21 @@
     <Compile Include="ColorMatrix.cs" />
     <Compile Include="Coroutine.cs" />
     <Compile Include="DrawPass.cs" />
+    <Compile Include="FibonacciHeap\Constants.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="FibonacciHeap\FibonacciHeap.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="FibonacciHeap\FibonacciHeapDoubleKey.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="FibonacciHeap\FibonacciHeapNode.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="FibonacciHeap\FibonacciHeapNodeDoubleKey.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="Healthbar.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="InputAction.cs" />
