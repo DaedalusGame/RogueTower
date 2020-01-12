@@ -1131,9 +1131,14 @@ namespace RogueTower
                 int x = tile.X;
                 int y = tile.Y;
                 Color color = tile.Color;
+                float crackAmount = 0;
+                if (tile.Health < tile.MaxHealth)
+                    crackAmount = (float)(1 - tile.Health / tile.MaxHealth);
 
                 if (tile.Mechanism == Mechanism.ChainDestroyStart)
-                    color = Color.Red;
+                {
+                    crackAmount = 0.25f;
+                }
 
                 /*switch(tile.ConnectFlag)
                 {
@@ -1217,8 +1222,8 @@ namespace RogueTower
                 else if (tile is Grass)
                     SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);
 
-                if (tile.Health < tile.MaxHealth)
-                    SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));
+                if (crackAmount > 0)
+                    SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * crackAmount);
             }
         }
 
