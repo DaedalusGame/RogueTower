@@ -99,6 +99,7 @@ namespace RogueTower
         public List<Box> Boxes = new List<Box>();
 
         public RoomTile Room;
+        public FlagConnect ConnectFlag = FlagConnect.Any;
         public Connectivity Connectivity;
         public bool ConnectionDirty = true;
         public int BlobIndex
@@ -214,6 +215,11 @@ namespace RogueTower
         public IEnumerable<Tile> GetAdjacentNeighbors()
         {
             return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1) }.Shuffle();
+        }
+
+        public IEnumerable<Tile> GetFullNeighbors()
+        {
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1), GetNeighbor(1, 1), GetNeighbor(1, -1), GetNeighbor(-1, 1), GetNeighbor(-1, -1) }.Shuffle();
         }
 
         public IEnumerable<Tile> GetDownNeighbors()

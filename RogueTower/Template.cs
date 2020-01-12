@@ -27,6 +27,20 @@ namespace RogueTower
         Right,
     }
 
+    /// <summary>
+    /// How the 
+    /// </summary>
+    enum FlagConnect
+    {
+        Any = -1,
+        In = 0,
+        Out = 1,
+        InOut = 2,
+        Blocked = 3,
+        Fast = 4,
+        Teleport = 5,
+    }
+
     class Template
     {
         public static List<Template> Templates = new List<Template>();
@@ -42,9 +56,12 @@ namespace RogueTower
 
         public int[,] Foreground;
         public int[,] Background;
+        private FlagConnect[,] Connect;
 
         public int Connections => GetConnections();
         public List<JObject> Entities = new List<JObject>();
+
+        public FlagConnect GetConnectFlag(int x, int y) => Connect?[x, y] ?? FlagConnect.Any;
 
         public string GetConnection(Direction dir)
         {
@@ -108,31 +125,11 @@ namespace RogueTower
                 var name = layer["name"].ToObject<string>();
                 if(name == "Foreground")
                 {
-                    int width = layer["gridCellsX"].ToObject<int>();
-                    int height = layer["gridCellsY"].ToObject<int>();
-                    Foreground = new int[width,height];
-                    int i = 0;
-                    foreach(var tile in layer["data"])
-                    {
-                        int x = i % width;
-                        int y = i / width;
-                        Foreground[x, y] = tile.ToObject<int>(); 
-                        i++;
-                    }
+                    LoadTileLayer(layer, (width, height) => Foreground = new int[width, height], (x, y, id) => Foreground[x, y] = id);
                 }
                 if (name == "Background")
                 {
-                    int width = layer["gridCellsX"].ToObject<int>();
-                    int height = layer["gridCellsY"].ToObject<int>();
-                    Background = new int[width, height];
-                    int i = 0;
-                    foreach (var tile in layer["data"])
-                    {
-                        int x = i % width;
-                        int y = i / width;
-                        Background[x, y] = tile.ToObject<int>();
-                        i++;
-                    }
+                    LoadTileLayer(layer, (width, height) => Background = new int[width, height], (x, y, id) => Background[x, y] = id);
                 }
                 if (name == "Entities")
                 {
@@ -141,9 +138,32 @@ namespace RogueTower
                         Entities.Add((JObject)entity);
                     }
                 }
+                if (name == "FlagConnect")
+                {
+                    LoadTileLayer(layer, (width, height) => Connect = new FlagConnect[width, height], (x, y, id) => Connect[x, y] = (FlagConnect)id);
+                }
             }
 
             reader.Close();
+        }
+
+        private delegate void SetupTileDelegate(int width, int height);
+
+        private delegate void LoadTileDelegate(int x, int y, int id);
+
+        private void LoadTileLayer(JToken layer, SetupTileDelegate setup, LoadTileDelegate loader)
+        {
+            int width = layer["gridCellsX"].ToObject<int>();
+            int height = layer["gridCellsY"].ToObject<int>();
+            setup(width, height);
+            int i = 0;
+            foreach (var tile in layer["data"])
+            {
+                int x = i % width;
+                int y = i / width;
+                loader(x,y,tile.ToObject<int>());
+                i++;
+            }
         }
 
         public void PrintEntity(JObject entity, GameWorld world, int px, int py)

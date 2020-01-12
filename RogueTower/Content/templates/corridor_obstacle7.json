@@ -64,7 +64,7 @@
           "originX": 8,
           "originY": 8,
           "rotation": 180,
-          "values": {"Delay": 0}
+          "values": {"Delay": 50}
         },
         {
           "name": "cannon_fire",
@@ -75,9 +75,23 @@
           "originX": 8,
           "originY": 8,
           "rotation": 180,
-          "values": {"Delay": 0}
+          "values": {"Delay": 100}
         }
       ]
+    },
+    {
+      "name": "FlagConnect",
+      "_eid": "82375266",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagConnect",
+      "data": [1, 3, -1, -1, -1, -1, 3, 1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 3, -1, -1, -1, -1, 3, -1, -1, 3, 3, 3, 3, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "exportMode": 0,
+      "arrayMode": 0
     }
   ]
 }

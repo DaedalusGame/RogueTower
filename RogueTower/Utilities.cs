@@ -135,6 +135,11 @@ namespace RogueTower
 
         public static DijkstraTile[,] Dijkstra(Point start, int width, int height, double maxDist, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
         {
+            return Dijkstra(new[] { start }, width, height, maxDist, length, neighbors);
+        }
+
+        public static DijkstraTile[,] Dijkstra(IEnumerable<Point> start, int width, int height, double maxDist, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
+        {
             var dijkstraMap = new DijkstraTile[width, height];
             var nodeMap = new FibonacciHeapNode<DijkstraTile,double>[width, height];
             var heap = new FibonacciHeap<DijkstraTile, double>(0);
@@ -144,7 +149,8 @@ namespace RogueTower
                 for (int y = 0; y < height; y++)
                 {
                     Point tile = new Point(x, y);
-                    DijkstraTile dTile = new DijkstraTile(tile, tile == start ? 0 : double.PositiveInfinity, tile == start ? 0 : double.PositiveInfinity);
+                    bool isStart = start.Contains(tile);
+                    DijkstraTile dTile = new DijkstraTile(tile, isStart ? 0 : double.PositiveInfinity, isStart ? 0 : double.PositiveInfinity);
                     var node = new FibonacciHeapNode<DijkstraTile, double>(dTile, dTile.Distance);
                     dijkstraMap[x, y] = dTile;
                     nodeMap[x, y] = node;
@@ -203,6 +209,18 @@ namespace RogueTower
                 yield return dTile.Tile;
                 dTile = dTile.Previous;
             }
+        }
+
+        public static Point FindStart(this DijkstraTile[,] dijkstra, Point end)
+        {
+            DijkstraTile dTile = dijkstra[end.X, end.Y];
+
+            while (dTile.Previous != null)
+            {
+                dTile = dTile.Previous;
+            }
+
+            return dTile.Tile;
         }
 
         public static IEnumerable<Point> FindPath(this DijkstraTile[,] dijkstra, Point end)

@@ -759,40 +759,49 @@ namespace RogueTower
 
             var floors = map.EnumerateTiles().Where(x => x is EmptySpace && IsFloor(x.GetNeighbor(0, 1))).ToList();
             var floorCheck = floors.ToHashSet();
-            var wallCheck = map.EnumerateTiles().Where(x => x is Wall && !x.GetAdjacentNeighbors().All(y => y is Wall) && !(floorCheck.Contains(x.GetNeighbor(1, 0)) || floorCheck.Contains(x.GetNeighbor(-1, 0)))).ToHashSet();
+            
+            var entries = new List<Tile>();
+            var exits = new List<Tile>();
+
+            foreach(var tile in map.EnumerateTiles())
+            {
+                switch (tile.ConnectFlag)
+                {
+                    case (FlagConnect.Any):
+                        if(IsWall(tile) && (floorCheck.Contains(tile.GetNeighbor(1, 0)) || floorCheck.Contains(tile.GetNeighbor(-1, 0))))
+                        {
+                            entries.Add(tile);
+                            exits.Add(tile);
+                        }
+                        break;
+                    case (FlagConnect.In):
+                        entries.Add(tile);
+                        break;
+                    case (FlagConnect.Out):
+                        exits.Add(tile);
+                        break;
+                    case (FlagConnect.InOut):
+                        entries.Add(tile);
+                        exits.Add(tile);
+                        break;
+                }
+            }
 
             var components = floors.Where(x => x.Room != null).Select(x => x.Room.KComponent).Distinct().ToList();
             var floorGroups = floors.ToLookup(x => x.Room?.KComponent);
+            var entryGroups = entries.ToLookup(x => x.Room?.KComponent);
 
             var mainGroup = components.WithMax(x => x.Tiles.Count);
-            var mainComponents = new List<KComponent>() { mainGroup };
+            var mainComponents = new HashSet<KComponent>() { mainGroup };
             components.Remove(mainGroup);
 
             while (components.Any())
             {
                 var component = components.First();
-                var start = floorGroups[component].First();
-                var all = floorGroups[component];
-                var dijkstra = Util.Dijkstra(new Point(start.X, start.Y), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
-                    var tile = map.Tiles[b.X, b.Y];
-                    if (tile is Wall)
-                    {
-                        if (wallCheck.Contains(tile))
-                            return float.PositiveInfinity;
-                    }
-                    return 1;
-                }, (a) => {
-                    return map.Tiles[a.X, a.Y].GetDownNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
-                });
-                var ends = dijkstra.FindEnds(p => floorCheck.Contains(map.Tiles[p.X, p.Y]) && mainComponents.Contains(map.Tiles[p.X, p.Y].Room?.KComponent));
-                if (ends.Any())
+                var connected = ConnectPath(map, entryGroups[component], exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList());
+                if (connected != null)
                 {
-                    var end = ends.WithMin(p => dijkstra[p.X, p.Y].Distance);
-                    IEnumerable<Point> path = dijkstra.FindPath(end);
-                    foreach (var point in path)
-                    {
-                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
-                    }
+                    ConnectPath(map, entryGroups[connected], exits.Where(exit => exit.Room?.KComponent == component).ToList());
                 }
                 components.Remove(component);
                 mainComponents.Add(component);
@@ -802,6 +811,138 @@ namespace RogueTower
         private bool IsFloor(Tile tile)
         {
             return tile is Wall && !(tile is Spike);
+        }
+
+        private bool IsWall(Tile tile)
+        {
+            return tile is Wall;
+        }
+
+        private KComponent ConnectPath(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits)
+        {
+            var wallCheck = map.EnumerateTiles().Where(x => IsWall(x) && x.GetFullNeighbors().All(y => IsWall(y))).ToHashSet();
+            var dijkstra = Util.Dijkstra(entries.Select(entry => new Point(entry.X,entry.Y)).ToHashSet(), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
+                var tile = map.Tiles[b.X, b.Y];
+                switch (tile.ConnectFlag)
+                {
+                    default:
+                    case (FlagConnect.Any):
+                        if (wallCheck.Contains(tile))
+                            return 1;
+                        else
+                            return double.PositiveInfinity;
+                    case (FlagConnect.Blocked):
+                        return double.PositiveInfinity;
+                    case (FlagConnect.Fast):
+                        return 0.01;
+                    case (FlagConnect.Out):
+                    case (FlagConnect.InOut):
+                        return 100;
+                }
+            }, (a) => {
+                return map.Tiles[a.X, a.Y].GetDownNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
+            });
+            var ends = dijkstra.FindEnds(p => exits.Contains(map.Tiles[p.X, p.Y]));
+            if (ends.Any())
+            {
+                foreach (var end in ends.OrderBy(p => dijkstra[p.X, p.Y].Distance))
+                {
+                    var component = map.Tiles[end.X, end.Y].Room?.KComponent;
+                    IEnumerable<Point> path = dijkstra.FindPath(end).ToList();
+                    var start = dijkstra.FindStart(end);
+                    //if (!CheckPath(start, path))
+                    //    continue;
+                    map.Tiles[start.X, start.Y] = new EmptySpace(map, start.X, start.Y);
+                    foreach (var point in path)
+                    {
+                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                    }
+                    return component;
+                }
+            }
+            return null;
+        }
+
+        /*private KComponent ConnectPath(Map map, IEnumerable<Tile> floors, IEnumerable<KComponent> mainComponents, IEnumerable<Tile> floorCheck, IEnumerable<Tile> wallCheck)
+        {
+            var start = floors.First();
+            var dijkstra = Util.Dijkstra(new Point(start.X,start.Y), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
+                var lastTile = map.Tiles[a.X, a.Y];
+                var tile = map.Tiles[b.X, b.Y];
+                var lastWasConnection = lastTile.ConnectFlag == FlagConnect.In || lastTile.ConnectFlag == FlagConnect.Out || lastTile.ConnectFlag == FlagConnect.InOut;
+                switch (tile.ConnectFlag)
+                {
+                    default:
+                    case (FlagConnect.Any):
+                        if (tile is Wall)
+                        {
+                            if (wallCheck.Contains(tile))
+                                return double.PositiveInfinity;
+                            return 100;
+                        }
+                        return 1;
+                    case (FlagConnect.Blocked):
+                        return double.PositiveInfinity;
+                    case (FlagConnect.Fast):
+                        return 0.01;
+                    case (FlagConnect.Out):
+                        if (IsWall(lastTile) && !lastWasConnection)
+                            return 1;
+                        else
+                            return double.PositiveInfinity;
+                    case (FlagConnect.InOut):
+                        if (!lastWasConnection)
+                            return 1;
+                        else
+                            return double.PositiveInfinity;
+                    case (FlagConnect.In):
+                        if (!IsWall(lastTile) && !lastWasConnection)
+                            return 1;
+                        else
+                            return double.PositiveInfinity;
+                }
+            }, (a) => {
+                return map.Tiles[a.X, a.Y].GetAdjacentNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
+            });
+            var ends = dijkstra.FindEnds(p => floorCheck.Contains(map.Tiles[p.X, p.Y]) && mainComponents.Contains(map.Tiles[p.X, p.Y].Room?.KComponent));
+            if (ends.Any())
+            {
+                foreach (var end in ends.OrderBy(p => dijkstra[p.X, p.Y].Distance).Take(15))
+                {
+                    var component = map.Tiles[end.X, end.Y].Room?.KComponent;
+                    IEnumerable<Point> path = dijkstra.FindPath(end).ToList();
+                    if (!CheckPath(dijkstra.FindStart(end), path))
+                        continue;
+                    foreach (var point in path)
+                    {
+                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                    }
+                    return component;
+                }
+            }
+            return null;
+        }*/
+
+        private bool CheckPath(Point start, IEnumerable<Point> path)
+        {
+            var previous = start;
+            int height = 0;
+            int maxHeight = 0;
+            foreach(var next in path)
+            {
+                int dy = next.Y - previous.Y;
+                if (dy < 0)
+                    height++;
+                else
+                {
+                    if (height > maxHeight)
+                        maxHeight = height;
+                    height = 0;
+                }
+                previous = next;
+            }
+
+            return maxHeight <= 2;
         }
 
         private void BuildTemplate(Map map, int px, int py, RoomTile room, Color color)
@@ -892,6 +1033,7 @@ namespace RogueTower
                     map.Tiles[px + x, py + y].Color = color;
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
                     map.Tiles[px + x, py + y].Room = room;
+                    map.Tiles[px + x, py + y].ConnectFlag = template.GetConnectFlag(x, y);
                 }
             }
 

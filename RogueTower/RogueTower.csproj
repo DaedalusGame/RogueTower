@@ -1491,6 +1491,12 @@
     <None Include="Content\templates\tower_wall_righttop.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\templates\vault0.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\vault1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Humper\LICENSE" />
     <None Include="packages.config" />
   </ItemGroup>

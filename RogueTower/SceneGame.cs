@@ -1132,6 +1132,22 @@ namespace RogueTower
                 int y = tile.Y;
                 Color color = tile.Color;
 
+                switch(tile.ConnectFlag)
+                {
+                    default:
+                    case (FlagConnect.Any):
+                        color = Color.Gray;
+                        break;
+                    case (FlagConnect.In):
+                    case (FlagConnect.InOut):
+                    case (FlagConnect.Out):
+                        color = Color.White;
+                        break;
+                    case (FlagConnect.Blocked):
+                        color = Color.Red;
+                        break;
+                }
+
                 //TODO: move tile draw code into a method on Tile
                 if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
                 {
