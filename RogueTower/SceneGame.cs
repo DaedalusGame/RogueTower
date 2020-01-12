@@ -1132,6 +1132,9 @@ namespace RogueTower
                 int y = tile.Y;
                 Color color = tile.Color;
 
+                if (tile.Mechanism == Mechanism.ChainDestroyStart)
+                    color = Color.Red;
+
                 /*switch(tile.ConnectFlag)
                 {
                     default:

@@ -31,6 +31,13 @@ namespace RogueTower
         KillWest = ~(West | NorthWest | SouthWest),
     }
 
+    enum Mechanism
+    {
+        None,
+        ChainDestroy,
+        ChainDestroyStart,
+    }
+
     abstract class Tile
     {
         static Dictionary<int, int> BlobTileMap = new Dictionary<int, int>() //Mapper for the minimal tileset, index in memory -> index in image
@@ -97,6 +104,8 @@ namespace RogueTower
         public virtual Sound breakSound => sfx_tile_break;
         public Color Color = Color.White;
         public List<Box> Boxes = new List<Box>();
+
+        public Mechanism Mechanism;
 
         public RoomTile Room;
         public FlagConnect ConnectFlag = FlagConnect.Any;
@@ -189,15 +198,33 @@ namespace RogueTower
             northwest.ConnectionDirty = true;
         }
 
+        public void ChainDestroy()
+        {
+            foreach(var neighbor in GetAdjacentNeighbors())
+            {
+                if(neighbor.Mechanism == Mechanism.ChainDestroy || neighbor.Mechanism == Mechanism.ChainDestroyStart)
+                {
+                    Scheduler.Instance.RunTimer(neighbor.ChainDestroy, new WaitDelta(World,3));
+                }
+            }
+
+            ReplaceEmpty();
+        }
+
+
         public virtual void HandleTileDamage(double damagein)
         {
-            if(CanDamage == false)
+            if (Mechanism == Mechanism.ChainDestroyStart)
+            {
+                ChainDestroy();   
+            }
+            if (CanDamage == false)
                 return;
             Health -= damagein;
             if(Health <= 0)
             {
                 PlaySFX(breakSound, 1.0f, 0.1f, 0.2f);
-                Replace(new EmptySpace(Map, X, Y));
+                ReplaceEmpty();
             }
             new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8) + new Vector2(0, -16), damagein.ToString(), 30);
         }

@@ -911,10 +911,12 @@ namespace RogueTower
                     var start = dijkstra.FindStart(end);
                     //if (!CheckPath(start, path))
                     //    continue;
-                    map.Tiles[start.X, start.Y] = new EmptySpace(map, start.X, start.Y);
+                    //map.Tiles[start.X, start.Y] = new EmptySpace(map, start.X, start.Y);
+                    map.Tiles[start.X, start.Y].Mechanism = Mechanism.ChainDestroyStart;
                     foreach (var point in path)
                     {
-                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                        //map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                        map.Tiles[point.X, point.Y].Mechanism = Mechanism.ChainDestroy;
                     }
                     return component;
                 }
