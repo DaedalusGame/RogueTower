@@ -821,8 +821,8 @@ namespace RogueTower
             }
 
             var components = floors.Where(x => x.Room != null).Select(x => x.Room.KComponent).Distinct().ToList();
-            var floorGroups = floors.ToLookup(x => x.Room?.KComponent);
             var entryGroups = entries.ToLookup(x => x.Room?.KComponent);
+            var exitGroups = exits.ToLookup(x => x.Room?.KComponent);
 
             var mainGroup = components.WithMax(x => x.Tiles.Count);
             var mainComponents = new HashSet<KComponent>() { mainGroup };
@@ -831,10 +831,36 @@ namespace RogueTower
             while (components.Any())
             {
                 var component = components.First();
-                var connected = ConnectPath(map, entryGroups[component], exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList());
-                if (connected != null)
+
+                bool connectIn = false;
+                bool connectOut = false;
+
+                switch(component.Type)
                 {
-                    ConnectPath(map, entryGroups[connected], exits.Where(exit => exit.Room?.KComponent == component).ToList());
+                    case (KComponentType.Vault):
+                        connectIn = true;
+                        connectOut = true;
+                        break;
+                    case (KComponentType.Sink):
+                        connectOut = true;
+                        break;
+                    case (KComponentType.Source):
+                        connectIn = true;
+                        break;
+                }
+
+                if(connectIn)
+                {
+
+                    IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
+                    IEnumerable<Tile> pathExits = exitGroups[component];
+                    var connected = ConnectPath(map, pathEntries, pathExits);
+                }
+                if(connectOut)
+                {
+                    IEnumerable<Tile> pathEntries = entryGroups[component];
+                    IEnumerable<Tile> pathExits = exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList();
+                    var connected = ConnectPath(map, pathEntries, pathExits);
                 }
                 components.Remove(component);
                 mainComponents.Add(component);
