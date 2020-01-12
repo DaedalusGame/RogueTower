@@ -51,9 +51,18 @@ namespace RogueTower
         }
     }
 
+    enum KComponentType
+    {
+        Source,
+        Sink,
+        Traversal,
+        Vault,
+    }
+
     class KComponent
     {
         public List<RoomTile> Tiles = new List<RoomTile>();
+        public KComponentType Type;
         public Color Color = Color.White;
 
         public void Add(RoomTile tile)
@@ -64,7 +73,24 @@ namespace RogueTower
 
         public override string ToString()
         {
-            return $"KComponent ({Tiles.Count} elements)";
+            return $"KComponent ({Type}) ({Tiles.Count} elements)";
+        }
+
+        public void Qualify()
+        {
+            var inNeighbors = Tiles.SelectMany(tile => tile.GetInNeighbors()).Where(neighbor => neighbor.KComponent != this && neighbor.KComponent != null).Select(neighbor => neighbor.KComponent).Distinct();
+            var outNeighbors = Tiles.SelectMany(tile => tile.GetOutNeighbors()).Where(neighbor => neighbor.KComponent != this && neighbor.KComponent != null).Select(neighbor => neighbor.KComponent).Distinct();
+
+            bool hasIn = inNeighbors.Any();
+            bool hasOut = outNeighbors.Any();
+            if (hasIn && hasOut)
+                Type = KComponentType.Traversal;
+            else if (hasIn)
+                Type = KComponentType.Sink;
+            else if (hasOut)
+                Type = KComponentType.Source;
+            else
+                Type = KComponentType.Vault;
         }
     }
 
@@ -530,6 +556,13 @@ namespace RogueTower
             foreach (var visit in toVisit)
             {
                 visit.KAssign(visit);
+            }
+
+            var components = EnumerateTiles().Select(tile => tile.KComponent).Distinct().ToList();
+
+            foreach (var component in components)
+            {
+                component.Qualify();
             }
         }
 
