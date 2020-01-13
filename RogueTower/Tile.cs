@@ -208,6 +208,7 @@ namespace RogueTower
                 }
             }
 
+            new WallBreakEffect(World, new Vector2(X * 16 + 8, Y * 16 + 8), Color, 10);
             ReplaceEmpty();
         }
 
@@ -246,12 +247,12 @@ namespace RogueTower
 
         public IEnumerable<Tile> GetFullNeighbors()
         {
-            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1), GetNeighbor(1, 1), GetNeighbor(1, -1), GetNeighbor(-1, 1), GetNeighbor(-1, -1) }.Shuffle();
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1), GetNeighbor(1, 1), GetNeighbor(1, -1), GetNeighbor(-1, 1), GetNeighbor(-1, -1) };
         }
 
         public IEnumerable<Tile> GetDownNeighbors()
         {
-            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0) }.Shuffle();
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0) };
         }
 
         //Copy values over here

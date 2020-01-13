@@ -517,6 +517,12 @@ namespace RogueTower
             AlphaSourceBlend = Blend.One,
             AlphaDestinationBlend = Blend.InverseSourceAlpha,
         };
+        BlendState Multiply = new BlendState()
+        {
+            ColorBlendFunction = BlendFunction.Add,
+            ColorSourceBlend = Blend.DestinationColor,
+            ColorDestinationBlend = Blend.Zero,
+        };
 
         private Matrix CreateViewMatrix()
         {
@@ -562,7 +568,6 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 48, 544 + 200), new Vector2(-0.2f, -0.1f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 60, 528 + 200), new Vector2(-0.25f, -0.15f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 72, 512 + 200), new Vector2(-0.3f, -0.2f));
-
 
             PotionAppearance.Randomize(World.Random);
 
@@ -1265,6 +1270,17 @@ namespace RogueTower
             }
             color *= human.VisualFlash();
 
+            if(human.VisualInvisible)
+            {
+                float blur = 20f / 255;
+                color = new ColorMatrix(new Matrix(
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 1),
+                new Vector4(blur, blur, blur, 0));
+            }      
+
             DrawPlayerState(state, human.Position - new Vector2(8, 8) + human.VisualOffset(), mirror, color);
         }
 
@@ -1330,7 +1346,13 @@ namespace RogueTower
 
         public void DrawCircle(SpriteReference sprite, int frame, Vector2 position, float radius, Color color)
         {
-            PushSpriteBatch(samplerState: SamplerState.LinearClamp, shader: Shader, shaderSetup: (transform) =>
+            var wrap = new SamplerState()
+            {
+                Filter = TextureFilter.Linear,
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Wrap,
+            };
+            PushSpriteBatch(samplerState: wrap, shader: Shader, shaderSetup: (transform) =>
             {
                 SetupCircle(sprite.GetFrameMatrix(frame), transform);
             });

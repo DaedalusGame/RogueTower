@@ -45,7 +45,7 @@ namespace RogueTower
             }
         }
 
-        public int Width
+        public virtual int Width
         {
             get
             {
@@ -58,7 +58,7 @@ namespace RogueTower
             }
         }
 
-        public int Height
+        public virtual int Height
         {
             get
             {
@@ -107,7 +107,7 @@ namespace RogueTower
             }
         }
 
-        public Texture2D Texture
+        public virtual Texture2D Texture
         {
             get
             {
@@ -169,6 +169,43 @@ namespace RogueTower
         }
     }
 
+    public class DynamicSprite : SpriteReference
+    {
+        public delegate void RenderDelegate();
+
+        RenderDelegate Render;
+        RenderTarget2D RenderTarget;
+
+        public override Texture2D Texture
+        {
+            get
+            {
+                return RenderTarget;
+            }
+            set
+            {
+                //NOOP
+            }
+        }
+
+        public override int Width => RenderTarget.Width;
+
+        public override int Height => RenderTarget.Height;
+
+        public DynamicSprite(string filename, RenderTarget2D renderTarget, RenderDelegate render, bool keepLoaded) : base(filename)
+        {
+            Render = render;
+            RenderTarget = renderTarget;
+            KeepLoaded = keepLoaded;
+        }
+
+        public void Update(GraphicsDevice device)
+        {
+            device.SetRenderTarget(RenderTarget);
+            Render();
+        }
+    }
+
     class SpriteLoader
     {
         private Regex FileNameExpression = new Regex(@"^[\w,\s-]+_strip([\d]+)");
@@ -197,6 +234,7 @@ namespace RogueTower
         public Dictionary<string, SpriteReference> Sprites = new Dictionary<string, SpriteReference>();
         List<SpriteReference> QueuedSprites = new List<SpriteReference>();
         List<SpriteReference> AllSprites = new List<SpriteReference>();
+        List<DynamicSprite> DynamicSprites = new List<DynamicSprite>();
         int unloadcheck;
 
         public SpriteLoader(GraphicsDevice device)
@@ -229,11 +267,32 @@ namespace RogueTower
                     sprite.Unload();
                 }
             }
+
+            DynamicSprites.RemoveAll(sprite => !sprite.ShouldLoad);
+        }
+
+        public void Draw(GameTime time)
+        {
+            foreach (var sprite in DynamicSprites)
+            {
+                sprite.Update(GraphicsDevice);
+            }
+            GraphicsDevice.SetRenderTarget(null);
         }
 
         public SpriteReference AddSprite(string filename)
         {
             return AddSprite(filename, false);
+        }
+
+        public SpriteReference AddSprite(DynamicSprite sprite)
+        {
+            if(Sprites.ContainsKey(sprite.FileName))
+                return Sprites[sprite.FileName];
+
+            DynamicSprites.Add(sprite);
+            Sprites.Add(sprite.FileName, sprite);
+            return sprite;
         }
 
         public SpriteReference AddSprite(string filename, bool keeploaded)

@@ -851,7 +851,6 @@ namespace RogueTower
 
                 if(connectIn)
                 {
-
                     IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
                     IEnumerable<Tile> pathExits = exitGroups[component];
                     var connected = ConnectPath(map, pathEntries, pathExits);

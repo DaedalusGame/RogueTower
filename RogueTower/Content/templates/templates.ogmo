@@ -6,10 +6,10 @@
   "gridColor": "#3c4049cc",
   "anglesRadians": true,
   "directoryDepth": 5,
-  "layerGridDefaultSize": {"x": 8, "y": 8},
+  "layerGridDefaultSize": {"x": 16, "y": 16},
   "levelDefaultSize": {"x": 320, "y": 240},
-  "levelMinSize": {"x": 128, "y": 128},
-  "levelMaxSize": {"x": 128, "y": 128},
+  "levelMinSize": {"x": 48, "y": 48},
+  "levelMaxSize": {"x": 256, "y": 256},
   "levelValues": [
     {"name": "ConnectionUp", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
     {"name": "ConnectionDown", "definition": "String", "defaults": "none", "maxLength": 0, "trimWhitespace": true},
@@ -21,11 +21,12 @@
       "definition": "Enum",
       "choices": ["Any", "Up", "Down", "Left", "Right"],
       "defaults": 0
-    }
+    },
+    {"name": "PuzzleID", "definition": "String", "defaults": "", "maxLength": 0, "trimWhitespace": true}
   ],
   "defaultExportMode": ".json",
   "compactExport": false,
-  "entityTags": [],
+  "entityTags": ["mechanism"],
   "layers": [
     {
       "definition": "tile",
@@ -51,7 +52,7 @@
       "gridSize": {"x": 8, "y": 8},
       "exportID": "73950925",
       "requiredTags": [],
-      "excludedTags": []
+      "excludedTags": ["mechanism"]
     },
     {
       "definition": "tile",
@@ -61,6 +62,23 @@
       "exportMode": 0,
       "arrayMode": 0,
       "defaultTileset": "FlagConnect"
+    },
+    {
+      "definition": "tile",
+      "name": "FlagMechanism",
+      "gridSize": {"x": 16, "y": 16},
+      "exportID": "90752454",
+      "exportMode": 0,
+      "arrayMode": 0,
+      "defaultTileset": "FlagMechanism"
+    },
+    {
+      "definition": "entity",
+      "name": "Mechanism",
+      "gridSize": {"x": 16, "y": 16},
+      "exportID": "90766993",
+      "requiredTags": ["mechanism"],
+      "excludedTags": []
     }
   ],
   "entities": [
@@ -339,11 +357,318 @@
       "values": [],
       "texture": "../editor_hydra.png",
       "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABcUlEQVR4nO2VPW7CQBCFfSLaSKk4Q5SOA1CkpUlOkEPkAvRQ0eUWkegoqXICR8/Skx7DzHh3bZrII41Y4/W8b3687rrFFlvsv9jm67WHfxx2fXYf/jDx9dvz4IBQIL3OICcBQLjvu+E3EifgrFWgCIPbCqjw0+plcKyLgpb0zGbrZUyD+Of7cViHwgzmlTF7JsuYBnE8cwPAtRdAIaJq8L62gMLqKhoCeL3xQGwFuIdrK27L7gJkg+FNdHQ/ggj7XmKa4VgrMgjOQDNA1AaFUBBvJpogvMPFE8e+y8/pbm/1OaD2vd/evWYeACvzez27EApSdRQzWMl5QBFA0C14FmMUIDsZdY+F0IpUfwcQQGcg26siEKUTpEpYAVjKsd5pmbUCkwAwhMhCz4IWAMRoAoCxjGN9jFoARyLNAHhYZ8GbZv3PDmFz+UshrLgOHnxS9haCwfXN0M84+819s4krhA6Wt+b17OIWIgN4mLgHMiXrPztwvczqysPwAAAAAElFTkSuQmCC"
+    },
+    {
+      "exportID": "90823994",
+      "name": "wire_in",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": true,
+      "nodeLimit": 0,
+      "nodeDisplay": 2,
+      "nodeGhost": false,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_input.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuA/ECDT6GySDMBmGMkuQDaILAModgHJBlACAI0ae0ZXYLjkAAAAAElFTkSuQmCC"
+    },
+    {
+      "exportID": "90827961",
+      "name": "wire_out",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_output.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYElEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuD///8g/B9KI7P/Q+XhAJcByAoxDEBWQ7QB6JoIGoDL6cQagC0M/hNtACUAAI3Hwv5libGeAAAAAElFTkSuQmCC"
+    },
+    {
+      "exportID": "90823390",
+      "name": "puzzle_in",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": true,
+      "nodeLimit": 0,
+      "nodeDisplay": 2,
+      "nodeGhost": false,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_input.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuA/ECDT6GySDMBmGMkuQDaILAModgHJBlACAI0ae0ZXYLjkAAAAAElFTkSuQmCC"
+    },
+    {
+      "exportID": "90828702",
+      "name": "puzzle_out",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_output.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYElEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuD///8g/B9KI7P/Q+XhAJcByAoxDEBWQ7QB6JoIGoDL6cQagC0M/hNtACUAAI3Hwv5libGeAAAAAElFTkSuQmCC"
+    },
+    {
+      "exportID": "90844307",
+      "name": "wire_or",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": true,
+      "nodeLimit": 0,
+      "nodeDisplay": 2,
+      "nodeGhost": false,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_or.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAYklEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuD///8gDAIwPjJAVoPTgP9IGrHRKBirAVg0YtVMigEkuQBdMWkGIAcSLsW4NAMATwAJxkpRCRYAAAAASUVORK5CYII="
+    },
+    {
+      "exportID": "90844156",
+      "name": "wire_and",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": true,
+      "nodeLimit": 0,
+      "nodeDisplay": 2,
+      "nodeGhost": false,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_wire_and.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZUlEQVR4nGNgQAJb/xf+L/nC8J+BHPDk/5n/IAPI0gzSCDKALM0gJ8MMgHmBbG8M0TAYJuD///8gDAIwPgobSQx7OKEpQlGMi8YwAAkQZRA2AzBoUl2AjSYuDJADEylQGQipBwEABU3p1962ZrEAAAAASUVORK5CYII="
+    },
+    {
+      "exportID": "90872901",
+      "name": "chain_destroy",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": ["mechanism"],
+      "values": [],
+      "texture": "../editor_chaindestroy.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAbklEQVR4nLVSgQnAIAzrIbvJm/tZN9GOKFpSxwLBWkhoqmJmpdNRMpRJ3CByUdwasCavQbt8MHDBYQReEEb4zWA1ITw5Z4C7GWsywgNVNTy9vzeYUIVILkIkzkYYxse10EtcfTQqQtSDr5yleX0Dvrs+f1Qh5pIAAAAASUVORK5CYII="
+    },
+    {
+      "exportID": "90968743",
+      "name": "template_builder",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff0000ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": true,
+      "nodeLimit": 0,
+      "nodeDisplay": 2,
+      "nodeGhost": false,
+      "tags": ["mechanism"],
+      "values": [
+        {"name": "PuzzleID", "definition": "String", "defaults": "", "maxLength": 0, "trimWhitespace": true}
+      ],
+      "texture": "../editor_template.png",
+      "textureImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZUlEQVR4nGPoPSNlSglm+I8EdnieF8XGB9HIbJg82AAQgU0RMh+XoSAaqwHY+NhcSbQLsHkBROM0gJgwQDEA2UZS8CA1AOb/AwcOoEcASuzQzgCQRnyYaBcgA2TX0N4AsmKBEgwAY3tzioC6GYIAAAAASUVORK5CYII="
     }
   ],
   "tilesets": [
     {"label": "Foreground", "path": "../tileset.png", "image": "data:image/png;base64,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", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
     {"label": "Background", "path": "../tileset_back.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAFQElEQVR4nO2c244kNQyG+x3mEgTSaEEsWhatlpEQF3DBQdywEtfw/q+xOynGyONxVSrlpJLufJ9kVXenDkn5r9hxz/Tl57/++bjYh38/3r95v2zXzG2X4x17+O3vUPseuzyS+iX22atvN03vm46tNv4rPf6SnJDsu59+X26QvLe21i6O9CztH2nPmThUCyK9X9t/a9+j4x+l/dX3P+4+/vXDL4ul15fUIJZ20O+tee21BFD65MvxVoziWNtP63x9YyLjH6VdBJC2W8endrH02cWbInNTqH5fUwAlT75sZXCeCLStOT46/tHav/jmbVH7pTjm2PbKAih58mUQVgTe026ne3H+YxqwabnxR4+v3f72cVxiul1//qz/0ZjUQgB7nnzZpkROiyCXAxjnX3IOzI0/enyL9hTfdU4gMV/i/rP+R2PSKAKQqX6rvyIQmUb3CCA3/ujxrXOCL1+/exbzX/Q/GnP0VHykPSoAeS3O3wojonyZJfY4MDf+6PGt2z//+s12/8MxqUIdICIAL+6LsLTIZGuXf61jcvP2lTqAxPuvHp98LycYrg4QFYBOEJfk678i0bPXsr93jZYx+ex2G/NtTqBtqDrAEQHo7F/Ot5qRP80E+qadFZPParfrfJsT2M+HqwPoqXsrp9AC0AlZTgAyE+jjzozJ1AEyAthjWgDizD1rcp2YifNbx+y9fTpquXV+rk4wVB1gS7lrM4GcQ5K7tVlAPrPJYuuY3FoAcr21db7XN50TDFMHOGLeALWDtfNt9r+WB9SOya0FEO7fCHWAkiffmjcw+z3AVpGodUxuLYBw/9bWkdF16OnHF9iL2WLjmjkLx3Az/pyznevHqB3zerWXmjz90fNEBVCSM3jjDwtgtHVspL3U9nx3kLOoAEpyBm/8YQHUjnlnt6/F+70WyT9qxPiS83njDwvg7HVrjRum+yxPgo3vuUz//z8UGXydv8Ni2GXVAAPKCsBz7lEBRHOS3vfjuOefsDHo/v5+sfc/PCz26x9/djXph/TLi4Pet4vaUfb13hxgT05y9QKwMeXu7m458ahbGzOjAhh9nd9cAF5M6+3kra2XA0QEEK39Rx1YmlM0rwNcQwiwDo4IIFqHiAqgNKdoXgeIDqi1tcwBjtQhouMpvf/N6wC9HZwzG5Ojq4BoHSI6ntL737QOcGQd3Lu9Zg7Qow5Q4foxouvg3u21coBedYAK148RXQeP0H7NdYAK148xWm2/tD0qgN51gArXj9Hj+/ytL2dKrx8VQPgGXjtnxWzt5LW+6H32nh8BBGkds3NOX8P7M6616yOAAFvxJRKzjzreYuO0VwdAAAEklu5NKmS/rZjf4sZ616pRB6jdz6sj3ZAj2aQIwYv1LfqZ8Gr3Xhjw8oRaoenmiCwlbEw+44bqvIAQUIGoAGx8rtk3D3KAwWgZ99fQ+QAC6MwZsd9icwEE0JFeN1LnAgigI2fFfovkAqwCOnN2/Bd0pZAZoCM9byICGAAEMDkIALqCACYHAUwOApgcBDA5CGByEMDkIIDJQQCTgwAmBwFMDgKYHAQwOQhgchDA5CCAyUEAk4MAJgcBTA4CmBwEMDkIYHIQwOQggMkRAWgHp/fa8Z4YkiGAG0DPAAhgUkQEVgw6HMi0r98jgBtBnL38csiT8+W1JwDZIoAbQf5HUJwuvyDiOVzPAgjgRhCHWwGsOR3n3yBPvxjy4veGPQHg/EnwxNC7T9AJnA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKPwCQmhgI+ZEBawAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
-    {"label": "FlagConnect", "path": "../tileset_flags_connect.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABlUlEQVR4nO2XYRKCIBBGOYrX8Ar96z7dnWySouVjXSSJ8HszO4JB674Q03nv507Dm8Y5VxVu/SK3JoyPso1iBvPRd71wEWH+2pa5LNcRCrmtMRkjjM8KQDI0AajgpAgnUARoMjUBFgk3iwAponcBsjBL8dORtwDsGwWgnLnriAVsSUCffQjYE7N1PkIIsErXBOQKzYnpUkBZ/lSALFhbFe0EIAkHCkAS0JhiAZIiAbn5BQLS+Q0E+EIB3tcJkPP1/A1ugQA6JwWgscktoAjQcuH8X9wELWgCtifrAvblb/AYlMl7XQHVf4T+eQ/4yl/hfbtwH0+B6peh/43a12Hn3bUu7D+/ujH8jKWIeE0t/ekRcTv0w7nP8YMIkMWiIxjzWAGX3bUuc9sXnFzEewXIXxudQwLkM+7Vl205picBWysgM+YtQCsUtZ/HPgTI5V0Q16oiKIAC+hGQ2wdy/SEFbO36QMJ4AuTOn+sPLcDC0AJOvQJOvQec+SlQ8zp8qQpCCCGEEEIIIYQQQgghhBBCCCGEkIO5A09/g8HeGgQ8AAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
+    {"label": "FlagConnect", "path": "../tileset_flags_connect.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABlUlEQVR4nO2XYRKCIBBGOYrX8Ar96z7dnWySouVjXSSJ8HszO4JB674Q03nv507Dm8Y5VxVu/SK3JoyPso1iBvPRd71wEWH+2pa5LNcRCrmtMRkjjM8KQDI0AajgpAgnUARoMjUBFgk3iwAponcBsjBL8dORtwDsGwWgnLnriAVsSUCffQjYE7N1PkIIsErXBOQKzYnpUkBZ/lSALFhbFe0EIAkHCkAS0JhiAZIiAbn5BQLS+Q0E+EIB3tcJkPP1/A1ugQA6JwWgscktoAjQcuH8X9wELWgCtifrAvblb/AYlMl7XQHVf4T+eQ/4yl/hfbtwH0+B6peh/43a12Hn3bUu7D+/ujH8jKWIeE0t/ekRcTv0w7nP8YMIkMWiIxjzWAGX3bUuc9sXnFzEewXIXxudQwLkM+7Vl205picBWysgM+YtQCsUtZ/HPgTI5V0Q16oiKIAC+hGQ2wdy/SEFbO36QMJ4AuTOn+sPLcDC0AJOvQJOvQec+SlQ8zp8qQpCCCGEEEIIIYQQQgghhBBCCCGEkIO5A09/g8HeGgQ8AAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
+    {"label": "FlagMechanism", "path": "../tileset_flags_mechanism.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAABhUlEQVR4nO3Z4WrDIBQG0LzGYE+0H3vmvpnrIFlta03ULFhzDshI4S7R+1WKmaYQvlpGCGGqHXu4/p/vaISH69LRWt86Dr//NDfyo3L0EYBp+gyx3+stY1mIPepvn9XXl9Smnr+kdq4fIwApJQvYWv8YgNr62gCUBjcTgLhD982+XMLf6CsArx3TgLe+fy4AIdn8/gKw3ze4rgHtO0Dr85fUFAYgPDW/xwDEC1+yEP8VgJr61uc/fQD2aOAeAXiz+48VgPQknxf1Zn0BB68/RwAW8fXWb9Dg9eMHYJ705frc8d9oMU5dnzoHyAegx3OAteTPE4/H3+KdvP7VQVA6AL0eBK1sf8nJb9lCT1CfOwm8D0DPJ4EbtsBlIRJOXb92FJxr/nsE4DbT50Oakh9Rg9aP8S4gN/ncZ1u20MHrlwCM8jr4qNeuw9Tv0gQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAONgPKak/J/482mUAAAAASUVORK5CYII=", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
   ]
 }
