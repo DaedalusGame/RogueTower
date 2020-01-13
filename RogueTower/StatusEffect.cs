@@ -101,7 +101,7 @@ namespace RogueTower
             if(Enemy is Player player)
                 PlaySFX(sfx_generic_debuff, 1);
             PoisonFX = new StatusPoisonEffect(Enemy.World, this);
-            Message(Enemy, new Message("You have been poisoned!"));
+            Message(Enemy, new MessageText("You have been poisoned!"));
             //if (Enemy is Player player)
             //    player.PlayerInput.SubActions.Add(new MessageBox("Oops! You just got poison'd!", InputResult.ActionTaken));
             //You're poisoned!
@@ -109,7 +109,7 @@ namespace RogueTower
 
         protected override void OnRemove()
         {
-            Message(Enemy, new Message("You are wracked by the last of the poison."));
+            Message(Enemy, new MessageText("You are wracked by the last of the poison."));
             //You're no longer poisoned
         }
 
@@ -193,13 +193,13 @@ namespace RogueTower
             if (Enemy is Player player)
                 PlaySFX(sfx_generic_debuff, 1);
             SlowFX = new StatusSlowEffect(Enemy.World, this);
-            Message(Enemy, new Message("You slow down!"));
+            Message(Enemy, new MessageText("You slow down!"));
             //You slow down!
         }
 
         protected override void OnRemove()
         {
-            Message(Enemy, new Message("Your speed returns to normal."));
+            Message(Enemy, new MessageText("Your speed returns to normal."));
             //You're no longer slow
         }
 
@@ -282,7 +282,7 @@ namespace RogueTower
                 }, 20);
                 Enemy.Health = 0;
                 Enemy.Death();
-                Message(Enemy, new Message("Your time has ran out!"));
+                Message(Enemy, new MessageText("Your time has ran out!"));
                 Remove();
             }
         }
@@ -307,13 +307,13 @@ namespace RogueTower
         {
             if (Enemy is Player player)
                 PlaySFX(sfx_generic_debuff, 1);
-            Message(Enemy, new Message("You have been cursed!"));
+            Message(Enemy, new MessageText("You have been cursed!"));
             //You're cursed!
         }
 
         protected override void OnRemove()
         {
-            Message(Enemy, new Message("Your curse has been lifted."));
+            Message(Enemy, new MessageText("Your curse has been lifted."));
             //You're no longer cursed
         }
 

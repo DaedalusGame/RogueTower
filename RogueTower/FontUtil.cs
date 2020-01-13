@@ -23,6 +23,8 @@ namespace RogueTower
         public TextColorFunction Color = (index) => Microsoft.Xna.Framework.Color.Black;
         public TextColorFunction Border = (index) => Microsoft.Xna.Framework.Color.Transparent;
         public TextOffsetFunction Offset = (index) => Vector2.Zero;
+        internal IconRender[] Icons = new IconRender[0];
+        public int IconIndex = 0;
         public int DialogIndex = int.MaxValue;
         public int? MaxWidth = null;
         public int? MaxHeight = null;
@@ -69,6 +71,14 @@ namespace RogueTower
             return this;
         }
 
+        internal TextParameters SetIcons(SceneGame scene, params IconRender[] icons)
+        {
+            Icons = icons;
+            foreach (var icon in Icons)
+                icon.SetScene(scene);
+            return this;
+        }
+
         public TextParameters SetConstraints(int maxWidth, int maxHeight)
         {
             MaxWidth = maxWidth;
@@ -96,6 +106,7 @@ namespace RogueTower
                 Color = Color,
                 Border = Border,
                 Offset = Offset,
+                Icons = Icons,
                 DialogIndex = DialogIndex,
                 MaxWidth = MaxWidth,
                 MaxHeight = MaxHeight,

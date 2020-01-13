@@ -132,6 +132,8 @@ namespace RogueTower
         public IEnumerable<string> InEdgeUp => GetNeighbor(0, -1).EdgeDown;
         public IEnumerable<string> InEdgeDown => GetNeighbor(0, 1).EdgeUp;
 
+        public List<RoomTile> ExtraNeighbors = new List<RoomTile>();
+
         public RoomTile(MapGenerator generator, int x, int y)
         {
             Generator = generator;
@@ -433,6 +435,12 @@ namespace RogueTower
                     neighbor.KAssign(root);
                 }
             }
+        }
+
+        public void Connect(RoomTile room)
+        {
+            if(!ExtraNeighbors.Contains(room))
+                ExtraNeighbors.Add(room);
         }
 
         public override string ToString()
