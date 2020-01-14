@@ -678,7 +678,8 @@ namespace RogueTower
 
             Rectangle drawZone = GetDrawZone();
 
-            var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+            //var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+            var passes = World.Objects.ToMultiLookup(obj => obj.GetDrawPasses());
 
             DrawMapBackground(World.Map);
             DepthShear = Shear.Below(0.75);

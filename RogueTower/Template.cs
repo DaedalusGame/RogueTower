@@ -49,6 +49,9 @@ namespace RogueTower
         public int Weight;
         public TravelDirection TravelDirection;
 
+        public int Width;
+        public int Height;
+
         public string Up;
         public string Down;
         public string Right;
@@ -110,6 +113,8 @@ namespace RogueTower
             JObject root = JObject.Load(reader);
 
             Name = Path.GetFileNameWithoutExtension(filename);
+            Width = root["width"].ToObject<int>() / 16;
+            Height = root["height"].ToObject<int>() / 16;
 
             var values = root["values"];
 

@@ -794,7 +794,7 @@ namespace RogueTower
                             break;
                     }
                     if (room.SelectedTemplate != null)
-                        BuildTemplate(map, origin + x * 8, y * 8, room, color);
+                        BuildRoom(map, origin + x * 8, y * 8, room, color);
                 }
             }
 
@@ -931,66 +931,6 @@ namespace RogueTower
             return null;
         }
 
-        /*private KComponent ConnectPath(Map map, IEnumerable<Tile> floors, IEnumerable<KComponent> mainComponents, IEnumerable<Tile> floorCheck, IEnumerable<Tile> wallCheck)
-        {
-            var start = floors.First();
-            var dijkstra = Util.Dijkstra(new Point(start.X,start.Y), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
-                var lastTile = map.Tiles[a.X, a.Y];
-                var tile = map.Tiles[b.X, b.Y];
-                var lastWasConnection = lastTile.ConnectFlag == FlagConnect.In || lastTile.ConnectFlag == FlagConnect.Out || lastTile.ConnectFlag == FlagConnect.InOut;
-                switch (tile.ConnectFlag)
-                {
-                    default:
-                    case (FlagConnect.Any):
-                        if (tile is Wall)
-                        {
-                            if (wallCheck.Contains(tile))
-                                return double.PositiveInfinity;
-                            return 100;
-                        }
-                        return 1;
-                    case (FlagConnect.Blocked):
-                        return double.PositiveInfinity;
-                    case (FlagConnect.Fast):
-                        return 0.01;
-                    case (FlagConnect.Out):
-                        if (IsWall(lastTile) && !lastWasConnection)
-                            return 1;
-                        else
-                            return double.PositiveInfinity;
-                    case (FlagConnect.InOut):
-                        if (!lastWasConnection)
-                            return 1;
-                        else
-                            return double.PositiveInfinity;
-                    case (FlagConnect.In):
-                        if (!IsWall(lastTile) && !lastWasConnection)
-                            return 1;
-                        else
-                            return double.PositiveInfinity;
-                }
-            }, (a) => {
-                return map.Tiles[a.X, a.Y].GetAdjacentNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
-            });
-            var ends = dijkstra.FindEnds(p => floorCheck.Contains(map.Tiles[p.X, p.Y]) && mainComponents.Contains(map.Tiles[p.X, p.Y].Room?.KComponent));
-            if (ends.Any())
-            {
-                foreach (var end in ends.OrderBy(p => dijkstra[p.X, p.Y].Distance).Take(15))
-                {
-                    var component = map.Tiles[end.X, end.Y].Room?.KComponent;
-                    IEnumerable<Point> path = dijkstra.FindPath(end).ToList();
-                    if (!CheckPath(dijkstra.FindStart(end), path))
-                        continue;
-                    foreach (var point in path)
-                    {
-                        map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
-                    }
-                    return component;
-                }
-            }
-            return null;
-        }*/
-
         private bool CheckPath(Point start, IEnumerable<Point> path)
         {
             var previous = start;
@@ -1013,12 +953,24 @@ namespace RogueTower
             return maxHeight <= 2;
         }
 
-        private void BuildTemplate(Map map, int px, int py, RoomTile room, Color color)
+        private void BuildRoom(Map map, int px, int py, RoomTile room, Color color)
         {
             var template = room.SelectedTemplate;
+            BuildTemplate(map, px, py, template, color);
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
+                {
+                    map.Tiles[px + x, py + y].Room = room;
+                }
+            }
+        }
+
+        private void BuildTemplate(Map map, int px, int py, Template template, Color color)
+        {
+            for (int x = 0; x < template.Width; x++)
+            {
+                for (int y = 0; y < template.Height; y++)
                 {
                     switch (template.Foreground[x, y])
                     {
@@ -1100,7 +1052,6 @@ namespace RogueTower
 
                     map.Tiles[px + x, py + y].Color = color;
                     map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
-                    map.Tiles[px + x, py + y].Room = room;
                     map.Tiles[px + x, py + y].ConnectFlag = template.GetConnectFlag(x, y);
                 }
             }

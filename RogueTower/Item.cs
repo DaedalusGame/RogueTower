@@ -94,7 +94,7 @@ namespace RogueTower
             if (enemy is Player player)
             {
                 if(!player.Memory.IsKnown(this) && FakeName != TrueName)
-                    player.History.Add(new MessageText($"This {FakeName} is clearly a {TrueName}!"));
+                    player.History.Add(new MessageItemIdentify(this));
                 player.Memory.Identify(this);
             }
         }

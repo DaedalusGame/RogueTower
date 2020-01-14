@@ -46,7 +46,9 @@ namespace RogueTower
             return this;
         }
 
-        protected string Macro(Item item, Enemy owner) => $"{Game.FORMAT_ICON}{item.GetName(owner)}";
+        protected string MacroItem(Item item, Enemy owner) => $"{Game.FORMAT_ICON}{item.GetName(owner)}";
+        protected string MacroIdentified(Item item, Enemy owner) => $"{Game.FORMAT_ICON}{item.TrueName}";
+        protected string MacroUnidentified(Item item, Enemy owner) => $"{Game.FORMAT_ICON}{item.FakeName}";
     }
 
     class MessageText : Message
@@ -67,7 +69,7 @@ namespace RogueTower
         Item PreviousItem;
         Item CurrentItem;
 
-        public override string RenderText(Enemy owner) => $"{Macro(PreviousItem,owner)} became {Macro(CurrentItem, owner)}.";
+        public override string RenderText(Enemy owner) => $"{MacroItem(PreviousItem,owner)} became {MacroItem(CurrentItem, owner)}.";
         public override IconRender[] Icons => new[]
         {
             new IconRender(PreviousItem.DrawIcon),
@@ -81,12 +83,29 @@ namespace RogueTower
         }
     }
 
+    class MessageItemIdentify : Message
+    {
+        Item Item;
+
+        public override string RenderText(Enemy owner) => $"This {MacroUnidentified(Item,owner)} is clearly {MacroIdentified(Item, owner)}!";
+        public override IconRender[] Icons => new[]
+        {
+            new IconRender(Item.DrawIcon),
+            new IconRender(Item.DrawIcon),
+        };
+
+        public MessageItemIdentify(Item item)
+        {
+            Item = item;
+        }
+    }
+
     class MessageItem : Message
     {
         Item Item;
         string Text;
 
-        public override string RenderText(Enemy owner) => string.Format(Text, Macro(Item, owner));
+        public override string RenderText(Enemy owner) => string.Format(Text, MacroItem(Item, owner));
         public override IconRender[] Icons => new[]
         {
             new IconRender(Item.DrawIcon),
