@@ -798,6 +798,12 @@ namespace RogueTower
                 }
             }
 
+            while (map.SubTemplates.Count > 0)
+            {
+                var first = map.SubTemplates.Dequeue();
+                BuildTemplate(map, first.X, first.Y, first.Pick(Random), Color.White);
+            }
+
             var floors = map.EnumerateTiles().Where(x => x is EmptySpace && IsFloor(x.GetNeighbor(0, 1))).ToList();
             var floorCheck = floors.ToHashSet();
             
@@ -919,11 +925,11 @@ namespace RogueTower
                     //if (!CheckPath(start, path))
                     //    continue;
                     //map.Tiles[start.X, start.Y] = new EmptySpace(map, start.X, start.Y);
-                    map.Tiles[start.X, start.Y].Mechanism = Mechanism.ChainDestroyStart;
+                    map.Tiles[start.X, start.Y].Mechanism = new ChainDestroyStart();
                     foreach (var point in path)
                     {
                         //map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
-                        map.Tiles[point.X, point.Y].Mechanism = Mechanism.ChainDestroy;
+                        map.Tiles[point.X, point.Y].Mechanism = new ChainDestroy();
                     }
                     return component;
                 }
@@ -972,92 +978,20 @@ namespace RogueTower
             {
                 for (int y = 0; y < template.Height; y++)
                 {
-                    switch (template.Foreground[x, y])
-                    {
-                        default:
-                            map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            break;
-                        case (0):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Normal);
-                            break;
-                        case (1):
-                            if (Random.NextDouble() < 0.07)
-                            {
-                                var trap = map.BuildTrap(px + x, py + y, Random);
-                                trap.Facing = Wall.WallFacing.Top;
-                                map.Tiles[px + x, py + y] = trap;
-                            }
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Top);
-                            break;
-                        case (2):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Bottom);
-                            break;
-                        case (3):
-                            map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
-                            break;
-                        case (4):
-                            map.Tiles[px + x, py + y] = new Spike(map, px + x, py + y);
-                            break;
-                        case (6):
-                            if (Random.NextDouble() < 0.07)
-                            {
-                                var trap = map.BuildTrap(px + x, py + y, Random);
-                                trap.Facing = Wall.WallFacing.BottomTop;
-                                map.Tiles[px + x, py + y] = trap;
-                            }
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.BottomTop);
-                            break;
-                        case (8):
-                            map.Tiles[px + x, py + y] = new Grass(map, px + x, py + y);
-                            break;
-                        case (9):
-                            map.Tiles[px + x, py + y] = new WallIce(map, px + x, py + y);
-                            break;
-                        case (10):
-                            map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Left);
-                            break;
-                        case (11):
-                            map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Right);
-                            break;
-                        case (17):
-                            if(Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
-                            break;
-                        case (18):
-                            if (Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
-                            break;
-                        case (19):
-                            if (Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new WallIce(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            break;
-                        case (20):
-                            map.Tiles[px + x, py + y] = new SpikeDeath(map, px + x, py + y);
-                            break;
-                        case (21):
-                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Left);
-                            break;
-                        case (22):
-                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Right);
-                            break;
-                    }
+                    template.PrintForeground(template.Foreground[x, y], map, px + x, py + y, Random);
+                    template.PrintBackground(template.Background[x, y], map, px + x, py + y, Random);
+                    template.PrintConnectFlag(template.GetConnectFlag(x, y), map, px + x, py + y);
+                    template.PrintMechanism(template.GetMechanismFlag(x, y), map, px + x, py + y);
 
                     map.Tiles[px + x, py + y].Color = color;
-                    map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
-                    map.Tiles[px + x, py + y].ConnectFlag = template.GetConnectFlag(x, y);
                 }
             }
 
             foreach (var entity in template.Entities)
-                template.PrintEntity(entity, map.World, px, py);
+                template.PrintEntity(entity, map, px, py);
+
+            foreach (var mechanism in template.EntitiesMechanism)
+                template.PrintMechanism(mechanism, map, px, py);
         }
 
         private TileBG GetBackground(int id)
@@ -1111,7 +1045,7 @@ namespace RogueTower
                     return TileBG.PillarDetail;
                 case (27):
                     return TileBG.Pillar;
-                case (43):
+                case (35):
                     return TileBG.PillarBottomBroken;
             }
         }

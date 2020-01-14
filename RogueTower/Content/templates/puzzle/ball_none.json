@@ -1,0 +1,88 @@
+{
+  "ogmoVersion": "3.2.0",
+  "width": 48,
+  "height": 48,
+  "offsetX": 0,
+  "offsetY": 0,
+  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "none", "ConnectionRight": "none", "Weight": 100, "Direction": "Any", "Tags": "ball"},
+  "layers": [
+    {
+      "name": "Foreground",
+      "_eid": "73948374",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 3,
+      "gridCellsY": 3,
+      "tileset": "Foreground",
+      "data": [63, 63, 63, 63, 3, 63, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Background",
+      "_eid": "73951650",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 3,
+      "gridCellsY": 3,
+      "tileset": "Background",
+      "data": [63, 63, 63, 63, 63, 63, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Entities",
+      "_eid": "73950925",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 8,
+      "gridCellHeight": 8,
+      "gridCellsX": 6,
+      "gridCellsY": 6,
+      "entities": []
+    },
+    {
+      "name": "FlagConnect",
+      "_eid": "82375266",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 3,
+      "gridCellsY": 3,
+      "tileset": "FlagConnect",
+      "data": [15, 15, 15, 15, 3, 15, 15, 15, 15],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "FlagMechanism",
+      "_eid": "90752454",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 3,
+      "gridCellsY": 3,
+      "tileset": "FlagMechanism",
+      "data": [63, 63, 63, 63, 63, 63, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Mechanism",
+      "_eid": "90766993",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 3,
+      "gridCellsY": 3,
+      "entities": []
+    }
+  ]
+}

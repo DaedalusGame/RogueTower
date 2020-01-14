@@ -1141,7 +1141,7 @@ namespace RogueTower
                 if (tile.Health < tile.MaxHealth)
                     crackAmount = (float)(1 - tile.Health / tile.MaxHealth);
 
-                if (tile.Mechanism == Mechanism.ChainDestroyStart)
+                if (tile.Mechanism is ChainDestroyStart)
                 {
                     crackAmount = 0.25f;
                 }

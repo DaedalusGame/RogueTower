@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "full", "ConnectionRight": "full", "Weight": 100, "Direction": "Any", "PuzzleID": ""},
+  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "full", "ConnectionRight": "full", "Weight": 100, "Direction": "Any", "PuzzleTags": ""},
   "layers": [
     {
       "name": "Foreground",
@@ -85,13 +85,13 @@
       "entities": [
         {
           "name": "template_builder",
-          "id": 0,
+          "id": 1,
           "_eid": "90968743",
           "x": 0,
           "y": 0,
           "originX": 0,
           "originY": 0,
-          "values": {"PuzzleID": "full"}
+          "values": {"Tag": "full"}
         }
       ]
     }

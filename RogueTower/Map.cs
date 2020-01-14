@@ -9,6 +9,30 @@ using System.Threading.Tasks;
 
 namespace RogueTower
 {
+    class SubTemplate
+    {
+        public string Tag;
+        public int X;
+        public int Y;
+
+        public SubTemplate(int x, int y, string tag)
+        {
+            X = x;
+            Y = y;
+            Tag = tag;
+        }
+
+        public Template Pick(Random random)
+        {
+            WeightedList<Template> templates = new WeightedList<Template>();
+            foreach(var template in Template.Puzzles[Tag])
+            {
+                templates.Add(template, template.Weight);
+            }
+            return templates.GetWeighted(random);
+        }
+    }
+
     class Map
     {
         public WeightedList<Func<Map, int, int, Trap>> PossibleTraps = new WeightedList<Func<Map, int, int, Trap>>()
@@ -27,6 +51,8 @@ namespace RogueTower
         public List<IBox> CollisionTiles = new List<IBox>();
         public bool CollisionDirty = true;
         public bool ConnectionDirty = true;
+
+        public Queue<SubTemplate> SubTemplates = new Queue<SubTemplate>();
 
         public Map(GameWorld world, int width, int height)
         {

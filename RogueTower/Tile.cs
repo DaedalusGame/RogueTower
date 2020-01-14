@@ -31,13 +31,6 @@ namespace RogueTower
         KillWest = ~(West | NorthWest | SouthWest),
     }
 
-    enum Mechanism
-    {
-        None,
-        ChainDestroy,
-        ChainDestroyStart,
-    }
-
     abstract class Tile
     {
         static Dictionary<int, int> BlobTileMap = new Dictionary<int, int>() //Mapper for the minimal tileset, index in memory -> index in image
@@ -202,7 +195,7 @@ namespace RogueTower
         {
             foreach(var neighbor in GetAdjacentNeighbors())
             {
-                if(neighbor.Mechanism == Mechanism.ChainDestroy || neighbor.Mechanism == Mechanism.ChainDestroyStart)
+                if(neighbor.Mechanism is ChainDestroy)
                 {
                     Scheduler.Instance.RunTimer(neighbor.ChainDestroy, new WaitDelta(World,3));
                 }
@@ -215,7 +208,7 @@ namespace RogueTower
 
         public virtual void HandleTileDamage(double damagein)
         {
-            if (Mechanism == Mechanism.ChainDestroyStart)
+            if (Mechanism is ChainDestroyStart)
             {
                 ChainDestroy();   
             }
