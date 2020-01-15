@@ -731,6 +731,32 @@ namespace RogueTower
             }
         }
 
+        [Flags]
+        enum ConnectionResult
+        {
+            None = 0,
+            ConnectIn = 1,
+            ConnectOut = 2,
+            ConnectInOut = 3,
+        }
+
+        struct Connector
+        {
+            public ConnectionResult Result;
+            Func<KComponent, ConnectionResult> Function;
+
+            public Connector(ConnectionResult result, Func<KComponent, ConnectionResult> function)
+            {
+                Result = result;
+                Function = function;
+            }
+
+            public ConnectionResult Run(KComponent component)
+            {
+                return Function(component);
+            }
+        }
+
         public void Build(Map map)
         {
             for (int y = 0; y < map.Height; y++)
@@ -809,8 +835,9 @@ namespace RogueTower
             
             var entries = new List<Tile>();
             var exits = new List<Tile>();
+            var teleports = new List<Tile>();
 
-            foreach(var tile in map.EnumerateTiles())
+            foreach (var tile in map.EnumerateTiles())
             {
                 switch (tile.ConnectFlag)
                 {
@@ -819,6 +846,10 @@ namespace RogueTower
                         {
                             entries.Add(tile);
                             exits.Add(tile);
+                        }
+                        if(tile is Wall wall && wall.Top && floorCheck.Contains(tile.GetNeighbor(0,-1)))
+                        {
+                            teleports.Add(tile);
                         }
                         break;
                     case (FlagConnect.In):
@@ -831,50 +862,134 @@ namespace RogueTower
                         entries.Add(tile);
                         exits.Add(tile);
                         break;
+                    case (FlagConnect.Teleport):
+                        teleports.Add(tile);
+                        break;
                 }
             }
 
             var components = floors.Where(x => x.Room != null).Select(x => x.Room.KComponent).Distinct().ToList();
             var entryGroups = entries.ToLookup(x => x.Room?.KComponent);
             var exitGroups = exits.ToLookup(x => x.Room?.KComponent);
+            var teleportGroups = teleports.ToLookup(x => x.Room?.KComponent);
 
             var mainGroup = components.WithMax(x => x.Tiles.Count);
             var mainComponents = new HashSet<KComponent>() { mainGroup };
             components.Remove(mainGroup);
 
+            Func<KComponent, ConnectionResult> ConnectPathIn = (component) =>
+            {
+                IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
+                IEnumerable<Tile> pathExits = exitGroups[component];
+                var connected = ConnectPath(map, pathEntries, pathExits);
+                if (connected == PathResult.TwoWay)
+                    return ConnectionResult.ConnectInOut;
+                else if(connected == PathResult.OneWay)
+                    return ConnectionResult.ConnectIn;
+                else
+                    return ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectPathOut = (component) =>
+            {
+                IEnumerable<Tile> pathEntries = entryGroups[component];
+                IEnumerable<Tile> pathExits = exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList();
+                var connected = ConnectPath(map, pathEntries, pathExits);
+                if (connected == PathResult.TwoWay)
+                    return ConnectionResult.ConnectInOut;
+                else if (connected == PathResult.OneWay)
+                    return ConnectionResult.ConnectOut;
+                else
+                    return ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportIn = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                IEnumerable<Tile> teleportExits = teleportGroups[component];
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectIn);
+                return connected ? ConnectionResult.ConnectIn : ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportOut = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleportGroups[component];
+                IEnumerable<Tile> teleportExits = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectOut);
+                return connected ? ConnectionResult.ConnectOut : ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportIO = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                IEnumerable<Tile> teleportExits = teleportGroups[component];
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectInOut);
+                return connected ? ConnectionResult.ConnectInOut : ConnectionResult.None;
+            };
+
             while (components.Any())
             {
                 var component = components.First();
 
-                bool connectIn = false;
-                bool connectOut = false;
-
+                WeightedList<Connector> possibleConnections = new WeightedList<Connector>();
+                ConnectionResult wantedConnection = ConnectionResult.None;
+              
                 switch(component.Type)
                 {
                     case (KComponentType.Vault):
-                        connectIn = true;
-                        connectOut = true;
+                        wantedConnection = ConnectionResult.ConnectInOut;
                         break;
                     case (KComponentType.Sink):
-                        connectOut = true;
+                        wantedConnection = ConnectionResult.ConnectOut;
                         break;
                     case (KComponentType.Source):
-                        connectIn = true;
+                        wantedConnection = ConnectionResult.ConnectIn;
                         break;
                 }
 
-                if(connectIn)
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectIn))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectIn, ConnectPathIn), 100);
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectIn, ConnectTeleportIn), 100);
+                }
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectOut))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectOut, ConnectPathOut), 100);
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectOut, ConnectTeleportOut), 100);
+                }
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectInOut))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectInOut, ConnectTeleportIO), 100);
+                }
+
+                while (wantedConnection != ConnectionResult.None && possibleConnections.Count > 0)
+                {
+                    var connect = possibleConnections.GetWeighted(Random);
+                    if(wantedConnection.HasFlag(connect.Result))
+                        wantedConnection &= ~connect.Run(component);
+                    possibleConnections.Remove(connect);
+                }
+
+                /*if(connectIn)
                 {
                     IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
                     IEnumerable<Tile> pathExits = exitGroups[component];
                     var connected = ConnectPath(map, pathEntries, pathExits);
+                    if (connected == null)
+                    {
+                        IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                        IEnumerable<Tile> teleportExits = teleportGroups[component];
+                        ConnectTeleport(map, teleportEntries, teleportExits);
+                    }
                 }
                 if(connectOut)
                 {
                     IEnumerable<Tile> pathEntries = entryGroups[component];
                     IEnumerable<Tile> pathExits = exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList();
                     var connected = ConnectPath(map, pathEntries, pathExits);
-                }
+                    if (connected == null)
+                    {
+                        IEnumerable<Tile> teleportEntries = teleportGroups[component];
+                        IEnumerable<Tile> teleportExits = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                        ConnectTeleport(map, teleportEntries, teleportExits);
+                    }
+                }*/
                 components.Remove(component);
                 mainComponents.Add(component);
             }
@@ -890,7 +1005,59 @@ namespace RogueTower
             return tile is Wall;
         }
 
-        private KComponent ConnectPath(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits)
+        private bool ConnectTeleport(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits, ConnectionResult connection)
+        {
+            if (entries.Any() && exits.Any())
+            {
+                Tile entry, exit;
+                if(connection == ConnectionResult.ConnectOut)
+                {
+                    entry = entries.Shuffle().First();
+                    exit = exits.WithMin(tile => SquaredDistance(entry.X, entry.Y, tile.X, tile.Y));
+                }
+                else
+                {
+                    exit = exits.Shuffle().First();
+                    entry = entries.WithMin(tile => SquaredDistance(exit.X, exit.Y, tile.X, tile.Y));
+                }
+
+                if (exit != null)
+                {
+                    map.Tiles[entry.X, entry.Y] = new TeleportTrapLinked(map, entry.X, entry.Y)
+                    {
+                        LinkX = exit.X,
+                        LinkY = exit.Y,
+                    };
+                    if (connection == ConnectionResult.ConnectInOut)
+                        map.Tiles[exit.X, exit.Y] = new TeleportTrapLinked(map, exit.X, exit.Y)
+                        {
+                            LinkX = entry.X,
+                            LinkY = entry.Y,
+                        };
+                    else
+                        map.Tiles[exit.X, exit.Y] = new BumpTrap(map, exit.X, exit.Y);
+                    return true;
+                }
+            }
+
+            return false; //Bad times
+        }
+
+        private int SquaredDistance(int x1, int y1, int x2, int y2)
+        {
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+            return dx * dx + dy * dy;
+        }
+
+        enum PathResult
+        {
+            None,
+            OneWay,
+            TwoWay,
+        }
+
+        private PathResult ConnectPath(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits)
         {
             var wallCheck = map.EnumerateTiles().Where(x => IsWall(x) && x.GetFullNeighbors().All(y => IsWall(y))).ToHashSet();
             var dijkstra = Util.Dijkstra(entries.Select(entry => new Point(entry.X,entry.Y)).ToHashSet(), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
@@ -931,10 +1098,10 @@ namespace RogueTower
                         //map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
                         map.Tiles[point.X, point.Y].Mechanism = new ChainDestroy();
                     }
-                    return component;
+                    return Math.Abs(start.Y - end.Y) < 1 ? PathResult.TwoWay : PathResult.OneWay;
                 }
             }
-            return null;
+            return PathResult.None;
         }
 
         private bool CheckPath(Point start, IEnumerable<Point> path)

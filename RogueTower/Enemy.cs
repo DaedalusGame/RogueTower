@@ -260,7 +260,7 @@ namespace RogueTower
             }
             set
             {
-                var pos = value + Box.Bounds.Center - Box.Bounds.Location;
+                var pos = value + Box.Bounds.Location - Box.Bounds.Center;
                 Box.Teleport(pos.X, pos.Y);
             }
         }

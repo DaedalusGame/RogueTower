@@ -285,6 +285,7 @@ namespace RogueTower
         }
 
         public WallFacing Facing;
+        public bool Top => Facing == WallFacing.BottomTop || Facing == WallFacing.Top;
 
         public Wall(Map map, int x, int y, double health) : base(map, x, y, false, health)
         {
@@ -355,7 +356,8 @@ namespace RogueTower
             get;
         }
 
-        public bool Triggered => World.Frame - LastTrigger <= RetriggerTime;
+        public virtual bool Triggered => Pressed;
+        public bool Pressed => World.Frame - LastTrigger <= RetriggerTime;
 
         public Trap(Map map, int x, int y) : base(map, x, y)
         {
@@ -462,6 +464,46 @@ namespace RogueTower
 
             if(!human.Dead)
                 human.AddStatusEffect(new Doom(human, 1, 30));
+        }
+    }
+
+    abstract class TeleportTrap : Trap
+    {
+        public abstract Vector2 Destination
+        {
+            get;
+        }
+        public override float RetriggerTime => 30;
+
+        public TeleportTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            Scheduler.Instance.Run(new Coroutine(Teleport(human, Destination)));
+        }
+
+        public IEnumerable<Wait> Teleport(EnemyHuman human, Vector2 destination)
+        {
+            human.Hitstop = 30;
+
+            yield return new WaitDelta(World, 30);
+
+            human.Position = Destination;
+        }
+    }
+
+    class TeleportTrapLinked : TeleportTrap
+    {
+        public override Vector2 Destination => new Vector2(LinkX*16+8,LinkY*16-8);
+        public int LinkX, LinkY;
+
+        public Tile Link => Map.GetTile(LinkX, LinkY);
+        public override bool Triggered => Pressed || (Link is TeleportTrap teleport && teleport.Pressed);
+
+        public TeleportTrapLinked(Map map, int x, int y) : base(map, x, y)
+        {
         }
     }
 
