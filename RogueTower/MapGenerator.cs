@@ -830,6 +830,15 @@ namespace RogueTower
                 BuildTemplate(map, first.X, first.Y, first.Pick(Random), Color.White);
             }
 
+            foreach(var connection in map.WireConnections)
+            {
+                var nodeStart = map.WireNodes[connection.Start.X, connection.Start.Y];
+                var nodeEnd = map.WireNodes[connection.End.X, connection.End.Y];
+
+                if(nodeStart != null && nodeEnd != null)
+                    new Wire(map.World, nodeStart, nodeEnd);
+            }
+
             var floors = map.EnumerateTiles().Where(x => x is EmptySpace && IsFloor(x.GetNeighbor(0, 1))).ToList();
             var floorCheck = floors.ToHashSet();
             

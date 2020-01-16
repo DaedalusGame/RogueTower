@@ -679,9 +679,15 @@ namespace RogueTower
             Rectangle drawZone = GetDrawZone();
 
             //var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
-            var passes = World.Objects.ToMultiLookup(obj => obj.GetDrawPasses());
+            var passes = World.Objects.OrderBy(x => x.DrawOrder).ToMultiLookup(obj => obj.GetDrawPasses());
 
             DrawMapBackground(World.Map);
+            PushSpriteBatch(samplerState: SamplerState.PointWrap);
+            foreach (GameObject obj in passes[DrawPass.Wire])
+            {
+                DrawObject(obj, drawZone, DrawPass.Wire);
+            }
+            PopSpriteBatch();
             DepthShear = Shear.Below(0.75);
             //Pass lower enemy
             foreach (GameObject obj in passes[DrawPass.Background])
@@ -1131,6 +1137,8 @@ namespace RogueTower
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
             var spikeDeath = SpriteLoader.Instance.AddSprite("content/wall_spike_death");
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
+            var switchOff = SpriteLoader.Instance.AddSprite("content/switch_off");
+            var switchOn = SpriteLoader.Instance.AddSprite("content/switch_on");
 
             foreach (Tile tile in tiles)
             {
@@ -1182,6 +1190,13 @@ namespace RogueTower
                 else if (tile is Ladder ladderTile)
                 {
                     SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                }
+                else if (tile is Switch switchTile)
+                {
+                    if (switchTile.Powered)
+                        SpriteBatch.Draw(switchOn.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    else
+                        SpriteBatch.Draw(switchOff.Texture, new Vector2(x * 16, y * 16), Color.White);
                 }
                 else if (tile is SpikeDeath)
                 {
@@ -1242,7 +1257,7 @@ namespace RogueTower
 
         public void DrawObject(GameObject obj, Rectangle drawZone, DrawPass pass)
         {
-            if (obj is Enemy enemy && !enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
+            if (obj.GetDrawPoints().Any() && !obj.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
             {
                 return;
             }

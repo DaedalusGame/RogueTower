@@ -235,7 +235,7 @@ namespace RogueTower
             };
         }
 
-        public virtual IEnumerable<Vector2> GetDrawPoints()
+        public override IEnumerable<Vector2> GetDrawPoints()
         {
             yield return Position;
         }
@@ -512,7 +512,7 @@ namespace RogueTower
 
             HandlePhysicsEarly();
 
-            var wallTiles = World.FindTiles(Box.Bounds.Offset(GetFacingVector(Facing)));
+            var wallTiles = World.FindBoxes(Box.Bounds.Offset(GetFacingVector(Facing))).Where(box => box.Data is Tile && !IgnoresCollision(box));
             if (wallTiles.Any() && !Incorporeal)
             {
                 Velocity.X = 0;

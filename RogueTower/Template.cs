@@ -370,11 +370,14 @@ namespace RogueTower
 
         public void PrintMechanism(JObject entity, Map map, int px, int py)
         {
+            GameWorld world = map.World;
             string type = entity["name"].ToObject<string>();
             float ox = entity["x"].ToObject<float>();
             float oy = entity["y"].ToObject<float>();
             var values = entity["values"];
 
+            float x = px * 16 + ox;
+            float y = py * 16 + oy;
             var tile = map.Tiles[px + (int)(ox / 16), py + (int)(oy / 16)];
 
             if(type == "chain_destroy")
@@ -385,6 +388,69 @@ namespace RogueTower
             {
                 string tag = values["Tag"].ToObject<string>();
                 map.SubTemplates.Enqueue(new SubTemplate(tile.X, tile.Y, tag));
+            }
+            if(type == "wire_in" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeRandom(world, new Vector2(x + 8, y + 8));
+                map.WireNodes[tile.X, tile.Y] = node;
+                ConnectWires(entity, map, px, py);
+            }
+            if (type == "wire_out" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1);
+                map.WireNodes[tile.X, tile.Y] = node;
+            }
+            if (type == "wire_or" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1);
+                map.WireNodes[tile.X, tile.Y] = node;
+                ConnectWires(entity, map, px, py);
+            }
+            if (type == "wire_and" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1000);
+                map.WireNodes[tile.X, tile.Y] = node;
+                ConnectWires(entity, map, px, py);
+            }
+            if (type == "puzzle_in" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1000);
+                map.WireNodes[tile.X, tile.Y] = node;
+                ConnectWires(entity, map, px, py);
+            }
+            if (type == "puzzle_out" && !map.HasWire(tile.X, tile.Y))
+            {
+                var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1);
+                map.WireNodes[tile.X, tile.Y] = node;
+            }
+            if (type == "switch" && !map.HasWire(tile.X, tile.Y))
+            {
+                bool powered = values["Powered"].ToObject<bool>();
+                var switchTile = new Switch(map, tile.X, tile.Y)
+                {
+                    Powered = powered,
+                };
+                map.Tiles[tile.X, tile.Y] = switchTile;
+                map.WireNodes[tile.X, tile.Y] = switchTile;
+                ConnectWires(entity, map, px, py);
+            }
+        }
+
+        private static void ConnectWires(JObject entity, Map map, int px, int py)
+        {
+            var nodes = entity["nodes"];
+
+            float ox = entity["x"].ToObject<float>();
+            float oy = entity["y"].ToObject<float>();
+
+            int tx = px + (int)(ox / 16);
+            int ty = py + (int)(oy / 16);
+
+            foreach (var connection in nodes)
+            {
+                int connectionX = px + connection["x"].ToObject<int>() / 16;
+                int connectionY = py + connection["y"].ToObject<int>() / 16;
+                map.WireConnections.Add(new WireConnection(new Point(tx, ty), new Point(connectionX, connectionY)));
             }
         }
 
@@ -439,6 +505,9 @@ namespace RogueTower
             float oy = entity["y"].ToObject<float>();
             var values = entity["values"];
 
+            float x = px * 16 + ox;
+            float y = py * 16 + oy;
+
             if (type == "ball_and_chain") //TODO: make a dictionary of (name -> generator delegate)
             {
                 float rotation = entity["rotation"].ToObject<float>();
@@ -446,46 +515,46 @@ namespace RogueTower
                 float distance = values["Distance"].ToObject<float>();
                 bool swings = values["Swings"].ToObject<bool>();
 
-                var ballandchain = new BallAndChain(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation), speed, distance);
+                var ballandchain = new BallAndChain(world, new Vector2(x, y), MathHelper.ToRadians(rotation), speed, distance);
                 ballandchain.Swings = swings;
             }
             if(type == "moaiman")
             {
                 bool flipped = entity["flippedX"].ToObject<bool>();
-                var moaiman = new MoaiMan(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                var moaiman = new MoaiMan(world, new Vector2(x, y));
                 moaiman.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
             if (type == "cannon")
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonFire(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                var cannon = new CannonFire(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
                 cannon.DelayTime = delay;
             }
             if (type == "cannon_fire")
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonFire(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                var cannon = new CannonFire(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
                 cannon.DelayTime = delay;
             }
             if (type == "cannon_poison")
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonPoisonBreath(world, new Vector2(px * 16 + ox, py * 16 + oy), MathHelper.ToRadians(rotation));
+                var cannon = new CannonPoisonBreath(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
                 cannon.DelayTime = delay;
             }
             if (type == "snake")
             {
                 bool flipped = entity["flippedX"].ToObject<bool>();
-                var snake = new Snake(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                var snake = new Snake(world, new Vector2(x, y));
                 snake.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
             if (type == "hydra")
             {
                 bool flipped = entity["flippedX"].ToObject<bool>();
-                var hydra = new Hydra(world, new Vector2(px * 16 + ox, py * 16 + oy));
+                var hydra = new Hydra(world, new Vector2(x, y));
                 hydra.Facing = flipped ? HorizontalFacing.Left : HorizontalFacing.Right;
             }
         }

@@ -587,4 +587,40 @@ namespace RogueTower
             Scheduler.Instance.Run(new Coroutine(Unfold()));
         }
     }
+
+    class Switch : Tile, IWireNode
+    {
+        public Vector2 Position => new Vector2(X * 16 + 8, Y * 16 + 8);
+        public bool Powered
+        {
+            get;
+            set;
+        }
+
+        public Switch(Map map, int x, int y) : base(map, x, y, false, double.PositiveInfinity)
+        {
+        }
+
+        public override void AddCollisions()
+        {
+            var box = CreateBox(new RectangleF(0, 0, 16, 16));
+            box.AddTags(CollisionTag.NoCollision);
+            Boxes.Add(box);
+        }
+
+        public override void HandleTileDamage(double damagein)
+        {
+            Powered = !Powered;
+        }
+
+        public void ConnectIn(IWireConnector connector)
+        {
+            //NOOP
+        }
+
+        public void ConnectOut(IWireConnector connector)
+        {
+            //NOOP
+        }
+    }
 }
