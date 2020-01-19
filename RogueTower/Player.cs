@@ -238,6 +238,7 @@ namespace RogueTower
                 //new DamagePopup(World, item.Position, $"+1 {item.Item.Name}", 30);
                 new ItemPickup(World, item.Item, item.Position, new Vector2(24, 24), 50);
                 Pickup(item.Item);
+                History.Add(new MessageItem(item.Item.Copy(), "Got {0}"));
                 item.Destroy();
             }
         }

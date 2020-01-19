@@ -14,5 +14,6 @@ namespace RogueTower
         Effect,
         EffectDeath,
         Invisible,
+        Wire,
     }
 }

@@ -517,6 +517,12 @@ namespace RogueTower
             AlphaSourceBlend = Blend.One,
             AlphaDestinationBlend = Blend.InverseSourceAlpha,
         };
+        BlendState Multiply = new BlendState()
+        {
+            ColorBlendFunction = BlendFunction.Add,
+            ColorSourceBlend = Blend.DestinationColor,
+            ColorDestinationBlend = Blend.Zero,
+        };
 
         private Matrix CreateViewMatrix()
         {
@@ -562,7 +568,6 @@ namespace RogueTower
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 48, 544 + 200), new Vector2(-0.2f, -0.1f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 60, 528 + 200), new Vector2(-0.25f, -0.15f));
             AddGroundBackground(SpriteLoader.Instance.AddSprite("content/bg_parallax_layer5"), new Vector2(0 + 72, 512 + 200), new Vector2(-0.3f, -0.2f));
-
 
             PotionAppearance.Randomize(World.Random);
 
@@ -673,9 +678,16 @@ namespace RogueTower
 
             Rectangle drawZone = GetDrawZone();
 
-            var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+            //var passes = World.Objects.SelectMany(obj => obj.GetDrawPasses().Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+            var passes = World.Objects.OrderBy(x => x.DrawOrder).ToMultiLookup(obj => obj.GetDrawPasses());
 
             DrawMapBackground(World.Map);
+            PushSpriteBatch(samplerState: SamplerState.PointWrap);
+            foreach (GameObject obj in passes[DrawPass.Wire])
+            {
+                DrawObject(obj, drawZone, DrawPass.Wire);
+            }
+            PopSpriteBatch();
             DepthShear = Shear.Below(0.75);
             //Pass lower enemy
             foreach (GameObject obj in passes[DrawPass.Background])
@@ -1125,12 +1137,38 @@ namespace RogueTower
             var spike = SpriteLoader.Instance.AddSprite("content/wall_spike");
             var spikeDeath = SpriteLoader.Instance.AddSprite("content/wall_spike_death");
             var breaks = SpriteLoader.Instance.AddSprite("content/breaks");
+            var switchOff = SpriteLoader.Instance.AddSprite("content/switch_off");
+            var switchOn = SpriteLoader.Instance.AddSprite("content/switch_on");
 
             foreach (Tile tile in tiles)
             {
                 int x = tile.X;
                 int y = tile.Y;
                 Color color = tile.Color;
+                float crackAmount = 0;
+                if (tile.Health < tile.MaxHealth)
+                    crackAmount = (float)(1 - tile.Health / tile.MaxHealth);
+
+                if (tile.Mechanism is ChainDestroyStart)
+                {
+                    crackAmount = 0.25f;
+                }
+
+                /*switch(tile.ConnectFlag)
+                {
+                    default:
+                    case (FlagConnect.Any):
+                        color = Color.Gray;
+                        break;
+                    case (FlagConnect.In):
+                    case (FlagConnect.InOut):
+                    case (FlagConnect.Out):
+                        color = Color.White;
+                        break;
+                    case (FlagConnect.Blocked):
+                        color = Color.Red;
+                        break;
+                }*/
 
                 //TODO: move tile draw code into a method on Tile
                 if (tile is WallBlock) //subtypes before parent type otherwise it draws only the parent
@@ -1152,6 +1190,13 @@ namespace RogueTower
                 else if (tile is Ladder ladderTile)
                 {
                     SpriteBatch.Draw(ladder.Texture, new Vector2(x * 16, y * 16), ladder.GetFrameRect(0), color, 0, Vector2.Zero, 1, ladderTile.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.FlipVertically, 0);
+                }
+                else if (tile is Switch switchTile)
+                {
+                    if (switchTile.Powered)
+                        SpriteBatch.Draw(switchOn.Texture, new Vector2(x * 16, y * 16), Color.White);
+                    else
+                        SpriteBatch.Draw(switchOff.Texture, new Vector2(x * 16, y * 16), Color.White);
                 }
                 else if (tile is SpikeDeath)
                 {
@@ -1198,8 +1243,8 @@ namespace RogueTower
                 else if (tile is Grass)
                     SpriteBatch.Draw(grass.Texture, new Vector2(x * 16, y * 16), Color.White);
 
-                if (tile.Health < tile.MaxHealth)
-                    SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * (float)(1 - tile.Health / tile.MaxHealth));
+                if (crackAmount > 0)
+                    SpriteBatch.Draw(breaks.Texture, new Vector2(x * 16, y * 16), Color.White * crackAmount);
             }
         }
 
@@ -1212,7 +1257,7 @@ namespace RogueTower
 
         public void DrawObject(GameObject obj, Rectangle drawZone, DrawPass pass)
         {
-            if (obj is Enemy enemy && !enemy.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
+            if (obj.GetDrawPoints().Any() && !obj.GetDrawPoints().Any(pos => drawZone.Contains(Vector2.Transform(pos, WorldTransform))))
             {
                 return;
             }
@@ -1240,6 +1285,17 @@ namespace RogueTower
                 color *= statusEffect.ColorMatrix;
             }
             color *= human.VisualFlash();
+
+            if(human.VisualInvisible)
+            {
+                float blur = 20f / 255;
+                color = new ColorMatrix(new Matrix(
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 1),
+                new Vector4(blur, blur, blur, 0));
+            }      
 
             DrawPlayerState(state, human.Position - new Vector2(8, 8) + human.VisualOffset(), mirror, color);
         }
@@ -1306,7 +1362,13 @@ namespace RogueTower
 
         public void DrawCircle(SpriteReference sprite, int frame, Vector2 position, float radius, Color color)
         {
-            PushSpriteBatch(samplerState: SamplerState.LinearClamp, shader: Shader, shaderSetup: (transform) =>
+            var wrap = new SamplerState()
+            {
+                Filter = TextureFilter.Linear,
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Wrap,
+            };
+            PushSpriteBatch(samplerState: wrap, shader: Shader, shaderSetup: (transform) =>
             {
                 SetupCircle(sprite.GetFrameMatrix(frame), transform);
             });

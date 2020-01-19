@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "towerright", "ConnectionDown": "oladderleft", "ConnectionLeft": "full", "ConnectionRight": "outside", "Weight": 2, "Direction": "Down"},
+  "values": {"ConnectionUp": "towerright", "ConnectionDown": "oladderleft", "ConnectionLeft": "full", "ConnectionRight": "outside", "Weight": 2, "Direction": "Down", "PuzzleID": ""},
   "layers": [
     {
       "name": "Foreground",
@@ -30,7 +30,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Background",
-      "data": [0, 0, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1],
+      "data": [0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, 0, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, -1, -1, -1, -1],
       "exportMode": 0,
       "arrayMode": 0
     },
@@ -43,6 +43,45 @@
       "gridCellHeight": 8,
       "gridCellsX": 16,
       "gridCellsY": 16,
+      "entities": []
+    },
+    {
+      "name": "FlagConnect",
+      "_eid": "82375266",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagConnect",
+      "data": [-1, 3, -1, -1, 3, -1, -1, -1, -1, 1, -1, -1, 3, -1, -1, -1, -1, 1, -1, -1, 3, -1, -1, -1, -1, 3, 1, 1, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "FlagMechanism",
+      "_eid": "90752454",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagMechanism",
+      "data": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Mechanism",
+      "_eid": "90766993",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
       "entities": []
     }
   ]

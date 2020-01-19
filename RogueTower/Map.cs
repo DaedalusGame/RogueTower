@@ -9,6 +9,60 @@ using System.Threading.Tasks;
 
 namespace RogueTower
 {
+    class SubTemplate
+    {
+        public string Tag;
+        public int X;
+        public int Y;
+
+        public SubTemplate(int x, int y, string tag)
+        {
+            X = x;
+            Y = y;
+            Tag = tag;
+        }
+
+        public Template Pick(Random random)
+        {
+            WeightedList<Template> templates = new WeightedList<Template>();
+            foreach(var template in Template.Puzzles[Tag])
+            {
+                templates.Add(template, template.Weight);
+            }
+            return templates.GetWeighted(random);
+        }
+    }
+
+    class WireConnection
+    {
+        public Point Start;
+        public Point End;
+
+        public WireConnection(Point start, Point end)
+        {
+            Start = start;
+            End = end;
+        }
+    }
+
+    enum PuzzleType
+    {
+        Input,
+        Output,
+    }
+
+    class PuzzleConnection
+    {
+        public Point Position;
+        public PuzzleType Type;
+
+        public PuzzleConnection(Point position, PuzzleType type)
+        {
+            Position = position;
+            Type = type;
+        }
+    }
+
     class Map
     {
         public WeightedList<Func<Map, int, int, Trap>> PossibleTraps = new WeightedList<Func<Map, int, int, Trap>>()
@@ -28,6 +82,11 @@ namespace RogueTower
         public bool CollisionDirty = true;
         public bool ConnectionDirty = true;
 
+        public Queue<SubTemplate> SubTemplates = new Queue<SubTemplate>();
+        public IWireNode[,] WireNodes;
+        public List<WireConnection> WireConnections = new List<WireConnection>();
+        public List<PuzzleConnection> PuzzleConnections = new List<PuzzleConnection>();
+
         public Map(GameWorld world, int width, int height)
         {
             SetWorld(world);
@@ -40,6 +99,7 @@ namespace RogueTower
             Height = height;
             Tiles = new Tile[Width, Height];
             Background = new TileBG[Width, Height];
+            WireNodes = new IWireNode[Width, Height];
 
             MapGenerator generator;
 
@@ -180,6 +240,11 @@ namespace RogueTower
                 return Tiles[x, y];
             else
                 return new Wall(this, x, y);
+        }
+
+        public bool HasWire(int x, int y)
+        {
+            return WireNodes[x, y] != null;
         }
 
         public bool InMap(int x, int y)

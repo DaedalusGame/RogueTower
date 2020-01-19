@@ -1,0 +1,127 @@
+{
+  "ogmoVersion": "3.2.0",
+  "width": 128,
+  "height": 128,
+  "offsetX": 0,
+  "offsetY": 0,
+  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "none", "ConnectionRight": "none", "Weight": 100, "Direction": "Any", "Tags": "full"},
+  "layers": [
+    {
+      "name": "Foreground",
+      "_eid": "73948374",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "Foreground",
+      "data": [63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 1, 1, 1, 63, 63, 63, 63, 63, 0, 0, 0, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Background",
+      "_eid": "73951650",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "Background",
+      "data": [63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 0, 0, 0, 63, 63, 63, 63, 63, 0, 0, 0, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Entities",
+      "_eid": "73950925",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 8,
+      "gridCellHeight": 8,
+      "gridCellsX": 16,
+      "gridCellsY": 16,
+      "entities": []
+    },
+    {
+      "name": "FlagConnect",
+      "_eid": "82375266",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagConnect",
+      "data": [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "FlagMechanism",
+      "_eid": "90752454",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagMechanism",
+      "data": [63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Mechanism",
+      "_eid": "90766993",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "entities": [
+        {"name": "puzzle_out", "id": 0, "_eid": "90828702", "x": 80, "y": 32, "originX": 0, "originY": 0},
+        {
+          "name": "puzzle_in",
+          "id": 1,
+          "_eid": "90823390",
+          "x": 16,
+          "y": 32,
+          "originX": 0,
+          "originY": 0,
+          "nodes": [
+            {"x": 48, "y": 32}
+          ]
+        },
+        {
+          "name": "wire_and",
+          "id": 2,
+          "_eid": "90844156",
+          "x": 48,
+          "y": 32,
+          "originX": 0,
+          "originY": 0,
+          "nodes": [
+            {"x": 80, "y": 32}
+          ]
+        },
+        {
+          "name": "switch",
+          "id": 3,
+          "_eid": "12297425",
+          "x": 48,
+          "y": 80,
+          "originX": 0,
+          "originY": 0,
+          "nodes": [
+            {"x": 48, "y": 32}
+          ],
+          "values": {"Powered": false}
+        }
+      ]
+    }
+  ]
+}

@@ -98,6 +98,10 @@ namespace RogueTower
         public Color Color = Color.White;
         public List<Box> Boxes = new List<Box>();
 
+        public Mechanism Mechanism;
+
+        public RoomTile Room;
+        public FlagConnect ConnectFlag = FlagConnect.Any;
         public Connectivity Connectivity;
         public bool ConnectionDirty = true;
         public int BlobIndex
@@ -187,15 +191,34 @@ namespace RogueTower
             northwest.ConnectionDirty = true;
         }
 
+        public void ChainDestroy()
+        {
+            foreach(var neighbor in GetAdjacentNeighbors())
+            {
+                if(neighbor.Mechanism is ChainDestroy)
+                {
+                    Scheduler.Instance.RunTimer(neighbor.ChainDestroy, new WaitDelta(World,3));
+                }
+            }
+
+            new WallBreakEffect(World, new Vector2(X * 16 + 8, Y * 16 + 8), Color, 10);
+            ReplaceEmpty();
+        }
+
+
         public virtual void HandleTileDamage(double damagein)
         {
-            if(CanDamage == false)
+            if (Mechanism is ChainDestroyStart)
+            {
+                ChainDestroy();   
+            }
+            if (CanDamage == false)
                 return;
             Health -= damagein;
             if(Health <= 0)
             {
                 PlaySFX(breakSound, 1.0f, 0.1f, 0.2f);
-                Replace(new EmptySpace(Map, X, Y));
+                ReplaceEmpty();
             }
             new DamagePopup(Map.World, new Vector2(X*16+8,Y*16 + 8) + new Vector2(0, -16), damagein.ToString(), 30);
         }
@@ -213,6 +236,16 @@ namespace RogueTower
         public IEnumerable<Tile> GetAdjacentNeighbors()
         {
             return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1) }.Shuffle();
+        }
+
+        public IEnumerable<Tile> GetFullNeighbors()
+        {
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0), GetNeighbor(0, -1), GetNeighbor(1, 1), GetNeighbor(1, -1), GetNeighbor(-1, 1), GetNeighbor(-1, -1) };
+        }
+
+        public IEnumerable<Tile> GetDownNeighbors()
+        {
+            return new[] { GetNeighbor(1, 0), GetNeighbor(0, 1), GetNeighbor(-1, 0) };
         }
 
         //Copy values over here
@@ -252,6 +285,7 @@ namespace RogueTower
         }
 
         public WallFacing Facing;
+        public bool Top => Facing == WallFacing.BottomTop || Facing == WallFacing.Top;
 
         public Wall(Map map, int x, int y, double health) : base(map, x, y, false, health)
         {
@@ -322,7 +356,8 @@ namespace RogueTower
             get;
         }
 
-        public bool Triggered => World.Frame - LastTrigger <= RetriggerTime;
+        public virtual bool Triggered => Pressed;
+        public bool Pressed => World.Frame - LastTrigger <= RetriggerTime;
 
         public Trap(Map map, int x, int y) : base(map, x, y)
         {
@@ -432,6 +467,46 @@ namespace RogueTower
         }
     }
 
+    abstract class TeleportTrap : Trap
+    {
+        public abstract Vector2 Destination
+        {
+            get;
+        }
+        public override float RetriggerTime => 30;
+
+        public TeleportTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            Scheduler.Instance.Run(new Coroutine(Teleport(human, Destination)));
+        }
+
+        public IEnumerable<Wait> Teleport(EnemyHuman human, Vector2 destination)
+        {
+            human.Hitstop = 30;
+
+            yield return new WaitDelta(World, 30);
+
+            human.Position = Destination;
+        }
+    }
+
+    class TeleportTrapLinked : TeleportTrap
+    {
+        public override Vector2 Destination => new Vector2(LinkX*16+8,LinkY*16-8);
+        public int LinkX, LinkY;
+
+        public Tile Link => Map.GetTile(LinkX, LinkY);
+        public override bool Triggered => Pressed || (Link is TeleportTrap teleport && teleport.Pressed);
+
+        public TeleportTrapLinked(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;
@@ -510,6 +585,42 @@ namespace RogueTower
         public override void HandleTileDamage(double damagein)
         {
             Scheduler.Instance.Run(new Coroutine(Unfold()));
+        }
+    }
+
+    class Switch : Tile, IWireNode
+    {
+        public Vector2 Position => new Vector2(X * 16 + 8, Y * 16 + 8);
+        public bool Powered
+        {
+            get;
+            set;
+        }
+
+        public Switch(Map map, int x, int y) : base(map, x, y, false, double.PositiveInfinity)
+        {
+        }
+
+        public override void AddCollisions()
+        {
+            var box = CreateBox(new RectangleF(0, 0, 16, 16));
+            box.AddTags(CollisionTag.NoCollision);
+            Boxes.Add(box);
+        }
+
+        public override void HandleTileDamage(double damagein)
+        {
+            Powered = !Powered;
+        }
+
+        public void ConnectIn(IWireConnector connector)
+        {
+            //NOOP
+        }
+
+        public void ConnectOut(IWireConnector connector)
+        {
+            //NOOP
         }
     }
 }

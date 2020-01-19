@@ -94,7 +94,7 @@ namespace RogueTower
             if (enemy is Player player)
             {
                 if(!player.Memory.IsKnown(this) && FakeName != TrueName)
-                    player.History.Add(new Message($"This {FakeName} is clearly a {TrueName}!"));
+                    player.History.Add(new MessageItemIdentify(this));
                 player.Memory.Identify(this);
             }
         }
@@ -121,10 +121,12 @@ namespace RogueTower
             if (!(this is T))
                 throw new ArgumentException();
             string nameA = GetName(enemy);
+            Item previous = Copy();
             transform((T)this);
             string nameB = GetName(enemy);
-            if(nameA != nameB)
-                Message(enemy, new Message($"{nameA} became {nameB}."));
+            Item current = Copy();
+            if (nameA != nameB)
+                Message(enemy, new MessageItemTransform(previous,current));
         }
 
         /// <summary>
@@ -138,7 +140,7 @@ namespace RogueTower
             string nameA = GetName(enemy);
             string nameB = newItem.GetName(enemy);
             if (nameA != nameB)
-                Message(enemy, new Message($"{nameA} became {nameB}."));
+                Message(enemy, new MessageItemTransform(this, newItem));
             if (enemy is Player player)
                 player.Pickup(newItem);
             Destroy();
@@ -470,7 +472,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Message(enemy, new Message("Blech! This is tainted!"));
+            Message(enemy, new MessageText("Blech! This is tainted!"));
             if (!enemy.StatusEffects.Any(x => x is Poison))
                 Identify(enemy);
             enemy.AddStatusEffect(new Poison(enemy, 1000));
@@ -498,7 +500,7 @@ namespace RogueTower
         {
             if(enemy is Player player && !player.Memory.IsKnown(item))
             {
-                Message(enemy, new Message($"Suddenly, {item.GetName(enemy)}'s nature is much clearer to you."));
+                Message(enemy, new MessageItem(item.Copy(),$"Suddenly, {0}'s nature is much clearer to you."));
                 item.Identify(player);
                 Identify(player);
             }
@@ -531,7 +533,7 @@ namespace RogueTower
         {
             if(item is Device device)
             {
-                Message(enemy, new Message($"{device.GetName(enemy)} is imbued with energy!"));
+                Message(enemy, new MessageItem(device.Copy(), $"{0} is imbued with energy!"));
                 device.Charges = Math.Min(device.Charges + enemy.Random.Next(6) + 3, device.MaxCharges);
                 if (device.Broken)
                     device.Transform<Device>(enemy, x => x.Broken = false);
@@ -569,7 +571,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Message(enemy, new Message("Tastes like water."));
+            Message(enemy, new MessageText("Tastes like water."));
             Identify(enemy);
             Empty(enemy);
         }
@@ -629,7 +631,7 @@ namespace RogueTower
 
         public override void DrinkEffect(Enemy enemy)
         {
-            Message(enemy, new Message("Tastes like blood."));
+            Message(enemy, new MessageText("Tastes like blood."));
             Identify(enemy);
             Empty(enemy);
         }

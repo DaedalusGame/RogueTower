@@ -51,9 +51,18 @@ namespace RogueTower
         }
     }
 
+    enum KComponentType
+    {
+        Source,
+        Sink,
+        Traversal,
+        Vault,
+    }
+
     class KComponent
     {
         public List<RoomTile> Tiles = new List<RoomTile>();
+        public KComponentType Type;
         public Color Color = Color.White;
 
         public void Add(RoomTile tile)
@@ -64,7 +73,24 @@ namespace RogueTower
 
         public override string ToString()
         {
-            return $"KComponent ({Tiles.Count} elements)";
+            return $"KComponent ({Type}) ({Tiles.Count} elements)";
+        }
+
+        public void Qualify()
+        {
+            var inNeighbors = Tiles.SelectMany(tile => tile.GetInNeighbors()).Where(neighbor => neighbor.KComponent != this && neighbor.KComponent != null).Select(neighbor => neighbor.KComponent).Distinct();
+            var outNeighbors = Tiles.SelectMany(tile => tile.GetOutNeighbors()).Where(neighbor => neighbor.KComponent != this && neighbor.KComponent != null).Select(neighbor => neighbor.KComponent).Distinct();
+
+            bool hasIn = inNeighbors.Any();
+            bool hasOut = outNeighbors.Any();
+            if (hasIn && hasOut)
+                Type = KComponentType.Traversal;
+            else if (hasIn)
+                Type = KComponentType.Sink;
+            else if (hasOut)
+                Type = KComponentType.Source;
+            else
+                Type = KComponentType.Vault;
         }
     }
 
@@ -105,6 +131,8 @@ namespace RogueTower
         public IEnumerable<string> InEdgeRight => GetNeighbor(1, 0).EdgeLeft;
         public IEnumerable<string> InEdgeUp => GetNeighbor(0, -1).EdgeDown;
         public IEnumerable<string> InEdgeDown => GetNeighbor(0, 1).EdgeUp;
+
+        public List<RoomTile> ExtraNeighbors = new List<RoomTile>();
 
         public RoomTile(MapGenerator generator, int x, int y)
         {
@@ -409,6 +437,12 @@ namespace RogueTower
             }
         }
 
+        public void Connect(RoomTile room)
+        {
+            if(!ExtraNeighbors.Contains(room))
+                ExtraNeighbors.Add(room);
+        }
+
         public override string ToString()
         {
             return $"{SelectedTemplate?.Name ?? "unknown"} (entropy: {Entropy.ToString()})";
@@ -531,6 +565,13 @@ namespace RogueTower
             {
                 visit.KAssign(visit);
             }
+
+            var components = EnumerateTiles().Select(tile => tile.KComponent).Distinct().ToList();
+
+            foreach (var component in components)
+            {
+                component.Qualify();
+            }
         }
 
         public void Generate()
@@ -582,7 +623,7 @@ namespace RogueTower
                 }
             }
 
-            var dijkstra = Util.Dijkstra(new Point(0, Height - 1), Width, Height, GetMainWeight, (pos) => GetRoom(pos.X, pos.Y).GetAdjacentNeighbors().Select(room => new Point(room.X, room.Y)));
+            var dijkstra = Util.Dijkstra(new Point(0, Height - 1), Width, Height, double.PositiveInfinity, GetMainWeight, (pos) => GetRoom(pos.X, pos.Y).GetAdjacentNeighbors().Select(room => new Point(room.X, room.Y)));
 
             Console.WriteLine("Generate Path");
             var path = dijkstra.FindPath(new Point(Random.Next(Width), 0)).ToList();
@@ -690,6 +731,32 @@ namespace RogueTower
             }
         }
 
+        [Flags]
+        enum ConnectionResult
+        {
+            None = 0,
+            ConnectIn = 1,
+            ConnectOut = 2,
+            ConnectInOut = 3,
+        }
+
+        struct Connector
+        {
+            public ConnectionResult Result;
+            Func<KComponent, ConnectionResult> Function;
+
+            public Connector(ConnectionResult result, Func<KComponent, ConnectionResult> function)
+            {
+                Result = result;
+                Function = function;
+            }
+
+            public ConnectionResult Run(KComponent component)
+            {
+                return Function(component);
+            }
+        }
+
         public void Build(Map map)
         {
             for (int y = 0; y < map.Height; y++)
@@ -753,102 +820,354 @@ namespace RogueTower
                             break;
                     }
                     if (room.SelectedTemplate != null)
-                        BuildTemplate(map, origin + x * 8, y * 8, room.SelectedTemplate, color);
+                        BuildRoom(map, origin + x * 8, y * 8, room, color);
+                }
+            }
+
+            while (map.SubTemplates.Count > 0)
+            {
+                var first = map.SubTemplates.Dequeue();
+                BuildTemplate(map, first.X, first.Y, first.Pick(Random), Color.White);
+            }
+
+            foreach(var connection in map.WireConnections)
+            {
+                var nodeStart = map.WireNodes[connection.Start.X, connection.Start.Y];
+                var nodeEnd = map.WireNodes[connection.End.X, connection.End.Y];
+
+                if(nodeStart != null && nodeEnd != null)
+                    new Wire(map.World, nodeStart, nodeEnd);
+            }
+
+            var floors = map.EnumerateTiles().Where(x => x is EmptySpace && IsFloor(x.GetNeighbor(0, 1))).ToList();
+            var floorCheck = floors.ToHashSet();
+            
+            var entries = new List<Tile>();
+            var exits = new List<Tile>();
+            var teleports = new List<Tile>();
+
+            foreach (var tile in map.EnumerateTiles())
+            {
+                switch (tile.ConnectFlag)
+                {
+                    case (FlagConnect.Any):
+                        if(IsWall(tile) && (floorCheck.Contains(tile.GetNeighbor(1, 0)) || floorCheck.Contains(tile.GetNeighbor(-1, 0))))
+                        {
+                            entries.Add(tile);
+                            exits.Add(tile);
+                        }
+                        if(tile is Wall wall && wall.Top && floorCheck.Contains(tile.GetNeighbor(0,-1)))
+                        {
+                            teleports.Add(tile);
+                        }
+                        break;
+                    case (FlagConnect.In):
+                        entries.Add(tile);
+                        break;
+                    case (FlagConnect.Out):
+                        exits.Add(tile);
+                        break;
+                    case (FlagConnect.InOut):
+                        entries.Add(tile);
+                        exits.Add(tile);
+                        break;
+                    case (FlagConnect.Teleport):
+                        teleports.Add(tile);
+                        break;
+                }
+            }
+
+            var components = floors.Where(x => x.Room != null).Select(x => x.Room.KComponent).Distinct().ToList();
+            var entryGroups = entries.ToLookup(x => x.Room?.KComponent);
+            var exitGroups = exits.ToLookup(x => x.Room?.KComponent);
+            var teleportGroups = teleports.ToLookup(x => x.Room?.KComponent);
+
+            var mainGroup = components.WithMax(x => x.Tiles.Count);
+            var mainComponents = new HashSet<KComponent>() { mainGroup };
+            components.Remove(mainGroup);
+
+            Func<KComponent, ConnectionResult> ConnectPathIn = (component) =>
+            {
+                IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
+                IEnumerable<Tile> pathExits = exitGroups[component];
+                var connected = ConnectPath(map, pathEntries, pathExits);
+                if (connected == PathResult.TwoWay)
+                    return ConnectionResult.ConnectInOut;
+                else if(connected == PathResult.OneWay)
+                    return ConnectionResult.ConnectIn;
+                else
+                    return ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectPathOut = (component) =>
+            {
+                IEnumerable<Tile> pathEntries = entryGroups[component];
+                IEnumerable<Tile> pathExits = exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList();
+                var connected = ConnectPath(map, pathEntries, pathExits);
+                if (connected == PathResult.TwoWay)
+                    return ConnectionResult.ConnectInOut;
+                else if (connected == PathResult.OneWay)
+                    return ConnectionResult.ConnectOut;
+                else
+                    return ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportIn = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                IEnumerable<Tile> teleportExits = teleportGroups[component];
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectIn);
+                return connected ? ConnectionResult.ConnectIn : ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportOut = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleportGroups[component];
+                IEnumerable<Tile> teleportExits = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectOut);
+                return connected ? ConnectionResult.ConnectOut : ConnectionResult.None;
+            };
+            Func<KComponent, ConnectionResult> ConnectTeleportIO = (component) =>
+            {
+                IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                IEnumerable<Tile> teleportExits = teleportGroups[component];
+                var connected = ConnectTeleport(map, teleportEntries, teleportExits, ConnectionResult.ConnectInOut);
+                return connected ? ConnectionResult.ConnectInOut : ConnectionResult.None;
+            };
+
+            while (components.Any())
+            {
+                var component = components.First();
+
+                WeightedList<Connector> possibleConnections = new WeightedList<Connector>();
+                ConnectionResult wantedConnection = ConnectionResult.None;
+              
+                switch(component.Type)
+                {
+                    case (KComponentType.Vault):
+                        wantedConnection = ConnectionResult.ConnectInOut;
+                        break;
+                    case (KComponentType.Sink):
+                        wantedConnection = ConnectionResult.ConnectOut;
+                        break;
+                    case (KComponentType.Source):
+                        wantedConnection = ConnectionResult.ConnectIn;
+                        break;
+                }
+
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectIn))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectIn, ConnectPathIn), 100);
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectIn, ConnectTeleportIn), 100);
+                }
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectOut))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectOut, ConnectPathOut), 100);
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectOut, ConnectTeleportOut), 100);
+                }
+                if (wantedConnection.HasFlag(ConnectionResult.ConnectInOut))
+                {
+                    possibleConnections.Add(new Connector(ConnectionResult.ConnectInOut, ConnectTeleportIO), 100);
+                }
+
+                while (wantedConnection != ConnectionResult.None && possibleConnections.Count > 0)
+                {
+                    var connect = possibleConnections.GetWeighted(Random);
+                    if(wantedConnection.HasFlag(connect.Result))
+                        wantedConnection &= ~connect.Run(component);
+                    possibleConnections.Remove(connect);
+                }
+
+                /*if(connectIn)
+                {
+                    IEnumerable<Tile> pathEntries = entries.Where(entry => mainComponents.Contains(entry.Room?.KComponent)).ToList();
+                    IEnumerable<Tile> pathExits = exitGroups[component];
+                    var connected = ConnectPath(map, pathEntries, pathExits);
+                    if (connected == null)
+                    {
+                        IEnumerable<Tile> teleportEntries = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                        IEnumerable<Tile> teleportExits = teleportGroups[component];
+                        ConnectTeleport(map, teleportEntries, teleportExits);
+                    }
+                }
+                if(connectOut)
+                {
+                    IEnumerable<Tile> pathEntries = entryGroups[component];
+                    IEnumerable<Tile> pathExits = exits.Where(exit => mainComponents.Contains(exit.Room?.KComponent)).ToList();
+                    var connected = ConnectPath(map, pathEntries, pathExits);
+                    if (connected == null)
+                    {
+                        IEnumerable<Tile> teleportEntries = teleportGroups[component];
+                        IEnumerable<Tile> teleportExits = teleports.Where(teleport => mainComponents.Contains(teleport.Room?.KComponent)).ToList();
+                        ConnectTeleport(map, teleportEntries, teleportExits);
+                    }
+                }*/
+                components.Remove(component);
+                mainComponents.Add(component);
+            }
+        }
+
+        private bool IsFloor(Tile tile)
+        {
+            return tile is Wall && !(tile is Spike);
+        }
+
+        private bool IsWall(Tile tile)
+        {
+            return tile is Wall;
+        }
+
+        private bool ConnectTeleport(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits, ConnectionResult connection)
+        {
+            if (entries.Any() && exits.Any())
+            {
+                Tile entry, exit;
+                if(connection == ConnectionResult.ConnectOut)
+                {
+                    entry = entries.Shuffle().First();
+                    exit = exits.WithMin(tile => SquaredDistance(entry.X, entry.Y, tile.X, tile.Y));
+                }
+                else
+                {
+                    exit = exits.Shuffle().First();
+                    entry = entries.WithMin(tile => SquaredDistance(exit.X, exit.Y, tile.X, tile.Y));
+                }
+
+                if (exit != null)
+                {
+                    map.Tiles[entry.X, entry.Y] = new TeleportTrapLinked(map, entry.X, entry.Y)
+                    {
+                        LinkX = exit.X,
+                        LinkY = exit.Y,
+                    };
+                    if (connection == ConnectionResult.ConnectInOut)
+                        map.Tiles[exit.X, exit.Y] = new TeleportTrapLinked(map, exit.X, exit.Y)
+                        {
+                            LinkX = entry.X,
+                            LinkY = entry.Y,
+                        };
+                    else
+                        map.Tiles[exit.X, exit.Y] = new BumpTrap(map, exit.X, exit.Y);
+                    return true;
+                }
+            }
+
+            return false; //Bad times
+        }
+
+        private int SquaredDistance(int x1, int y1, int x2, int y2)
+        {
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+            return dx * dx + dy * dy;
+        }
+
+        enum PathResult
+        {
+            None,
+            OneWay,
+            TwoWay,
+        }
+
+        private PathResult ConnectPath(Map map, IEnumerable<Tile> entries, IEnumerable<Tile> exits)
+        {
+            var wallCheck = map.EnumerateTiles().Where(x => IsWall(x) && x.GetFullNeighbors().All(y => IsWall(y))).ToHashSet();
+            var dijkstra = Util.Dijkstra(entries.Select(entry => new Point(entry.X,entry.Y)).ToHashSet(), map.Width, map.Height, double.PositiveInfinity, (a, b) => {
+                var tile = map.Tiles[b.X, b.Y];
+                switch (tile.ConnectFlag)
+                {
+                    default:
+                    case (FlagConnect.Any):
+                        if (wallCheck.Contains(tile))
+                            return 1;
+                        else
+                            return double.PositiveInfinity;
+                    case (FlagConnect.Blocked):
+                        return double.PositiveInfinity;
+                    case (FlagConnect.Fast):
+                        return 0.01;
+                    case (FlagConnect.Out):
+                    case (FlagConnect.InOut):
+                        return 100;
+                }
+            }, (a) => {
+                return map.Tiles[a.X, a.Y].GetDownNeighbors().Select(neighbor => new Point(neighbor.X, neighbor.Y));
+            });
+            var ends = dijkstra.FindEnds(p => exits.Contains(map.Tiles[p.X, p.Y]));
+            if (ends.Any())
+            {
+                foreach (var end in ends.OrderBy(p => dijkstra[p.X, p.Y].Distance))
+                {
+                    var component = map.Tiles[end.X, end.Y].Room?.KComponent;
+                    IEnumerable<Point> path = dijkstra.FindPath(end).ToList();
+                    var start = dijkstra.FindStart(end);
+                    //if (!CheckPath(start, path))
+                    //    continue;
+                    //map.Tiles[start.X, start.Y] = new EmptySpace(map, start.X, start.Y);
+                    map.Tiles[start.X, start.Y].Mechanism = new ChainDestroyStart();
+                    foreach (var point in path)
+                    {
+                        //map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
+                        map.Tiles[point.X, point.Y].Mechanism = new ChainDestroy();
+                    }
+                    return Math.Abs(start.Y - end.Y) < 1 ? PathResult.TwoWay : PathResult.OneWay;
+                }
+            }
+            return PathResult.None;
+        }
+
+        private bool CheckPath(Point start, IEnumerable<Point> path)
+        {
+            var previous = start;
+            int height = 0;
+            int maxHeight = 0;
+            foreach(var next in path)
+            {
+                int dy = next.Y - previous.Y;
+                if (dy < 0)
+                    height++;
+                else
+                {
+                    if (height > maxHeight)
+                        maxHeight = height;
+                    height = 0;
+                }
+                previous = next;
+            }
+
+            return maxHeight <= 2;
+        }
+
+        private void BuildRoom(Map map, int px, int py, RoomTile room, Color color)
+        {
+            var template = room.SelectedTemplate;
+            BuildTemplate(map, px, py, template, color);
+            for (int x = 0; x < 8; x++)
+            {
+                for (int y = 0; y < 8; y++)
+                {
+                    map.Tiles[px + x, py + y].Room = room;
                 }
             }
         }
 
         private void BuildTemplate(Map map, int px, int py, Template template, Color color)
         {
-            for (int x = 0; x < 8; x++)
+            for (int x = 0; x < template.Width; x++)
             {
-                for (int y = 0; y < 8; y++)
+                for (int y = 0; y < template.Height; y++)
                 {
-                    switch (template.Foreground[x, y])
-                    {
-                        default:
-                            map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            break;
-                        case (0):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Normal);
-                            break;
-                        case (1):
-                            if (Random.NextDouble() < 0.07)
-                            {
-                                var trap = map.BuildTrap(px + x, py + y, Random);
-                                trap.Facing = Wall.WallFacing.Top;
-                                map.Tiles[px + x, py + y] = trap;
-                            }
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Top);
-                            break;
-                        case (2):
-                            map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.Bottom);
-                            break;
-                        case (3):
-                            map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
-                            break;
-                        case (4):
-                            map.Tiles[px + x, py + y] = new Spike(map, px + x, py + y);
-                            break;
-                        case (6):
-                            if (Random.NextDouble() < 0.07)
-                            {
-                                var trap = map.BuildTrap(px + x, py + y, Random);
-                                trap.Facing = Wall.WallFacing.BottomTop;
-                                map.Tiles[px + x, py + y] = trap;
-                            }
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y, Wall.WallFacing.BottomTop);
-                            break;
-                        case (8):
-                            map.Tiles[px + x, py + y] = new Grass(map, px + x, py + y);
-                            break;
-                        case (9):
-                            map.Tiles[px + x, py + y] = new WallIce(map, px + x, py + y);
-                            break;
-                        case (10):
-                            map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Left);
-                            break;
-                        case (11):
-                            map.Tiles[px + x, py + y] = new Ladder(map, px + x, py + y, HorizontalFacing.Right);
-                            break;
-                        case (17):
-                            if(Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
-                            break;
-                        case (18):
-                            if (Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new WallBlock(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new Wall(map, px + x, py + y);
-                            break;
-                        case (19):
-                            if (Random.NextDouble() < 0.5)
-                                map.Tiles[px + x, py + y] = new WallIce(map, px + x, py + y);
-                            else
-                                map.Tiles[px + x, py + y] = new EmptySpace(map, px + x, py + y);
-                            break;
-                        case (20):
-                            map.Tiles[px + x, py + y] = new SpikeDeath(map, px + x, py + y);
-                            break;
-                        case (21):
-                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Left);
-                            break;
-                        case (22):
-                            map.Tiles[px + x, py + y] = new LadderExtend(map, px + x, py + y, HorizontalFacing.Right);
-                            break;
-                    }
+                    template.PrintForeground(template.Foreground[x, y], map, px + x, py + y, Random);
+                    template.PrintBackground(template.Background[x, y], map, px + x, py + y, Random);
+                    template.PrintConnectFlag(template.GetConnectFlag(x, y), map, px + x, py + y);
+                    template.PrintMechanism(template.GetMechanismFlag(x, y), map, px + x, py + y);
 
                     map.Tiles[px + x, py + y].Color = color;
-                    map.Background[px + x, py + y] = GetBackground(template.Background[x,y]);
                 }
             }
 
             foreach (var entity in template.Entities)
-                template.PrintEntity(entity, map.World, px, py);
+                template.PrintEntity(entity, map, px, py);
+
+            foreach (var mechanism in template.EntitiesMechanism)
+                template.PrintMechanism(mechanism, map, px, py);
         }
 
         private TileBG GetBackground(int id)
@@ -902,7 +1221,7 @@ namespace RogueTower
                     return TileBG.PillarDetail;
                 case (27):
                     return TileBG.Pillar;
-                case (43):
+                case (35):
                     return TileBG.PillarBottomBroken;
             }
         }

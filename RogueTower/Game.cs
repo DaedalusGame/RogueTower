@@ -274,6 +274,8 @@ namespace RogueTower
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            SpriteLoader.Instance.Draw(gameTime);
+
             GraphicsDevice.Clear(Color.Black);
 
             Frame++;
@@ -297,6 +299,7 @@ namespace RogueTower
         public const char FORMAT_UNDERLINE = (char)(FORMAT_CODES_BEGIN + 2);
         public const char FORMAT_SUBSCRIPT = (char)(FORMAT_CODES_BEGIN + 3);
         public const char FORMAT_SUPERSCRIPT = (char)(FORMAT_CODES_BEGIN + 4);
+        public const char FORMAT_ICON = (char)(FORMAT_CODES_BEGIN + 5);
 
         public static string ConvertToPixelText(string text)
         {
@@ -412,6 +415,13 @@ namespace RogueTower
                 SpriteBatch.Draw(tex, drawpos + charOffset + new Vector2(pos - offset, parameters.ScriptOffset), FontUtil.GetCharRect(index), color);
                 if (parameters.Bold)
                     SpriteBatch.Draw(tex, drawpos + charOffset + new Vector2(pos - offset + 1, parameters.ScriptOffset), FontUtil.GetCharRect(index), color);
+
+                if(chr == FORMAT_ICON)
+                {
+                    parameters.Icons[parameters.IconIndex].Draw(drawpos + charOffset + new Vector2(pos - offset, parameters.ScriptOffset) + new Vector2(8,8));
+                    parameters.IconIndex++;
+                }
+
                 pos += width + parameters.CharSeperator + (parameters.Bold ? 1 : 0);
                 totalindex++;
             }

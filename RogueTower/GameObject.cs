@@ -1,4 +1,5 @@
 ﻿using Humper.Base;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,6 +64,11 @@ namespace RogueTower
         protected abstract void UpdateDelta(float delta);
 
         protected abstract void UpdateDiscrete();
+
+        public virtual IEnumerable<Vector2> GetDrawPoints()
+        {
+            return Enumerable.Empty<Vector2>();
+        }
 
         public abstract IEnumerable<DrawPass> GetDrawPasses();
 

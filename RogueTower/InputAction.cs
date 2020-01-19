@@ -140,11 +140,11 @@ namespace RogueTower
 
         public void DrawMessageHistory(SceneGame scene, MessageHistory history)
         {
-            var parameters = new TextParameters().SetColor(Color.White, Color.Black).SetBold(true).SetConstraints(scene.Viewport.Width, 128);
-            int offsetY = 80;
+            int offsetY = 150;
             foreach(var message in history.Messages.Reverse<Message>())
             {
-                string fitString = FontUtil.FitString(message.Text, parameters);
+                var parameters = new TextParameters().SetColor(Color.White, Color.Black).SetBold(true).SetConstraints(scene.Viewport.Width, 128).SetIcons(scene, message.Icons);
+                string fitString = FontUtil.FitString(message.RenderText(Player), parameters);
                 var height = FontUtil.GetStringHeight(fitString);
                 offsetY -= height;
                 if (offsetY + height < 0)

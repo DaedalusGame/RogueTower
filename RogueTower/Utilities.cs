@@ -1,4 +1,5 @@
-﻿using Humper.Base;
+﻿using FibonacciHeap;
+using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -132,33 +133,45 @@ namespace RogueTower
             return !enumerable.Any();
         }
 
-        public static DijkstraTile[,] Dijkstra(Point start, int width, int height, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
+        public static DijkstraTile[,] Dijkstra(Point start, int width, int height, double maxDist, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
+        {
+            return Dijkstra(new[] { start }, width, height, maxDist, length, neighbors);
+        }
+
+        public static DijkstraTile[,] Dijkstra(IEnumerable<Point> start, int width, int height, double maxDist, Func<Point, Point, double> length, Func<Point, IEnumerable<Point>> neighbors)
         {
             var dijkstraMap = new DijkstraTile[width, height];
-            var dTiles = new List<DijkstraTile>();
+            var nodeMap = new FibonacciHeapNode<DijkstraTile,double>[width, height];
+            var heap = new FibonacciHeap<DijkstraTile, double>(0);
 
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     Point tile = new Point(x, y);
-                    DijkstraTile dTile = new DijkstraTile(tile, tile == start ? 0 : double.PositiveInfinity, tile == start ? 0 : double.PositiveInfinity);
+                    bool isStart = start.Contains(tile);
+                    DijkstraTile dTile = new DijkstraTile(tile, isStart ? 0 : double.PositiveInfinity, isStart ? 0 : double.PositiveInfinity);
+                    var node = new FibonacciHeapNode<DijkstraTile, double>(dTile, dTile.Distance);
                     dijkstraMap[x, y] = dTile;
-                    dTiles.Add(dTile);
+                    nodeMap[x, y] = node;
+                    heap.Insert(node);
                 }
             }
 
-            while (dTiles.Any())
+            while (!heap.IsEmpty())
             {
-                var dTile = dTiles.Aggregate((i1, i2) => i1.Distance < i2.Distance ? i1 : i2);
+                var node = heap.RemoveMin();
+                var dTile = node.Data;
 
-                dTiles.Remove(dTile);
+                if (dTile.Distance >= maxDist)
+                    break;
 
                 foreach (var neighbor in neighbors(dTile.Tile))
                 {
                     if (neighbor.X < 0 || neighbor.Y < 0 || neighbor.X >= width || neighbor.Y >= height)
                         continue;
-                    var dNeighbor = dijkstraMap[neighbor.X, neighbor.Y];
+                    var nodeNeighbor = nodeMap[neighbor.X, neighbor.Y];
+                    var dNeighbor = nodeNeighbor.Data;
                     double newDist = dTile.Distance + length(dTile.Tile, dNeighbor.Tile);
 
                     if (newDist < dNeighbor.Distance)
@@ -166,11 +179,25 @@ namespace RogueTower
                         dNeighbor.Distance = newDist;
                         dNeighbor.Previous = dTile;
                         dNeighbor.MoveDistance = dTile.MoveDistance + 1;
+                        heap.DecreaseKey(nodeNeighbor, dNeighbor.Distance);
                     }
                 }
             }
 
             return dijkstraMap;
+        }
+
+        public static IEnumerable<Point> FindEnds(this DijkstraTile[,] dijkstra, Func<Point,bool> predicate)
+        {
+            for(int x = 0; x < dijkstra.GetLength(0); x++)
+            {
+                for (int y = 0; y < dijkstra.GetLength(1); y++)
+                {
+                    var dTile = dijkstra[x, y];
+                    if (!double.IsInfinity(dTile.Distance) && predicate(dTile.Tile))
+                        yield return dTile.Tile;
+                }
+            }
         }
 
         private static IEnumerable<Point> FindPathInternal(DijkstraTile[,] dijkstra, Point end)
@@ -182,6 +209,18 @@ namespace RogueTower
                 yield return dTile.Tile;
                 dTile = dTile.Previous;
             }
+        }
+
+        public static Point FindStart(this DijkstraTile[,] dijkstra, Point end)
+        {
+            DijkstraTile dTile = dijkstra[end.X, end.Y];
+
+            while (dTile.Previous != null)
+            {
+                dTile = dTile.Previous;
+            }
+
+            return dTile.Tile;
         }
 
         public static IEnumerable<Point> FindPath(this DijkstraTile[,] dijkstra, Point end)
@@ -245,6 +284,16 @@ namespace RogueTower
                 shuffled.Insert(random.Next(shuffled.Count + 1), value);
             }
             return shuffled;
+        }
+
+        public static ILookup<TKey, TElement> ToMultiLookup<TSource, TKey, TElement>(this IEnumerable<TSource> enumerable, Func<TSource, IEnumerable<TKey>> keySelector, Func<TSource, TElement> valueSelector)
+        {
+            return enumerable.SelectMany(obj => keySelector(obj).Select(pass => Tuple.Create(valueSelector(obj), pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
+        }
+
+        public static ILookup<TKey, TElement> ToMultiLookup<TKey, TElement>(this IEnumerable<TElement> enumerable, Func<TElement, IEnumerable<TKey>> keySelector)
+        {
+            return enumerable.SelectMany(obj => keySelector(obj).Select(pass => Tuple.Create(obj, pass))).ToLookup(obj => obj.Item2, obj => obj.Item1);
         }
 
         public static Vector2 Mirror(this Vector2 vector, SpriteEffects mirror)
