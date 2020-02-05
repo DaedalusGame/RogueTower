@@ -1068,6 +1068,10 @@ namespace RogueTower
         {
             new DroppedItem(World, position, Meat.Moai).Spread();
             new DroppedItem(World, position, new CurseMedal()).Spread();
+            if(Random.NextDouble() > 0.75)
+            {
+                new DroppedItem(World, position, Weapon).Spread();
+            }
         }
 
         public override void Hit(Vector2 velocity, int hurttime, int invincibility, double damageIn)

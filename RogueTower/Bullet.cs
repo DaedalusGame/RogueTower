@@ -3,6 +3,7 @@ using Humper.Responses;
 using Microsoft.Xna.Framework;
 using System;
 using static RogueTower.Game;
+using ChaiFoxes.FMODAudio;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -277,15 +278,26 @@ namespace RogueTower
     class Explosion : Bullet
     {
         public override RectangleF ActivityZone => World.Bounds;
+        public SoundChannel Sound;
+        public int HurtTime;
+        public int Invincibility;
+        public double Damage;
 
-        public Explosion(GameWorld world, Vector2 position, Vector2 size) : base(world,position, size)
+        public Explosion(GameWorld world, Vector2 position, Vector2 size, int hurttime = 20, int invincibility = 50, double damage = 45) : base(world,position, size)
         {
-            
+            HurtTime = hurttime;
+            Invincibility = invincibility;
+            Damage = damage;
+            Sound = PlaySFX(sfx_explosion1, 1.0f);
+            Sound.Pitch = 1 - Math.Max(size.X, size.Y);
         }
 
-        public Explosion(GameWorld world, Vector2 position) : this(world, position, new Vector2(16,16))
+        public Explosion(GameWorld world, Vector2 position, int hurttime = 20, int invincibility = 50, double damage = 45) : this(world, position, new Vector2(16,16))
         {
-            PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
+            HurtTime = hurttime;
+            Invincibility = invincibility;
+            Damage = damage;
+            Sound = PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
         }
 
         protected override void UpdateDiscrete()
@@ -298,7 +310,7 @@ namespace RogueTower
 
         protected override void ApplyEffect(Enemy enemy)
         {
-            enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), 20, 50, 45);
+            enemy.Hit(new Vector2(Math.Sign(enemy.Position.X - Position.X), -2), HurtTime, Invincibility, Damage);
         }
 
         public override void Draw(SceneGame scene, DrawPass pass)

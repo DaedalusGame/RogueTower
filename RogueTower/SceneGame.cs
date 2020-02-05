@@ -64,7 +64,39 @@ namespace RogueTower
             }
         }
 
+        public class AlchemicalGauntletState : WeaponState
+        {
+            public string GauntletSprite;
+            public string OrbSprite;
+            public Color GauntletColor;
+            public Color OrbColor;
+            public AlchemicalGauntletState(string gauntletsprite, string orbsprite, float angle, Color gauntletcolor, Color orbcolor) : base("", 0, new Vector2(1,2), angle, 6)
+            {
+                GauntletSprite = gauntletsprite;
+                OrbSprite = orbsprite;
+                GauntletColor = gauntletcolor;
+                OrbColor = orbcolor;
+            }
+
+            public override void Draw(SceneGame game, Vector2 position, SpriteEffects mirror, float depth)
+            {
+                SpriteReference gauntletsprite = SpriteLoader.Instance.AddSprite($"content/{GauntletSprite}", false);
+                SpriteReference orbsprite = SpriteLoader.Instance.AddSprite($"content/{OrbSprite}", false);
+
+                float angle = Angle;
+                if (mirror == SpriteEffects.FlipHorizontally)
+                {
+                    angle = Util.MirrorAngle(angle);
+                    mirror = SpriteEffects.FlipVertically;
+                }
+
+                game.DrawSpriteExt(gauntletsprite, Frame, position - Origin, Origin, angle, Vector2.One, mirror, GauntletColor, depth);
+                game.DrawSpriteExt(orbsprite, Frame, position + (AngleToVector(angle + MathHelper.PiOver2) * 3) - orbsprite.Middle, orbsprite.Middle, angle, Vector2.One, mirror, OrbColor, depth);
+            }
+        }
+
         public static WeaponState None => new NoneState();
+        public static WeaponState AlchemicalGauntlet(float angle, string gauntletsprite, string orbsprite, Color gauntletcolor, Color orbcolor) => new AlchemicalGauntletState(gauntletsprite, orbsprite, angle, gauntletcolor, orbcolor);
         public static WeaponState Boomerang(float angle) => new WeaponState("boomerang", 0, new Vector2(1, 3), angle, 6);
         public static WeaponState Katana(float angle) => new WeaponState("katana", 0, new Vector2(3, 1), angle, 16);
         public static WeaponState Knife(float angle) => new WeaponState("knife", 0, new Vector2(4, 4), angle, 6);
