@@ -51,6 +51,12 @@ namespace RogueTower
         Output,
     }
 
+    class PuzzleNode
+    {
+        public List<Node> Inputs = new List<Node>();
+        public List<Node> Outputs = new List<Node>();
+    }
+
     class PuzzleConnection
     {
         public Point Position;
@@ -86,6 +92,7 @@ namespace RogueTower
         public IWireNode[,] WireNodes;
         public List<WireConnection> WireConnections = new List<WireConnection>();
         public List<PuzzleConnection> PuzzleConnections = new List<PuzzleConnection>();
+        public List<PuzzleNode> Puzzles = new List<PuzzleNode>();
 
         public Map(GameWorld world, int width, int height)
         {

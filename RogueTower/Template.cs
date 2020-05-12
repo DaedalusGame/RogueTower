@@ -54,6 +54,9 @@ namespace RogueTower
         public int Width;
         public int Height;
 
+        public int Inputs;
+        public int Outputs;
+
         public string Up;
         public string Down;
         public string Right;
@@ -183,7 +186,28 @@ namespace RogueTower
                 }
             }
 
+            QualifyPuzzle();
+
             reader.Close();
+        }
+
+        public void QualifyPuzzle()
+        {
+            Inputs = 0;
+            Outputs = 0;
+
+            foreach(var entity in EntitiesMechanism)
+            {
+                string type = entity["name"].ToObject<string>();
+                if(type == "puzzle_in")
+                {
+                    Inputs++;
+                }
+                if(type == "puzzle_out")
+                {
+                    Outputs++;
+                }
+            }
         }
 
         private delegate void SetupTileDelegate(int width, int height);
@@ -368,7 +392,7 @@ namespace RogueTower
             }
         }
 
-        public void PrintMechanism(JObject entity, Map map, int px, int py)
+        public void PrintMechanism(JObject entity, Map map, int px, int py, PuzzleNode puzzle)
         {
             GameWorld world = map.World;
             string type = entity["name"].ToObject<string>();
@@ -417,11 +441,15 @@ namespace RogueTower
                 var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1000);
                 map.WireNodes[tile.X, tile.Y] = node;
                 ConnectWires(entity, map, px, py);
+
+                puzzle.Inputs.Add(node);
             }
             if (type == "puzzle_out" && !map.HasWire(tile.X, tile.Y))
             {
                 var node = new NodeCombine(world, new Vector2(x + 8, y + 8), 1);
                 map.WireNodes[tile.X, tile.Y] = node;
+
+                puzzle.Outputs.Add(node);
             }
             if (type == "switch" && !map.HasWire(tile.X, tile.Y))
             {
@@ -561,7 +589,8 @@ namespace RogueTower
 
         public override string ToString()
         {
-            return Name;
+            string puzzle = (Inputs > 0 || Outputs > 0) ? $" ({Inputs}->{Outputs})" : "";
+            return $"{Name}{puzzle}";
         }
     }
 }

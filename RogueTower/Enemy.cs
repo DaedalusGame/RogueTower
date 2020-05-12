@@ -39,7 +39,7 @@ namespace RogueTower
         public Func<Vector2> VisualOffset = () => Vector2.Zero;
         public Func<ColorMatrix> VisualFlash = () => ColorMatrix.Identity;
         public virtual ColorMatrix VisualBaseColor => ColorMatrix.Identity;
-        public virtual bool VisualInvisible => true;
+        public virtual bool VisualInvisible => false;
 
         public override RectangleF ActivityZone => new RectangleF(Position - new Vector2(1000, 600) / 2, new Vector2(1000, 600));
 

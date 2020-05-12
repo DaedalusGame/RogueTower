@@ -94,6 +94,11 @@ namespace RogueTower
         }
     }
 
+    class EnvironmentComponent
+    {
+        List<EnvironmentComponent> Outside;
+    }
+
     class RoomTile
     {
         static HashSet<string> SolidEdges = new HashSet<string>() {
@@ -133,6 +138,10 @@ namespace RogueTower
         public IEnumerable<string> InEdgeDown => GetNeighbor(0, 1).EdgeUp;
 
         public List<RoomTile> ExtraNeighbors = new List<RoomTile>();
+
+        public List<RoomTile> EnvironmentNext = new List<RoomTile>();
+        public List<RoomTile> EnvironmentPrevious = new List<RoomTile>();
+        public Object Environment;
 
         public RoomTile(MapGenerator generator, int x, int y)
         {
@@ -389,6 +398,10 @@ namespace RogueTower
                 yield return GetNeighbor(1, 0);
             if (!SolidEdges.Contains(template.Left))
                 yield return GetNeighbor(-1, 0);
+            foreach(var neighbor in ExtraNeighbors)
+            {
+                yield return neighbor;
+            }
         }
 
         public IEnumerable<RoomTile> GetInNeighbors()
@@ -402,6 +415,23 @@ namespace RogueTower
                 yield return GetNeighbor(1, 0);
             if (!SolidEdges.Contains(template.Left))
                 yield return GetNeighbor(-1, 0);
+        }
+
+        public IEnumerable<RoomTile> GetEnvironmentNeighbors()
+        {
+            foreach (var neighbor in EnvironmentNext)
+            {
+                yield return neighbor;
+            }
+        }
+
+        public void ConnectEnvironment(RoomTile room)
+        {
+            if (!EnvironmentNext.Contains(room))
+            {
+                EnvironmentNext.Add(room);
+                room.EnvironmentPrevious.Add(this);
+            }
         }
 
         public void KInit()
@@ -439,7 +469,7 @@ namespace RogueTower
 
         public void Connect(RoomTile room)
         {
-            if(!ExtraNeighbors.Contains(room))
+            if (!ExtraNeighbors.Contains(room))
                 ExtraNeighbors.Add(room);
         }
 
@@ -572,6 +602,108 @@ namespace RogueTower
             {
                 component.Qualify();
             }
+        }
+
+        public bool HasEnvironmentPath(RoomTile start, RoomTile end)
+        {
+            HashSet<RoomTile> visited = new HashSet<RoomTile>();
+            Queue<RoomTile> toVisit = new Queue<RoomTile>();
+
+            visited.Add(start);
+            toVisit.Enqueue(start);
+
+            while (toVisit.Count > 0)
+            {
+                var visit = toVisit.Dequeue();
+
+                if (visit == end)
+                    return true;
+
+                foreach (var neighbor in visit.GetEnvironmentNeighbors())
+                {
+                    if (neighbor.InBounds() && !visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        toVisit.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public void CreateEnvironmentTree(RoomTile start)
+        {
+            BuildEnvironmentTree(start);
+
+            var orphans = EnumerateTiles().Where(x => x.EnvironmentPrevious.Empty()).ToList();
+            foreach(var orphan in orphans)
+            {
+                if (orphan.EnvironmentPrevious.Any())
+                    continue; //Not an orphan anymore
+
+                BuildEnvironmentTree(orphan);
+                orphan.GetNeighbor(0, -1).ConnectEnvironment(orphan);
+            }
+        }
+
+        public void PaintEnvironment(RoomTile start, Object environment)
+        {
+            HashSet<RoomTile> visited = new HashSet<RoomTile>();
+            Queue<RoomTile> toVisit = new Queue<RoomTile>();
+
+            visited.Add(start);
+            toVisit.Enqueue(start);
+
+            while (toVisit.Count > 0)
+            {
+                var visit = toVisit.Dequeue();
+
+                if (visit.Environment == null)
+                    visit.Environment = environment;
+                else
+                    break;
+
+                foreach (var neighbor in visit.GetEnvironmentNeighbors())
+                {
+                    if (neighbor.InBounds() && !visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        toVisit.Enqueue(neighbor);
+                    }
+                }
+            }
+        }
+
+        public void BuildEnvironmentTree(RoomTile start)
+        {
+            HashSet<RoomTile> visited = new HashSet<RoomTile>();
+            Queue<RoomTile> toVisit = new Queue<RoomTile>();
+
+            visited.Add(start);
+            toVisit.Enqueue(start);
+
+            while(toVisit.Count > 0)
+            {
+                var visit = toVisit.Dequeue();
+
+                foreach(var neighbor in visit.GetOutNeighbors())
+                {
+                    if (neighbor.InBounds() && !visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        toVisit.Enqueue(neighbor);
+
+                        if (!HasEnvironmentPath(visit, neighbor))
+                            visit.ConnectEnvironment(neighbor);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<RoomTile> GetEnvironmentEnds()
+        {
+            return EnumerateTiles().Where(x => !x.EnvironmentNext.Any());
         }
 
         public void Generate()
@@ -824,10 +956,27 @@ namespace RogueTower
                 }
             }
 
+            BuildEnvironmentTree(Rooms[0, Height - 1]);
+
             while (map.SubTemplates.Count > 0)
             {
                 var first = map.SubTemplates.Dequeue();
                 BuildTemplate(map, first.X, first.Y, first.Pick(Random), Color.White);
+            }
+
+            while (map.Puzzles.Any())
+            {
+                var end = map.Puzzles.WithMin(x => x.Outputs.Count);
+                map.Puzzles.Remove(end);
+                foreach (var input in end.Inputs)
+                {
+                    if (!map.Puzzles.Any(puzzle => puzzle.Outputs.Any()))
+                        break;
+                    var start = map.Puzzles.WithMin(puzzle => puzzle.Outputs.Any() ? puzzle.Outputs.Min(node => (node.Position - input.Position).LengthSquared()) : float.PositiveInfinity);
+                    var output = start.Outputs.WithMin(node => (node.Position - input.Position).LengthSquared());
+                    start.Outputs.Remove(output);
+                    new Wire(map.World, output, input);
+                }
             }
 
             foreach(var connection in map.WireConnections)
@@ -1107,7 +1256,13 @@ namespace RogueTower
                         //map.Tiles[point.X, point.Y] = new EmptySpace(map, point.X, point.Y);
                         map.Tiles[point.X, point.Y].Mechanism = new ChainDestroy();
                     }
-                    return Math.Abs(start.Y - end.Y) < 1 ? PathResult.TwoWay : PathResult.OneWay;
+                    if(Math.Abs(start.Y - end.Y) < 1)
+                    {
+                        map.Tiles[end.X, end.Y].Mechanism = new ChainDestroyStart();
+                        return PathResult.TwoWay;
+                    }
+                    else 
+                        return PathResult.OneWay;
                 }
             }
             return PathResult.None;
@@ -1166,8 +1321,14 @@ namespace RogueTower
             foreach (var entity in template.Entities)
                 template.PrintEntity(entity, map, px, py);
 
+            PuzzleNode puzzle = new PuzzleNode();
             foreach (var mechanism in template.EntitiesMechanism)
-                template.PrintMechanism(mechanism, map, px, py);
+                template.PrintMechanism(mechanism, map, px, py, puzzle);
+
+            if(puzzle.Inputs.Any() || puzzle.Outputs.Any())
+            {
+                map.Puzzles.Add(puzzle);
+            }
         }
 
         private TileBG GetBackground(int id)
