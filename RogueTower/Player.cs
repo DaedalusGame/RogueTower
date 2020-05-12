@@ -39,6 +39,7 @@ namespace RogueTower
         public bool JumpHeld;
 
         public bool Attack;
+        public bool AttackHeld;
         public bool ForwardAttack;
         public bool BackAttack;
         public bool UpAttack;
@@ -91,8 +92,9 @@ namespace RogueTower
                 ForwardAttack = true;
             if (back && attack)
                 BackAttack = true;
+            AttackHeld = game.InputState.IsKeyDown(Keys.Space) || game.InputState.IsButtonDown(Buttons.X);
 
-            if(altattack)
+            if (altattack)
                 AltAttack = true;
             AltAttackHeld = game.InputState.IsKeyDown(Keys.LeftAlt) || game.InputState.IsButtonDown(Buttons.B);
 
@@ -129,6 +131,7 @@ namespace RogueTower
             MoveRight = false;
             JumpHeld = false;
 
+            AttackHeld = false;
             AltAttackHeld = false;
 
             ClimbUp = false;

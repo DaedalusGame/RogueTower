@@ -860,6 +860,8 @@ namespace RogueTower
         public float SlashUpTime;
         public float SlashDownTime;
 
+        public Sound SwingSound = sfx_sword_stab;
+
         public bool IsUpSwing => SlashAction == SwingAction.UpSwing;
         public bool IsDownSwing => SlashAction == SwingAction.DownSwing;
         public override bool CanParry => IsUpSwing;
@@ -967,7 +969,7 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1002,7 +1004,7 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + new Vector2(0,2) + FacingVector * 6, swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
         }
     }
 
@@ -1040,7 +1042,38 @@ namespace RogueTower
             var effect = new SlashEffectStraight(Human.World, () => Human.Position + FacingVector * 9 + new Vector2(0,ArmAttackAngle*2), swingSize, 0, Human.Facing == HorizontalFacing.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 4);
             if (parry)
                 effect.Frame = effect.FrameEnd / 2;
-            PlaySFX(sfx_sword_swing, 1.0f, 0.1f, 0.5f);
+            PlaySFX(SwingSound, 1.0f, 0.1f, 0.5f);
+        }
+    }
+
+    class ActionLanceThrust : ActionStab
+    {
+        public ActionLanceThrust(EnemyHuman human, float upTime, float downTime, Weapon weapon) : base(human, upTime, downTime, weapon)
+        {
+            new ScreenShakeRandom(Human.World, 5, 5);
+            Human.Velocity.X += GetFacingVector(Human.Facing).X * 1.5f;
+            if (!Human.OnGround)
+                Human.Velocity.Y += 1;
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            basePose.Body = !Human.InAir ? BodyState.Stand : BodyState.Walk(1);
+            switch (SlashAction)
+            {
+                default:
+                case (SwingAction.UpSwing):
+                    basePose.Body = BodyState.Crouch(1);
+                    basePose.RightArm = ArmState.Angular(4);
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(-135f));
+                    break;
+                case (SwingAction.DownSwing):
+                    basePose.Body = BodyState.Crouch(2);
+                    basePose.LeftArm = ArmState.Angular(7);
+                    basePose.RightArm = ArmState.Angular(0);
+                    basePose.Weapon = Weapon.GetWeaponState(Human, MathHelper.ToRadians(0));
+                    break;
+            }
         }
     }
 
@@ -1786,6 +1819,112 @@ namespace RogueTower
         }
     }
 
+    class ActionTransplantPunch : ActionPunch
+    {
+        public ActionTransplantPunch(EnemyHuman human, float punchStartTime, float punchFinishTime, Weapon weapon) : base(human, punchStartTime, punchFinishTime, weapon)
+        {
+
+        }
+
+        public override void Punch()
+        {
+            Vector2 weaponSize = Weapon.WeaponSize;
+            RectangleF weaponMask = new RectangleF(Human.Position
+                + GetFacingVector(Human.Facing) * 8
+                + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
+                + new Vector2(0, 2)
+                - weaponSize / 2f,
+                weaponSize);
+            foreach (var box in Human.World.FindBoxes(weaponMask))
+            {
+                if(box.Data is Enemy enemy && enemy.CanDamage)
+                {
+                    enemy.AddStatusEffect(new Bomb(enemy, 180));
+                }
+            }
+            Human.SwingWeapon(weaponMask, Weapon.Damage);
+            PunchVisual();
+            PunchAction = PunchState.PunchEnd;
+        }
+    }
+
+    class ActionTransplantActivate : Action
+    {
+        public enum ActivationState
+        {
+            Pre,
+            Activate
+        }
+
+        public ActivationState ActivationAction;
+        public float PreActivationTime;
+        public float ActivationTime;
+
+        public ActionTransplantActivate(EnemyHuman player, float preActivationTime, float activationTime) : base(player)
+        {
+            PreActivationTime = preActivationTime;
+            ActivationTime = activationTime;
+        }
+
+        public override void OnInput()
+        {
+            //NOOP
+        }
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (ActivationAction)
+            {
+                case (ActivationState.Pre):
+                    basePose.RightArm = ArmState.Up;
+                    basePose.Weapon = Human.Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90));
+                    break;
+                case (ActivationState.Activate):
+                    basePose.RightArm = ArmState.Forward;
+                    break;
+            }
+        }
+
+        public override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+
+        public override void UpdateDelta(float delta)
+        {
+            switch (ActivationAction)
+            {
+                case (ActivationState.Pre):
+                    PreActivationTime -= delta;
+                    if (PreActivationTime <= 0)
+                        ActivationAction = ActivationState.Activate;
+                    break;
+                case (ActivationState.Activate):
+                    ActivationTime -= delta;
+                    foreach (var box in Human.World.FindBoxes(RectangleF.Centered(Human.Position, new Vector2(400, 240))))
+                    {
+                        if (box.Data is Enemy enemy)
+                        {
+                            Bomb bomb = (Bomb)enemy.StatusEffects.Find(status => status is Bomb);
+                            if (bomb != null)
+                            {
+                                new Explosion(enemy.World, enemy.HomingTarget, new Vector2(16 * bomb.Stacks, 16 * bomb.Stacks),20, 50, 20 * bomb.Stacks)
+                                {
+                                    Shooter = Human,
+                                    FrameEnd = 20 * bomb.Stacks
+                                };
+                                new WeaponFlash(Human, 10);
+                                PlaySFX(sfx_fingersnap_heavy, 1f);
+                                bomb.Remove();
+                            }
+                        }
+                    }
+                    if (ActivationTime <= 0)
+                        Human.ResetState();
+                    break;
+            }
+        }
+    }
+
     class ActionStealWeapon : ActionAttack
     {
         public enum StealState
@@ -2016,6 +2155,137 @@ namespace RogueTower
         public override void UpdateDelta(float delta)
         {
             //NOOP
+        }
+    }
+
+    class ActionCrimsonSaw : Action
+    {
+        public enum SawState
+        {
+            WindUp,
+            Spinning,
+            WindDown
+        }
+        public SawState SawAction;
+        public CrimsonSawEffect SawEffect;
+        public ParryEffect CreationEffect;
+
+        public Slider WindUpTime;
+        public Slider WindDownTime;
+
+        public float Pitch;
+        public float Angle;
+        public Vector2 Position;
+        public float WalkFrame;
+
+        public int DamageCounter;
+
+        public ActionCrimsonSaw(EnemyHuman human, float windUpTime, float windDownTime) : base(human)
+        {
+            WindUpTime = new Slider(windUpTime);
+            WindDownTime = new Slider(windDownTime);
+            SawEffect = new CrimsonSawEffect(Human.World, Angle, this);
+
+        }
+
+        public override void OnInput()
+        {
+            var player = (Player)Human;
+            if(SawAction == SawState.Spinning)
+            {
+                HandleMoveInput(player);
+                if(player.OnGround)
+                    HandleJumpInput(player);
+            }
+            if (!player.Controls.AttackHeld)
+            {
+                switch (SawAction)
+                {
+                    case (SawState.WindUp):
+                        SawAction = SawState.WindDown;
+                        break;
+                    case (SawState.Spinning):
+                        SawAction = SawState.WindDown;
+                        break;
+                }
+            }
+        }
+
+        public override void GetPose(PlayerState basePose)
+        {
+            switch (SawAction)
+            {
+                case (SawState.WindUp):
+                    basePose.LeftArm = ArmState.Up;
+                    basePose.RightArm = ArmState.Up;
+                    basePose.Weapon = Human.Weapon.GetWeaponState(Human, MathHelper.ToRadians(-90));
+                    break;
+                case (SawState.Spinning):
+                    basePose.Body = BodyState.Walk((int)WalkFrame);
+                    basePose.RightArm = ArmState.Angular(2);
+                    basePose.LeftArm = ArmState.Angular(1);
+                    break;
+                case (SawState.WindDown):
+                    basePose.RightArm = ArmState.Angular(7);
+                    basePose.Weapon = Human.Weapon.GetWeaponState(Human, MathHelper.ToRadians(-180));
+                    break;
+            }
+        }
+        public override void UpdateDiscrete()
+        {
+            /*if (SawAction == SawState.Spinning)
+            {
+                DamageCounter++;
+                if(DamageCounter % 10 == 0)
+                {
+                    var hitmask = RectangleF.Centered(Position, new Vector2(16, 16));
+                    //new RectangleDebug(Human.World, hitmask, Color.Red, 10);
+                    Human.SwingWeapon(hitmask, 10);
+                }
+            }*/
+        }
+        public override void UpdateDelta(float delta)
+        {
+            if (Human.InAir && Human.Velocity.Y > 0)
+                Human.Velocity.Y = 0.25f;
+            switch (SawAction)
+            {
+                case (SawState.WindUp):
+                    WindUpTime += delta * 0.25f;
+                    Pitch = WindUpTime.Slide;
+                    SawEffect.Angle += GetFacingVector(Human.Facing).X * WindUpTime.Slide;
+                    if(CreationEffect is null)
+                        CreationEffect = new ParryEffect(Human.World, Position = Human.Position - new Vector2(8, 8) + Human.Pose.GetWeaponOffset(Human.Facing.ToMirror()) + AngleToVector(Human.Pose.Weapon.GetAngle(Human.Facing.ToMirror())) * 24, 0, 20);
+                    CreationEffect.Angle = SawEffect.Angle;
+                    if (WindUpTime.Done)
+                    {
+                        SawAction = SawState.Spinning;
+                    }
+                    break;
+                case (SawState.Spinning):
+                    Pitch = 1.0f;
+                    Position = Human.Position - new Vector2(8, 8) + Human.Pose.GetWeaponOffset(Human.Facing.ToMirror()) + AngleToVector(Human.Pose.Weapon.GetAngle(Human.Facing.ToMirror())) * 24;
+
+                    if(!Human.InAir)
+                        WalkFrame += Math.Abs(Human.Velocity.X * delta * 0.125f) / (float)Math.Sqrt(Human.GroundFriction);
+
+                    SawEffect.Angle += GetFacingVector(Human.Facing).X * 10;
+
+                    var hitmask = RectangleF.Centered(Position, new Vector2(16, 16));
+                    //new RectangleDebug(Human.World, hitmask, Color.Red, 10);
+                    Human.SwingWeapon(hitmask, 10);
+                    Human.Velocity.X *= 0.75f;
+                    break;
+                case (SawState.WindDown):
+                    WindDownTime += delta * 0.25f;
+                    Pitch = 1 - WindDownTime.Slide;
+                    SawEffect.Angle += (GetFacingVector(Human.Facing).X *10) - WindDownTime.Slide;
+                    if (WindDownTime.Done)
+                    {
+                        Human.ResetState();
+                    }
+                    break;
+            }
         }
     }
 }

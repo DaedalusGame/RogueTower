@@ -507,6 +507,35 @@ namespace RogueTower
         }
     }
 
+    class VelocityTrap : Trap
+    {
+        public Random SpeedRand = new Random();
+        public override float RetriggerTime => 5;
+
+        public VelocityTrap(Map map, int x, int y) : base(map, x, y)
+        {
+
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            var HumanVelocity = human.Velocity;
+            human.Velocity = HumanVelocity * SpeedRand.Next(3,8);
+        }
+    }
+
+    class LaunchTrap : VelocityTrap
+    {
+        public LaunchTrap(Map map, int x, int y) : base(map, x, y)
+        {
+        }
+
+        public override void Trigger(EnemyHuman human)
+        {
+            human.Velocity.Y = -6 * SpeedRand.Next(1, 5);
+        }
+    }
+
     class Ladder : Wall
     {
         public HorizontalFacing Facing;

@@ -53,6 +53,7 @@ namespace RogueTower
             new WeaponLance(20, new Vector2(19, 76)),
             new WeaponWarhammer(30, new Vector2(18, 72)),
             new WeaponBoomerang(10, new Vector2(8, 8)),
+            new WeaponAlchemicalGauntlet(10, new Vector2(6,4)),
             new WeaponUnarmed(10, new Vector2(14, 10)),
         };
         public Vector2 Input2Direction(Player player)
@@ -442,6 +443,13 @@ namespace RogueTower
             CanParry = true;
         }
 
+        public override void GetPose(EnemyHuman human, PlayerState pose)
+        {
+            pose.RightArm = ArmState.Angular(7);
+            pose.Shield = ShieldState.ShieldForward;
+            pose.Weapon = GetWeaponState(human, MathHelper.ToRadians(-90));
+        }
+
         public override WeaponState GetWeaponState(EnemyHuman human, float angle)
         {
             return WeaponState.Lance(angle);
@@ -449,9 +457,13 @@ namespace RogueTower
 
         public override void HandleAttack(Player player)
         {
-            if (player.Controls.AltAttack)
+            if (player.Controls.Attack)
             {
-                player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionDownStab(player, 2, 4, this)), this, false, 0) { CanJump = true, CanMove = true };
+                player.CurrentAction = new ActionLanceThrust(player, 2, 12, this);
+            }
+            else if (player.Controls.AltAttack)
+            {
+                player.CurrentAction = new ActionCharge(player, 180, new ActionDashAttack(player, 2, 4, 4, 6, false, false, new ActionLanceThrust(player, 2, 6, this)), this, false, 0) { CanJump = true, CanMove = true };
             }
         }
 
@@ -712,6 +724,59 @@ namespace RogueTower
         protected override Item MakeCopy()
         {
             return new WeaponBoomerang();
+        }
+    }
+
+    class WeaponAlchemicalGauntlet : Weapon
+    {
+        public AlchemicalOrbs Orb;
+        public string GauntletSprite = "alchemical_gauntlet";
+        public Color GauntletColor = Color.Silver;
+
+        protected WeaponAlchemicalGauntlet() : base()
+        {
+
+        }
+
+
+        public WeaponAlchemicalGauntlet(double damage, Vector2 weaponSize) : base("Alchemical Gauntlet", "", damage, weaponSize, 1.0f, 1.0f)
+        {
+            Orb = new OrangeOrb(this);
+        }
+
+        public override void GetPose(EnemyHuman human, PlayerState pose)
+        {
+            pose.Shield = ShieldState.None;
+            pose.Weapon = GetWeaponState(human, 0);
+        }
+        public override WeaponState GetWeaponState(EnemyHuman human, float angle)
+        {
+            return WeaponState.AlchemicalGauntlet(angle, GauntletSprite, Orb.OrbSprite, GauntletColor, Orb.OrbColor);
+        }
+
+        public override void HandleAttack(Player player)
+        {
+            if(Orb != null)
+                Orb.HandleAttack(player);
+            else
+            {
+                if (player.Controls.Attack || player.Controls.AltAttack)
+                {
+                    PlaySFX(sfx_player_disappointed, 1, 0.1f, 0.15f);
+                    player.Hit(Vector2.Zero, 1, 0, 1);
+                    Util.Message(player, new MessageText("The empty alchemical gauntlet drains your strength upon activation!"));
+                }
+            }
+        }
+
+        public override void DrawIcon(SceneGame scene, Vector2 position)
+        {
+            DrawWeaponAsIcon(scene, SpriteLoader.Instance.AddSprite("content/alchemical_gauntlet"), 0, position);
+        }
+
+        protected override Item MakeCopy()
+        {
+            return new WeaponAlchemicalGauntlet();
         }
     }
 }

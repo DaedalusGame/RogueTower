@@ -338,4 +338,51 @@ namespace RogueTower
             }
         }
     }
+
+    class Bomb : StatusEffect
+    {
+        public int Stacks = 1;
+        public int StacksMax;
+        public float InitialDuration;
+        public Bomb(Enemy target, float duration, int stacksmax = 5) : base(target, duration)
+        {
+            InitialDuration = duration;
+            StacksMax = stacksmax;
+        }
+
+        protected override void OnAdd()
+        {
+            new StatusBombEffect(Enemy.World, this);
+            Message(Enemy, new MessageText("You feel an unnatural energy radiating within!"));
+        }
+
+        protected override void OnRemove()
+        {
+            Message(Enemy, new MessageText("The energy within dissipates!"));
+        }
+        public override StatusEffect[] Combine(StatusEffect other)
+        {
+            if (other is Bomb bomb)
+            {
+                Stacks = Math.Min(Stacks + bomb.Stacks, StacksMax);
+                Duration = Math.Min(Duration, bomb.Duration);
+                DurationMax = Math.Max(DurationMax, bomb.DurationMax);
+            }
+            return new[] { this };
+        }
+
+        protected override void UpdateDelta(float delta)
+        {
+            if (Duration >= DurationMax && Stacks > 0)
+            {
+                Stacks--;
+                Duration = 0;
+            }
+        }
+
+        protected override void UpdateDiscrete()
+        {
+            //NOOP
+        }
+    }
 }
