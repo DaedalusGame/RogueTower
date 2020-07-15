@@ -886,6 +886,9 @@ namespace RogueTower
                 $"OnWall: {World.Player.OnWall}\n" +
                 $"Room: {(int)(World.Player.Position.X / 8 / 16)},{(int)(World.Player.Position.Y / 8 / 16)}", new Vector2(0, 48), Alignment.Left, new TextParameters().SetColor(Color.White, Color.Black));
 
+            string FloorCount = $"{(World.Height / 8 - (int)World.Player.Position.Y / 8) / 16}";
+            DrawText(ConvertToPixelText($"Floor: {FloorCount}"), new Vector2(GraphicsDevice.Viewport.Width - 16, GraphicsDevice.Viewport.Height - 16), Alignment.Right, new TextParameters().SetColor(Color.White, Color.Black));
+
             foreach (var inputAction in GetOrderedInputActions(InputAction))
                 inputAction.Draw(this);
 
