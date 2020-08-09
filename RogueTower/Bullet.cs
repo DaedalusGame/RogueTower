@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Humper.Base;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {

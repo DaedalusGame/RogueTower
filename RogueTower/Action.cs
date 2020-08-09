@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ChaiFoxes.FMODAudio;
 using static RogueTower.Game;
 using static RogueTower.Util;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {
@@ -1829,12 +1830,11 @@ namespace RogueTower
         public override void Punch()
         {
             Vector2 weaponSize = Weapon.WeaponSize;
-            RectangleF weaponMask = new RectangleF(Human.Position
+            RectangleF weaponMask = RectangleF.Centered(Human.Position
                 + GetFacingVector(Human.Facing) * 8
                 + GetFacingVector(Human.Facing) * (weaponSize.X / 2)
-                + new Vector2(0, 2)
-                - weaponSize / 2f,
-                weaponSize);
+                + new Vector2(0, 2), weaponSize);
+
             foreach (var box in Human.World.FindBoxes(weaponMask))
             {
                 if(box.Data is Enemy enemy && enemy.CanDamage)

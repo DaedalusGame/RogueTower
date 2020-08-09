@@ -8,6 +8,7 @@ using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static RogueTower.Util;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {

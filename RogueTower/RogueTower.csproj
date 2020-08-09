@@ -47,6 +47,17 @@
     <Compile Include="ColorMatrix.cs" />
     <Compile Include="Coroutine.cs" />
     <Compile Include="DrawPass.cs" />
+    <Compile Include="Enemies\EnemyHuman.cs" />
+    <Compile Include="Enemies\CannonPoisonBreath.cs" />
+    <Compile Include="Enemies\BallAndChain.cs" />
+    <Compile Include="Enemies\EnemyGravity.cs" />
+    <Compile Include="Enemies\MoaiMan.cs" />
+    <Compile Include="Enemies\BlueDemon.cs" />
+    <Compile Include="Enemies\Snake.cs" />
+    <Compile Include="Enemies\SnakeHydra.cs" />
+    <Compile Include="Enemies\Hydra.cs" />
+    <Compile Include="Enemies\Cannon.cs" />
+    <Compile Include="Enemies\CannonFire.cs" />
     <Compile Include="FibonacciHeap\Constants.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
@@ -79,7 +90,7 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
     <Compile Include="Effect.cs" />
-    <Compile Include="Enemy.cs" />
+    <Compile Include="Enemies\Enemy.cs" />
     <Compile Include="FontUtil.cs" />
     <Compile Include="FrameCounter.cs" />
     <Compile Include="Game.cs" />

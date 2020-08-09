@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static RogueTower.Game;
 using static RogueTower.Util;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {

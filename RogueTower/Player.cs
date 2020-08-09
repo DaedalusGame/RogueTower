@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using ChaiFoxes.FMODAudio;
 using static RogueTower.Game;
 using static RogueTower.Util;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {

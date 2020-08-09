@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Humper;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {

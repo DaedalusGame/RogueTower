@@ -10,6 +10,7 @@ using ChaiFoxes.FMODAudio;
 using Humper.Base;
 using static RogueTower.Game;
 using static RogueTower.Util;
+using RogueTower.Enemies;
 
 namespace RogueTower
 {
