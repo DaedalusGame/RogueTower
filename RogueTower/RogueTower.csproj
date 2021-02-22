@@ -42,6 +42,42 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Actions\ActionBase.cs" />
+    <Compile Include="Actions\Attack\ActionAiming.cs" />
+    <Compile Include="Actions\Attack\ActionAttack.cs" />
+    <Compile Include="Actions\Attack\ActionBoomerangThrow.cs" />
+    <Compile Include="Actions\Attack\ActionCharge.cs" />
+    <Compile Include="Actions\Attack\ActionDashAttack.cs" />
+    <Compile Include="Actions\Attack\ActionDownStab.cs" />
+    <Compile Include="Actions\Attack\ActionKatanaSlash.cs" />
+    <Compile Include="Actions\Attack\ActionKnifeThrow.cs" />
+    <Compile Include="Actions\Attack\ActionLanceThrust.cs" />
+    <Compile Include="Actions\Attack\ActionLeftPunch.cs" />
+    <Compile Include="Actions\Attack\ActionPlunge.cs" />
+    <Compile Include="Actions\Attack\ActionPunch.cs" />
+    <Compile Include="Actions\Attack\ActionRapierThrust.cs" />
+    <Compile Include="Actions\Attack\ActionShockwave.cs" />
+    <Compile Include="Actions\Attack\ActionSlash.cs" />
+    <Compile Include="Actions\Attack\ActionSlashUp.cs" />
+    <Compile Include="Actions\Attack\ActionStab.cs" />
+    <Compile Include="Actions\Attack\ActionStealWeapon.cs" />
+    <Compile Include="Actions\Attack\ActionTwohandSlash.cs" />
+    <Compile Include="Actions\Attack\ActionWandBlast.cs" />
+    <Compile Include="Actions\Attack\ActionWandBlastAim.cs" />
+    <Compile Include="Actions\Attack\ActionWandBlastHoming.cs" />
+    <Compile Include="Actions\Attack\ActionWandSwing.cs" />
+    <Compile Include="Actions\Attack\AlchemicalOrbs\Orange\ActionTransplantActivate.cs" />
+    <Compile Include="Actions\Attack\AlchemicalOrbs\Orange\ActionTransplantPunch.cs" />
+    <Compile Include="Actions\Attack\AlchemicalOrbs\Red\ActionCrimsonSaw.cs" />
+    <Compile Include="Actions\Death\ActionEnemyDeath.cs" />
+    <Compile Include="Actions\Death\ActionPlayerDeath.cs" />
+    <Compile Include="Actions\Hurt\ActionHit.cs" />
+    <Compile Include="Actions\Interfaces\IActionAimable.cs" />
+    <Compile Include="Actions\Movement\ActionClimb.cs" />
+    <Compile Include="Actions\Movement\ActionDash.cs" />
+    <Compile Include="Actions\Movement\ActionIdle.cs" />
+    <Compile Include="Actions\Movement\ActionJump.cs" />
+    <Compile Include="Actions\Movement\ActionMove.cs" />
     <Compile Include="AlchemicalOrbs.cs" />
     <Compile Include="Background.cs" />
     <Compile Include="ColorMatrix.cs" />
@@ -86,7 +122,6 @@
     <Compile Include="StatusEffect.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="TileBG.cs" />
-    <Compile Include="Action.cs" />
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
     <Compile Include="Effect.cs" />

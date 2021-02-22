@@ -3,6 +3,8 @@ using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Actions.Death;
+using RogueTower.Actions.Movement;
 using System;
 using System.Collections.Generic;
 using System.Linq;

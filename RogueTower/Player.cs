@@ -13,6 +13,7 @@ using ChaiFoxes.FMODAudio;
 using static RogueTower.Game;
 using static RogueTower.Util;
 using RogueTower.Enemies;
+using RogueTower.Actions.Death;
 
 namespace RogueTower
 {

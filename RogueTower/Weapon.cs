@@ -9,6 +9,9 @@ using static RogueTower.Game;
 using static RogueTower.Util;
 using Microsoft.Xna.Framework.Graphics;
 using RogueTower.Enemies;
+using RogueTower.Actions;
+using RogueTower.Actions.Attack;
+using RogueTower.Actions.Movement;
 
 namespace RogueTower
 {
@@ -71,12 +74,12 @@ namespace RogueTower
 
         public abstract void HandleAttack(Player player);
 
-        public virtual void OnAttack(Action action, RectangleF hitmask)
+        public virtual void OnAttack(ActionBase action, RectangleF hitmask)
         {
             //NOOP
         }
 
-        public virtual void OnHit(Action action, Enemy target)
+        public virtual void OnHit(ActionBase action, Enemy target)
         {
             EnemyHuman attacker = action.Human;
             target.Hit(Util.GetFacingVector(attacker.Facing) + new Vector2(0, -2), 20, 20, Damage);
@@ -129,7 +132,7 @@ namespace RogueTower
             player.Velocity.Y = 0;
         }
 
-        public void DashAttack(Player player, Action dashAttackAction, float dashStartTime = 2, float dashTime = 4, float dashEndTime = 2, float dashFactor = 1, bool phasing = false, bool reversed = false)
+        public void DashAttack(Player player, ActionBase dashAttackAction, float dashStartTime = 2, float dashTime = 4, float dashEndTime = 2, float dashFactor = 1, bool phasing = false, bool reversed = false)
         {
             player.CurrentAction = new ActionDashAttack(player, dashStartTime, dashTime, dashEndTime, dashFactor, phasing, reversed, dashAttackAction);
         }
@@ -139,7 +142,7 @@ namespace RogueTower
             player.CurrentAction = new ActionTwohandSlash(player, upTime, downTime, this);
         }
 
-        public void ChargeAttack(Player player, float chargeTime, Action chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
+        public void ChargeAttack(Player player, float chargeTime, ActionBase chargeAction, bool slowDown = true, float slowDownAmount = 0.6f)
         {
             player.CurrentAction = new ActionCharge(player, 60 * chargeTime, chargeAction, this, slowDown, slowDownAmount);
         }
@@ -292,7 +295,7 @@ namespace RogueTower
         {
         }
 
-        public override void OnAttack(Action action, RectangleF hitmask)
+        public override void OnAttack(ActionBase action, RectangleF hitmask)
         {
             if (FireballReady)
             {
