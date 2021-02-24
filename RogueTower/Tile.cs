@@ -138,6 +138,16 @@ namespace RogueTower
                 Boxes.Add(CreateBox(new RectangleF(0,0,16,16)));
         }
 
+        public Vector2? GetRandomPosition(Random random)
+        {
+            if (Boxes.Any())
+            {
+                var box = Boxes.Pick(random);
+                return Util.GetRandomPosition(box.Bounds, random);
+            }
+            return null;
+        }
+
         public void Replace(Tile tile)
         {
             Map.RemoveTileCollisions(this);

@@ -253,6 +253,28 @@ namespace RogueTower
                 return new Wall(this, x, y);
         }
 
+        public TileBG GetBackground(int x, int y)
+        {
+            if (InMap(x, y))
+                return Background[x, y];
+            else
+                return TileBG.Empty;
+        }
+
+        public Tile FindTile(Vector2 pos)
+        {
+            int x = (int)(pos.X / 16);
+            int y = (int)(pos.Y / 16);
+            return GetTile(x, y);
+        }
+
+        public TileBG FindBackground(Vector2 pos)
+        {
+            int x = (int)(pos.X / 16);
+            int y = (int)(pos.Y / 16);
+            return GetBackground(x, y);
+        }
+
         public bool HasWire(int x, int y)
         {
             return WireNodes[x, y] != null;

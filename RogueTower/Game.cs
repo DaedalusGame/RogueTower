@@ -13,10 +13,11 @@ namespace RogueTower
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game : Microsoft.Xna.Framework.Game
+    class Game : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager Graphics;
         public SpriteBatch SpriteBatch;
+        public PrimitiveBatch<VertexPositionColorTexture> PrimitiveBatch;
 
         public Texture2D Pixel;
         public Effect Shader;
@@ -155,6 +156,7 @@ namespace RogueTower
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
+            PrimitiveBatch = new PrimitiveBatch<VertexPositionColorTexture>(GraphicsDevice);
 
             Shader = Content.Load<Effect>("effects");
 

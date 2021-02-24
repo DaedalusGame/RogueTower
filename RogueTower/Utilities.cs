@@ -56,6 +56,11 @@ namespace RogueTower
             return new Vector2(area.X + random.NextFloat() * area.Width, area.Y + random.NextFloat() * area.Height);
         }
 
+        public static Vector2 RotateVector(Vector2 offset, float angle)
+        {
+            return AngleToVector(angle) * offset.Y + AngleToVector(angle + MathHelper.PiOver2) * offset.X;
+        }
+
         public static float GetAngleDistance(float a0, float a1)
         {
             var max = Math.PI * 2;
