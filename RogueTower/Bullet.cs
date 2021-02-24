@@ -1,17 +1,15 @@
-﻿using Humper;
+﻿using ChaiFoxes.FMODAudio;
+using Humper;
+using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
-using System;
-using static RogueTower.Game;
-using ChaiFoxes.FMODAudio;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Humper.Base;
 using Microsoft.Xna.Framework.Graphics;
 using RogueTower.Enemies;
 using RogueTower.Items.Weapons;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static RogueTower.Game;
 
 namespace RogueTower
 {
