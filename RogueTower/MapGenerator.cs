@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using RogueTower.Actions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -482,7 +483,7 @@ namespace RogueTower
     class MapGenerator
     {
         public RoomTile[,] Rooms;
-        public Stack<Action> UndoStack;
+        public Stack<ActionBase> UndoStack;
         public int Width, Height;
         public bool Finished;
 
@@ -711,7 +712,7 @@ namespace RogueTower
             Random = new Random();
 
             Rooms = new RoomTile[Width, Height];
-            UndoStack = new Stack<Action>();
+            UndoStack = new Stack<ActionBase>();
 
             for (int x = 0; x < Width; x++)
             {

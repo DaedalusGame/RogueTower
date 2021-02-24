@@ -99,8 +99,12 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
             {
                 Vector2 idealTarget = Segment.Position + Util.RotateVector(IdealOffset, Segment.Angle);
                 Tile gripTile = world.Map.FindTile(idealTarget);
-                
-                return gripTile.GetRandomPosition(Random);
+                TileBG gripBackground = world.Map.FindBackground(idealTarget);
+
+                var randomTarget = gripTile.GetRandomPosition(Random);
+                if (randomTarget == null && gripBackground != TileBG.Empty)
+                    randomTarget = idealTarget;
+                return randomTarget;
             }
 
             public void MoveTowards(GameWorld world)

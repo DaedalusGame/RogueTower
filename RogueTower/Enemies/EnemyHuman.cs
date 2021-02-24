@@ -3,6 +3,12 @@ using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Actions;
+using RogueTower.Actions.Attack;
+using RogueTower.Actions.Death;
+using RogueTower.Actions.Hurt;
+using RogueTower.Actions.Movement;
+using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +42,7 @@ namespace RogueTower.Enemies
 
         public override bool VisualInvisible => false;
 
-        public Action CurrentAction;
+        public ActionBase CurrentAction;
 
         public EnemyHuman(GameWorld world, Vector2 position) : base(world, position)
         {

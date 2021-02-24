@@ -1,14 +1,14 @@
-﻿using Humper;
-using Humper.Base;
-using Humper.Responses;
+﻿using Humper.Base;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Actions;
+using RogueTower.Actions.Attack;
+using RogueTower.Actions.Death;
+using RogueTower.Actions.Hurt;
+using RogueTower.Actions.Movement;
+using RogueTower.Items;
+using RogueTower.Items.Weapons;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static RogueTower.Game;
 using static RogueTower.Util;
 
 namespace RogueTower.Enemies
@@ -223,7 +223,7 @@ namespace RogueTower.Enemies
                         }
                         else if (Weapon is WeaponSword)
                         {
-                            Action[] actionHolder =
+                            ActionBase[] actionHolder =
                             {
                                 new ActionSlash(this, 2, 4, 8, 2, Weapon),
                                 new ActionSlashUp(this, 2, 4, 8, 2, Weapon)
@@ -246,7 +246,7 @@ namespace RogueTower.Enemies
                         }
                         else if (Weapon is WeaponKnife)
                         {
-                            Action[] actionHolder =
+                            ActionBase[] actionHolder =
                             {
                                     new ActionStab(this, 4, 10, Weapon),
                                     new ActionDownStab(this, 4, 10, Weapon)

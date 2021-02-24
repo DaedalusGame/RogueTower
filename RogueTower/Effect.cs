@@ -9,6 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RogueTower.Enemies;
+using RogueTower.Actions;
+using RogueTower.Actions.Attack.AlchemicalOrbs.Red;
+using RogueTower.Actions.Attack;
+using RogueTower.Items;
 
 namespace RogueTower
 {
@@ -693,9 +697,9 @@ namespace RogueTower
     class AimingReticule : Particle
     {
         public float FrameEnd;
-        public Action Action;
+        public ActionBase Action;
         public EnemyHuman Player => Action.Human;
-        public AimingReticule(GameWorld world, Vector2 position, Action action) : base(world, position)
+        public AimingReticule(GameWorld world, Vector2 position, ActionBase action) : base(world, position)
         {
             FrameEnd = float.PositiveInfinity;
             Action = action;
