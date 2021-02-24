@@ -12,6 +12,7 @@ using static RogueTower.Game;
 using static RogueTower.Util;
 using RogueTower.Enemies;
 using RogueTower.Actions.Movement;
+using RogueTower.Items.Weapons;
 
 namespace RogueTower.Actions.Attack
 {

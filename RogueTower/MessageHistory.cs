@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RogueTower.Enemies;
+using RogueTower.Items;
 
 namespace RogueTower
 {

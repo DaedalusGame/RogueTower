@@ -8,6 +8,7 @@ using RogueTower.Actions.Attack;
 using RogueTower.Actions.Death;
 using RogueTower.Actions.Hurt;
 using RogueTower.Actions.Movement;
+using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;

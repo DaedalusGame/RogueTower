@@ -12,6 +12,7 @@ using RogueTower.Enemies;
 using RogueTower.Actions;
 using RogueTower.Actions.Attack.AlchemicalOrbs.Red;
 using RogueTower.Actions.Attack;
+using RogueTower.Items;
 
 namespace RogueTower
 {

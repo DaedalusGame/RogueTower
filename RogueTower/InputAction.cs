@@ -2,6 +2,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RogueTower.Items;
+using RogueTower.Items.Devices;
+using RogueTower.Items.Interfaces;
+using RogueTower.Items.Potions;
+using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
