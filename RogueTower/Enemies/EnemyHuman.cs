@@ -291,6 +291,7 @@ namespace RogueTower.Enemies
         public override void Draw(SceneGame scene, DrawPass pass)
         {
             scene.DrawHuman(this);
+            scene.DrawWireCircle(Position, 16, 20, Color.Red);
         }
     }
 }

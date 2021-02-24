@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RogueTower
 {
-    public abstract class Scene
+    abstract class Scene
     {
         protected Game Game;
 
@@ -21,6 +21,7 @@ namespace RogueTower
 
         public GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
         public SpriteBatch SpriteBatch => Game.SpriteBatch;
+        public PrimitiveBatch<VertexPositionColorTexture> PrimitiveBatch => Game.PrimitiveBatch;
         public Texture2D Pixel => Game.Pixel;
         public int Frame => Game.Frame;
         public GameWindow Window => Game.Window;

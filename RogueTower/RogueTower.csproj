@@ -86,6 +86,7 @@
     <Compile Include="Enemies\CannonPoisonBreath.cs" />
     <Compile Include="Enemies\BallAndChain.cs" />
     <Compile Include="Enemies\EnemyGravity.cs" />
+    <Compile Include="Enemies\Limzard.cs" />
     <Compile Include="Enemies\MoaiMan.cs" />
     <Compile Include="Enemies\BlueDemon.cs" />
     <Compile Include="Enemies\Snake.cs" />
@@ -152,6 +153,7 @@
     <Compile Include="Items\Weapons\WeaponWarhammer.cs" />
     <Compile Include="Mechanism.cs" />
     <Compile Include="MessageHistory.cs" />
+    <Compile Include="PrimitiveBatch.cs" />
     <Compile Include="Scheduler.cs" />
     <Compile Include="Slider.cs" />
     <Compile Include="StatusEffect.cs" />

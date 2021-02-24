@@ -7,6 +7,10 @@ using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ChaiFoxes.FMODAudio;
+using Humper.Base;
 using static RogueTower.Game;
 using static RogueTower.Util;
 
@@ -578,6 +582,8 @@ namespace RogueTower
 
             World.Player = new Player(World, new Vector2(50, World.Height - 50));
             World.Player.Weapon = Weapon.PresetWeaponList.First();
+
+            new Limzard(World, new Vector2(400, World.Height - 50));
 
             PlayerInput playerInput = new PlayerInput(World.Player);
             InputAction = playerInput;
@@ -1525,6 +1531,26 @@ namespace RogueTower
             var transitionSize = transitionStart - transitionEnd;
             var yRelative = player.Position.Y - transitionEnd;
             return clamp? MathHelper.Clamp(1 - (yRelative / transitionSize), 0, 1) : 1 - (yRelative / transitionSize);
+        }
+
+        public void DrawWireCircle(Vector2 pos, float radius, int precision, Color color)
+        {
+            PrimitiveBatch.Begin(PrimitiveType.LineStrip, blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, samplerState: SamplerState.PointWrap, transform: WorldTransform, projection: Projection, effect: Shader);
+            for (int i = 0; i <= precision; i++) {
+                var offset = Util.AngleToVector(MathHelper.TwoPi * i / precision) * radius;
+                PrimitiveBatch.AddVertex(new VertexPositionColorTexture(new Vector3(pos + offset, 0), color, Vector2.Zero));
+            }
+            PrimitiveBatch.End();
+        }
+
+        public void DrawWireLine(IEnumerable<Vector2> points, Color color)
+        {
+            PrimitiveBatch.Begin(PrimitiveType.LineStrip, blendState: NonPremultiplied, rasterizerState: RasterizerState.CullNone, samplerState: SamplerState.PointWrap, transform: WorldTransform, projection: Projection, effect: Shader);
+            foreach(var point in points)
+            {
+                PrimitiveBatch.AddVertex(new VertexPositionColorTexture(new Vector3(point, 0), color, Vector2.Zero));
+            }
+            PrimitiveBatch.End();
         }
 
         public void PushSpriteBatch(SpriteSortMode? sortMode = null, BlendState blendState = null, SamplerState samplerState = null, Matrix? transform = null, Effect shader = null, Action<Matrix> shaderSetup = null)
