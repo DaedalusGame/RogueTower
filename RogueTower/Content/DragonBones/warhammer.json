@@ -1,0 +1,1 @@
+{"name":"warhammer","version":"4.5","armature":[{"name":"armatureName","aabb":{"width":1184,"height":448},"bone":[{"name":"root"}],"slot":[{"name":"Warhammer","parent":"root"}],"skin":[{"slot":[{"name":"Warhammer","display":[{"name":"Warhammer","pivot":{"x":0.5,"y":0.5}}]}]}]}]}

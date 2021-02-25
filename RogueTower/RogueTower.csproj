@@ -82,6 +82,7 @@
     <Compile Include="ColorMatrix.cs" />
     <Compile Include="Coroutine.cs" />
     <Compile Include="DrawPass.cs" />
+    <Compile Include="Enemies\AIEnemyHuman.cs" />
     <Compile Include="Enemies\EnemyHuman.cs" />
     <Compile Include="Enemies\CannonPoisonBreath.cs" />
     <Compile Include="Enemies\BallAndChain.cs" />

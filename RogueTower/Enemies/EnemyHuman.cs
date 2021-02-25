@@ -293,5 +293,39 @@ namespace RogueTower.Enemies
             scene.DrawHuman(this);
             scene.DrawWireCircle(Position, 16, 20, Color.Red);
         }
+
+        public virtual void Walk(float dx)
+        {
+            float adjustedSpeedLimit = SpeedLimit;
+            float baseAcceleraton = Acceleration;
+            if (OnGround)
+                baseAcceleraton *= GroundFriction;
+            float acceleration = baseAcceleraton;
+
+            if (dx < 0 && Velocity.X > -adjustedSpeedLimit)
+                Velocity.X = Math.Max(Velocity.X - acceleration, -adjustedSpeedLimit);
+            if (dx > 0 && Velocity.X < adjustedSpeedLimit)
+                Velocity.X = Math.Min(Velocity.X + acceleration, adjustedSpeedLimit);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                AppliedFriction = 1;
+            if (CurrentAction is ActionMove move)
+            {
+                move.WalkingLeft = dx < 0;
+                move.WalkingRight = dx > 0;
+            }
+        }
+
+        public virtual void WalkConstrained(float dx) //Same as walk but don't jump off cliffs
+        {
+            float offset = Math.Sign(dx);
+            if (Math.Sign(dx) == Math.Sign(Velocity.X))
+                offset *= Math.Max(1, Math.Abs(Velocity.X));
+            var floor = World.FindTiles(Box.Bounds.Offset(new Vector2(16 * offset, 1)));
+            if (!floor.Any())
+                return;
+            Walk(dx);
+        }
+
+
     }
 }

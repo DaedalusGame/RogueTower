@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Humper.Base;
+using Microsoft.Xna.Framework;
 using RogueTower.Actions.Death;
 using RogueTower.Actions.Movement;
 using RogueTower.Items.Weapons;
@@ -8,8 +9,16 @@ namespace RogueTower.Enemies
 {
     class BlueDemon : EnemyHuman
     {
+
+        public AIEnemyHuman AI;
+
+        public override float Acceleration => 0.25f;
+        public override float SpeedLimit => AI.InCombat ? 3.0f : 1.0f;
+        public override bool Strafing => true;
+
         public BlueDemon(GameWorld world, Vector2 position) : base(world, position)
         {
+            AI = new AIEnemyHuman(this);
             Weapon = new WeaponFireSword(20, new Vector2(10, 40));
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
@@ -45,6 +54,11 @@ namespace RogueTower.Enemies
             pose.RightArm.SetPhenoType("armor");
         }
 
+        protected override void HandleInput()
+        {
+            AI.UpdateAI();
+        }
+
         protected override void UpdateDelta(float delta)
         {
             if (Active)
@@ -76,6 +90,7 @@ namespace RogueTower.Enemies
         {
             base.Hit(velocity, hurttime, invincibility / 10, damageIn);
         }
+
     }
 
 }
