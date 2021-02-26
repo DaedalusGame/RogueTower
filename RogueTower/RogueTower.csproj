@@ -95,6 +95,15 @@
     <Compile Include="Enemies\Hydra.cs" />
     <Compile Include="Enemies\Cannon.cs" />
     <Compile Include="Enemies\CannonFire.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAI.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIBoomerang.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIHammer.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIKatana.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIKnife.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIRapier.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIStealing.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAISword.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIWand.cs" />
     <Compile Include="FibonacciHeap\Constants.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
