@@ -83,7 +83,7 @@ namespace RogueTower
             return (float)Math.Atan2(vector.X, -vector.Y);
         } 
 
-        private static T PickInternal<T>(List<T> enumerable, Random random, bool remove)
+        private static T PickInternal<T>(IList<T> enumerable, Random random, bool remove)
         {
             int select = random.Next(enumerable.Count());
             T pick = enumerable[select];
@@ -92,12 +92,12 @@ namespace RogueTower
             return pick;
         }
 
-        public static T Pick<T>(this List<T> enumerable,Random random)
+        public static T Pick<T>(this IList<T> enumerable,Random random)
         {
             return PickInternal(enumerable, random, false);
         }
 
-        public static T PickAndRemove<T>(this List<T> enumerable, Random random)
+        public static T PickAndRemove<T>(this IList<T> enumerable, Random random)
         {
             return PickInternal(enumerable, random, true);
         }

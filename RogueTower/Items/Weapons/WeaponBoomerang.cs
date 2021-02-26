@@ -19,6 +19,8 @@ namespace RogueTower.Items.Weapons
     {
         public BoomerangProjectile BoomerProjectile;
 
+        public bool Thrown => BoomerProjectile != null && !BoomerProjectile.Destroyed;
+
         protected WeaponBoomerang() : base()
         {
 
