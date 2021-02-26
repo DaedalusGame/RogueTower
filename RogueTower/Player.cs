@@ -227,6 +227,7 @@ namespace RogueTower
                 { () => new DeviceBrew(false), 10 },
                 { () => new DeviceTrash(false), 10 },
                 { () => new DeviceDuplicate(false), 10 },
+                { () => new DeviceFlamebringer(false), 100 }
             };
 
             for (int i = 0; i < 5; i++)

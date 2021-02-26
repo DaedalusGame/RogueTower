@@ -122,6 +122,7 @@
     <Compile Include="Items\Devices\Device.cs" />
     <Compile Include="Items\Devices\DeviceBrew.cs" />
     <Compile Include="Items\Devices\DeviceDuplicate.cs" />
+    <Compile Include="Items\Devices\DeviceFlamebringer.cs" />
     <Compile Include="Items\Devices\DeviceTrash.cs" />
     <Compile Include="Items\EmptyBottle.cs" />
     <Compile Include="Items\Interfaces\IEdible.cs" />
