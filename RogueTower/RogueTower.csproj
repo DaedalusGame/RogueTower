@@ -1234,10 +1234,18 @@
     <None Include="Content\templates\corridor_obstacle8.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\templates\corridor_obstacle_16x16_mega1.json" />
-    <None Include="Content\templates\corridor_obstacle_16x16_mega2.json" />
-    <None Include="Content\templates\corridor_obstacle_16x16_mega3.json" />
-    <None Include="Content\templates\corridor_obstacle_16x16_mega4.json" />
+    <None Include="Content\templates\corridor_obstacle_16x16_mega1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\corridor_obstacle_16x16_mega2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\corridor_obstacle_16x16_mega3.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\templates\corridor_obstacle_16x16_mega4.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Content\templates\corridor_pit.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
