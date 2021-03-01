@@ -1,10 +1,10 @@
 {
-  "ogmoVersion": "3.2.0",
+  "ogmoVersion": "3.4.0",
   "width": 128,
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "none", "ConnectionDown": "icetunnelstairl2_0", "ConnectionLeft": "none", "ConnectionRight": "icetunnelstairl2_0", "Weight": 100, "Direction": "Any", "PuzzleID": ""},
+  "values": {"ConnectionUp": "none", "ConnectionDown": "icetunnelstairl2_0", "ConnectionLeft": "none", "ConnectionRight": "icetunnelstairl2_0", "Weight": 100, "Direction": "Any", "Tags": ""},
   "layers": [
     {
       "name": "Foreground",

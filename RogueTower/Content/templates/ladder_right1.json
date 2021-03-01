@@ -1,10 +1,10 @@
 {
-  "ogmoVersion": "3.2.0",
+  "ogmoVersion": "3.4.0",
   "width": 128,
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "ladderright", "ConnectionDown": "ladderright", "ConnectionLeft": "none", "ConnectionRight": "none", "Weight": 100, "Direction": "Any"},
+  "values": {"ConnectionUp": "ladderright", "ConnectionDown": "ladderright", "ConnectionLeft": "none", "ConnectionRight": "none", "Weight": 100, "Direction": "Any", "Tags": ""},
   "layers": [
     {
       "name": "Foreground",
@@ -89,6 +89,45 @@
           "values": {"Delay": 70}
         }
       ]
+    },
+    {
+      "name": "FlagConnect",
+      "_eid": "82375266",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagConnect",
+      "data": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "FlagMechanism",
+      "_eid": "90752454",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "tileset": "FlagMechanism",
+      "data": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+      "exportMode": 0,
+      "arrayMode": 0
+    },
+    {
+      "name": "Mechanism",
+      "_eid": "90766993",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 8,
+      "gridCellsY": 8,
+      "entities": []
     }
   ]
 }
