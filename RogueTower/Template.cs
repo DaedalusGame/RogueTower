@@ -544,7 +544,7 @@ namespace RogueTower
                 float distance = values["Distance"].ToObject<float>();
                 bool swings = values["Swings"].ToObject<bool>();
 
-                var ballandchain = new BallAndChain(world, new Vector2(x, y), MathHelper.ToRadians(rotation), speed, distance);
+                var ballandchain = new BallAndChain(world, new Vector2(x, y), rotation, speed, distance);
                 ballandchain.Swings = swings;
             }
             if(type == "moaiman")
@@ -557,21 +557,21 @@ namespace RogueTower
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonFire(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
+                var cannon = new CannonFire(world, new Vector2(x, y), rotation);
                 cannon.DelayTime = delay;
             }
             if (type == "cannon_fire")
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonFire(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
+                var cannon = new CannonFire(world, new Vector2(x, y), rotation);
                 cannon.DelayTime = delay;
             }
             if (type == "cannon_poison")
             {
                 float rotation = entity["rotation"].ToObject<float>();
                 float delay = values["Delay"].ToObject<float>();
-                var cannon = new CannonPoisonBreath(world, new Vector2(x, y), MathHelper.ToRadians(rotation));
+                var cannon = new CannonPoisonBreath(world, new Vector2(x, y), rotation);
                 cannon.DelayTime = delay;
             }
             if (type == "snake")
