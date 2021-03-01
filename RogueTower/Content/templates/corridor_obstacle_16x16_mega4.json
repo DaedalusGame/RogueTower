@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "corridor_16x16_botleft_botright ", "ConnectionRight": "full", "Weight": 10000, "Direction": "Any", "Tags": ""},
+  "values": {"ConnectionUp": "none", "ConnectionDown": "none", "ConnectionLeft": "corridor_16x16_botleft_botright ", "ConnectionRight": "full", "Weight": 100, "Direction": "Any", "Tags": ""},
   "layers": [
     {
       "name": "Foreground",
@@ -16,7 +16,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Foreground",
-      "data": [-1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 5, 9, -1, -1, 9, -1, 0, 10, -1, -1, -1, -1, -1, -1, 0, 10, -1, 4, 4, 4, 4, 4, 0, 10, -1, 0, 0, 0, 0, 0, 0, 10, -1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      "data": [-1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, -1, -1, -1, 0, 10, -1, 9, -1, -1, 9, -1, 0, 10, -1, -1, -1, -1, -1, -1, 0, 10, -1, 4, 4, 4, 4, 4, 0, 10, -1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
       "exportMode": 0,
       "arrayMode": 0
     },
@@ -30,7 +30,7 @@
       "gridCellsX": 8,
       "gridCellsY": 8,
       "tileset": "Background",
-      "data": [18, 11, 11, 17, 18, 11, 12, 1, -1, 19, 19, -1, -1, 19, 0, 1, -1, 27, 27, -1, -1, 1, 0, 12, -1, 27, 27, -1, -1, 1, 0, 0, -1, 27, 27, -1, -1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      "data": [18, 11, 11, 17, 18, 11, 12, 1, -1, 19, 19, -1, -1, 19, 0, 1, -1, 27, 27, -1, -1, 1, 0, 12, -1, 27, 27, -1, -1, 1, 0, 0, -1, 27, 27, -1, -1, 1, 0, 0, -1, 1, 1, -1, -1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       "exportMode": 0,
       "arrayMode": 0
     },
