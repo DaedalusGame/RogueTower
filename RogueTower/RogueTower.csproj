@@ -96,6 +96,7 @@
     <Compile Include="Enemies\Cannon.cs" />
     <Compile Include="Enemies\CannonFire.cs" />
     <Compile Include="Enemies\WeaponAIs\WeaponAI.cs" />
+    <Compile Include="Enemies\WeaponAIs\WeaponAIAlchemicalGauntlet.cs" />
     <Compile Include="Enemies\WeaponAIs\WeaponAIBoomerang.cs" />
     <Compile Include="Enemies\WeaponAIs\WeaponAIHammer.cs" />
     <Compile Include="Enemies\WeaponAIs\WeaponAIKatana.cs" />
@@ -1233,6 +1234,10 @@
     <None Include="Content\templates\corridor_obstacle8.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\templates\corridor_obstacle_16x16_mega1.json" />
+    <None Include="Content\templates\corridor_obstacle_16x16_mega2.json" />
+    <None Include="Content\templates\corridor_obstacle_16x16_mega3.json" />
+    <None Include="Content\templates\corridor_obstacle_16x16_mega4.json" />
     <None Include="Content\templates\corridor_pit.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

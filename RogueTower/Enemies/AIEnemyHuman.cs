@@ -1,8 +1,6 @@
-﻿using Humper;
-using Humper.Base;
+﻿using Humper.Base;
 using Microsoft.Xna.Framework;
 using RogueTower.Actions;
-using RogueTower.Actions.Attack;
 using RogueTower.Actions.Death;
 using RogueTower.Actions.Hurt;
 using RogueTower.Actions.Movement;
@@ -34,6 +32,8 @@ namespace RogueTower.Enemies
             WeaponAIs.Add(new WeaponAIRapierDash());
             WeaponAIs.Add(new WeaponAIKatanaUnsheathe());
             WeaponAIs.Add(new WeaponAIStealing());
+            WeaponAIs.Add(new WeaponAIAlchemicalGauntletOrangeOrbTransplant());
+            WeaponAIs.Add(new WeaponAIAlchemicalGauntletOrangeOrbActivate());
             WeaponAIs.Add(new WeaponAIDefault());
         }
 

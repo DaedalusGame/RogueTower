@@ -33,6 +33,7 @@ namespace RogueTower.Enemies
             Weapon = Weapon.PresetWeaponList[Random.Next(0, Weapon.PresetWeaponList.Length - 1)];
             //Weapon = new WeaponKatana(15, new Vector2(10, 40));
             //Weapon = new WeaponRapier(15, new Vector2(10, 40));
+            //Weapon = new WeaponAlchemicalGauntlet(10, new Vector2(6, 4));
             CurrentAction = new ActionIdle(this);
             InitHealth(80);
         }
