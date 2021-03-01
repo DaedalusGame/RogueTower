@@ -52,7 +52,7 @@
           "y": 24,
           "originX": 8,
           "originY": 8,
-          "rotation": 450,
+          "rotation": 1.5707963267948966,
           "values": {"Delay": 0}
         },
         {
@@ -63,7 +63,7 @@
           "y": 40,
           "originX": 8,
           "originY": 8,
-          "rotation": 450,
+          "rotation": 1.5707963267948966,
           "values": {"Delay": 0}
         },
         {
@@ -74,7 +74,7 @@
           "y": 88,
           "originX": 8,
           "originY": 8,
-          "rotation": 450,
+          "rotation": 1.5707963267948966,
           "values": {"Delay": 70}
         },
         {
@@ -85,7 +85,7 @@
           "y": 104,
           "originX": 8,
           "originY": 8,
-          "rotation": 450,
+          "rotation": 1.5707963267948966,
           "values": {"Delay": 70}
         }
       ]

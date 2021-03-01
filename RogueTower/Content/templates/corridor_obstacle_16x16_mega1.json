@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "none", "ConnectionDown": "corridor_16x16_botleft_topleft", "ConnectionLeft": "none", "ConnectionRight": "corridor_16x16_topleft_topright", "Weight": 10000, "Direction": "Any", "Tags": ""},
+  "values": {"ConnectionUp": "none", "ConnectionDown": "corridor_16x16_botleft_topleft", "ConnectionLeft": "none", "ConnectionRight": "corridor_16x16_topleft_topright", "Weight": 100, "Direction": "Any", "Tags": ""},
   "layers": [
     {
       "name": "Foreground",

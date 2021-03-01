@@ -52,7 +52,7 @@
           "y": 56,
           "originX": 8,
           "originY": 8,
-          "rotation": 180,
+          "rotation": 3.141592653589793,
           "values": {"Delay": 0}
         },
         {
@@ -63,7 +63,7 @@
           "y": 56,
           "originX": 8,
           "originY": 8,
-          "rotation": 180,
+          "rotation": 3.141592653589793,
           "values": {"Delay": 50}
         },
         {
@@ -74,7 +74,7 @@
           "y": 56,
           "originX": 8,
           "originY": 8,
-          "rotation": 180,
+          "rotation": 3.141592653589793,
           "values": {"Delay": 100}
         }
       ]

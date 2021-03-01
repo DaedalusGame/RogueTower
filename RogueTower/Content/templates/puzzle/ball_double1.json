@@ -1,5 +1,5 @@
 {
-  "ogmoVersion": "3.2.0",
+  "ogmoVersion": "3.4.0",
   "width": 48,
   "height": 48,
   "offsetX": 0,
@@ -63,7 +63,7 @@
           "y": 24,
           "originX": 8,
           "originY": 24,
-          "rotation": 180,
+          "rotation": 3.141592653589793,
           "values": {"Speed": 0.08, "Distance": 25, "Swings": false}
         }
       ]
