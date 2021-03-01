@@ -32,24 +32,33 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
         public class Segment
         {
             public List<Leg> Legs = new List<Leg>();
-            public Vector2 Position;
+            public Vector2 StartPosition;
+            public Vector2 EndPosition;
             public float Angle;
             public float Width;
             public float FollowDistance;
+            public Slider Frame = new Slider(0, 1);
+
+            public Vector2 Position => Vector2.Lerp(StartPosition, EndPosition, Frame.Slide);
 
             public Segment(Vector2 position, float width, float followDistance)
             {
-                Position = position;
+                StartPosition = position;
+                EndPosition = position;
                 Width = width;
                 FollowDistance = followDistance;
             }
 
             public void MoveTowards(Vector2 nextPosition)
             {
-                Vector2 Distance = nextPosition - Position;
+                Vector2 Distance = nextPosition - EndPosition;
                 if (Distance.Length() > FollowDistance)
-                    Position = nextPosition - Vector2.Normalize(Distance) * FollowDistance * 0.9f;
-                Angle = Util.VectorToAngle(nextPosition - Position);
+                {
+                    StartPosition = EndPosition;
+                    EndPosition = nextPosition - Vector2.Normalize(Distance) * FollowDistance * 0.9f;
+                    Frame = new Slider(0, 1);
+                }
+                Angle = Util.VectorToAngle(nextPosition - EndPosition);
             }
         }
 
@@ -64,7 +73,7 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
             public float Joint;
             public float JointHeight;
             public float MaxDistance;
-            public Slider Frame = new Slider(0,1);
+            public Slider Frame = new Slider(0, 1);
 
             public Vector2 Position => Vector2.Lerp(StartPosition, EndPosition, Frame.Slide);
 
@@ -83,7 +92,7 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
 
             public Vector2 GetIKJoint()
             {
-                var start = Segment.Position;
+                var start = Segment.EndPosition;
                 var end = Position;
                 var a = Length * Joint;
                 var b = Length * (1 - Joint);
@@ -95,9 +104,15 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
                 return start + Util.RotateVector(new Vector2(h, p), angle);
             }
 
+            public Vector2 GetDefaultSpot(GameWorld world)
+            {
+                Vector2 idealTarget = Segment.EndPosition + Util.RotateVector(IdealOffset, Segment.Angle);
+                return idealTarget;
+            }
+
             public Vector2? GetTargetSpot(GameWorld world)
             {
-                Vector2 idealTarget = Segment.Position + Util.RotateVector(IdealOffset, Segment.Angle);
+                Vector2 idealTarget = GetDefaultSpot(world);
                 Tile gripTile = world.Map.FindTile(idealTarget);
                 TileBG gripBackground = world.Map.FindBackground(idealTarget);
 
@@ -119,6 +134,18 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
                         StartPosition = EndPosition;
                         EndPosition = idealTarget.Value;
                         Frame = new Slider(Math.Min(distance, MaxDistance) / 5);
+                    }
+                }
+                else
+                {
+                    idealTarget = GetDefaultSpot(world);
+                    var delta = idealTarget.Value - EndPosition;
+                    var distance = delta.Length();
+                    if (distance > MaxDistance)
+                    {
+                        StartPosition = Position;
+                        EndPosition = idealTarget.Value;
+                        Frame = new Slider(10);
                     }
                 }
             }
@@ -167,6 +194,7 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
         {
             foreach(var segment in Segments)
             {
+                segment.Frame += delta;
                 foreach(var leg in segment.Legs)
                 {
                     leg.Frame += delta;
@@ -179,7 +207,13 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
         {
             var playerDelta = World.Player.Position - Position;
             if (playerDelta.Length() > 40)
+            {
                 Position += Vector2.Normalize(playerDelta) * 4;
+                playerDelta = Position - World.Player.Position;
+                if (playerDelta.Length() <= 40) {
+                    Position = World.Player.Position + Vector2.Normalize(playerDelta) * 40;
+                }
+            }
 
             Vector2 segmentPos = Position;
             foreach(var segment in Segments)
@@ -191,6 +225,11 @@ BALTIMORE'S FILTHIEST AND EXCLUSIVE HOME OF THE MEANEST SONS OF BITCHES IN THE S
                 }
                 segmentPos = segment.Position;
             }
+        }
+
+        private bool CanMove()
+        {
+            return Segments.All(segment => segment.Legs.All(leg => leg.GetTargetSpot(World).HasValue));
         }
     }
 }

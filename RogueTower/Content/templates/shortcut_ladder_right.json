@@ -4,7 +4,7 @@
   "height": 128,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"ConnectionUp": "shortcut_ladderr", "ConnectionDown": "none", "ConnectionLeft": "shortcut_ladderr", "ConnectionRight": "none", "Weight": 10000, "Direction": "Down"},
+  "values": {"ConnectionUp": "shortcut_ladderr", "ConnectionDown": "shortcut_ladderr", "ConnectionLeft": "none", "ConnectionRight": "none", "Weight": 10000, "Direction": "Down"},
   "layers": [
     {
       "name": "Foreground",

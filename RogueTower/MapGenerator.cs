@@ -367,8 +367,8 @@ namespace RogueTower
 
         public double GetEntropy()
         {
-            var freqs = PossibleTemplates.GroupBy(x => x.Forbidden).Select(x => (double)x.Count() / PossibleTemplates.Count);
-            freqs = freqs.Select(x => x * Math.Log(x) / Math.Log(2));
+            //var freqs = PossibleTemplates.GroupBy(x => x.Forbidden).Select(x => (double)x.Count() / PossibleTemplates.Count);
+            //freqs = freqs.Select(x => x * Math.Log(x) / Math.Log(2));
             return PossibleTemplates.Count(x => !x.Forbidden) - 1;
             //return -freqs.Sum();
         }
@@ -510,6 +510,18 @@ namespace RogueTower
         {
             var tiles = EnumerateTiles().ToList();
             var topology = DebugPrint((x) => GetChar(x.Type));
+
+            var templateCoverage = new HashSet<Template>();
+            foreach(var tile in tiles.SelectMany(x => x.PossibleTemplates))
+            {
+                if (!tile.Forbidden)
+                    templateCoverage.Add(tile.Template);
+            }
+            var templateMisses = Template.Templates.Except(templateCoverage);
+            foreach(var miss in templateMisses)
+            {
+                Console.WriteLine($"Template \"{miss.Name}\" is contradictory.");
+            }
 
             if(tiles.Any(x => x.Entropy < 0))
             {
@@ -1151,6 +1163,11 @@ namespace RogueTower
                 }*/
                 components.Remove(component);
                 mainComponents.Add(component);
+            }
+
+            foreach(var roomTile in Rooms)
+            {
+                roomTile.PossibleTemplates.Clear();
             }
         }
 
