@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueTower.Enemies;
 
-namespace RogueTower.Effects.StatusEffectVisual
+namespace RogueTower.Effects.StatusEffectVisuals
 {
     abstract class StatusEffectVisual<T> : VisualEffect where T : StatusEffect
     {

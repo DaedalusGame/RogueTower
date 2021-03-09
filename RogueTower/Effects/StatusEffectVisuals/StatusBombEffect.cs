@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using static RogueTower.Util;
 
-namespace RogueTower.Effects.StatusEffectVisual
+namespace RogueTower.Effects.StatusEffectVisuals
 {
     class StatusBombEffect : StatusEffectVisual<Bomb>
     {

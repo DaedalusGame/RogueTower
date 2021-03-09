@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace RogueTower.Effects.StatusEffectVisual
+namespace RogueTower.Effects.StatusEffectVisuals
 {
     class StatusStunEffect : StatusEffectVisual<Stun>
     {

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueTower.Effects.Particles;
 using System.Collections.Generic;
 
-namespace RogueTower.Effects.StatusEffectVisual
+namespace RogueTower.Effects.StatusEffectVisuals
 {
     class StatusDeathEffect : StatusEffectVisual<Doom>
     {

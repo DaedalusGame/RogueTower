@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace RogueTower.Effects.StatusEffectVisual
+namespace RogueTower.Effects.StatusEffectVisuals
 {
     class StatusSlowEffect : StatusEffectVisual<Slow>
     {

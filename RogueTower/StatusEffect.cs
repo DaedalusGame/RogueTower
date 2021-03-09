@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueTower.Effects;
 using RogueTower.Effects.Particles;
-using RogueTower.Effects.StatusEffectVisual;
+using RogueTower.Effects.StatusEffectVisuals;
 using RogueTower.Enemies;
 using System;
 using static RogueTower.Game;
