@@ -20,3 +20,8 @@ Connection Types:
 - stairleft [Stair ascends left (\)]
 - stairright [Stair ascends right (/)]
 - pit [Single tile pit]
+
+- corridor_16x16_botleft_topleft [Piece of 16x16 layout, connects bottom left to top left piece]
+- corridor_16x16_botright_topright [Piece of 16x16 layout, connects bottom right to top right piece]
+- corridor_16x16_botleft_botright [Piece of 16x16 layout, connects bottom left to bottom right piece]
+- corridor_16x16_topleft_topright [Piece of 16x16 layout, connects top left to top right piece]

@@ -82,6 +82,35 @@
     <Compile Include="ColorMatrix.cs" />
     <Compile Include="Coroutine.cs" />
     <Compile Include="DrawPass.cs" />
+    <Compile Include="Effects\ItemPickup.cs" />
+    <Compile Include="Effects\Particles\AimingReticule.cs" />
+    <Compile Include="Effects\Particles\BloodDrop.cs" />
+    <Compile Include="Effects\Particles\BloodSplatterEffect.cs" />
+    <Compile Include="Effects\Particles\ChargeEffect.cs" />
+    <Compile Include="Effects\Particles\CrimsonSawEffect.cs" />
+    <Compile Include="Effects\Particles\DamagePopup.cs" />
+    <Compile Include="Effects\Particles\DeathEffect.cs" />
+    <Compile Include="Effects\Particles\FireEffect.cs" />
+    <Compile Include="Effects\Particles\KnifeBounced.cs" />
+    <Compile Include="Effects\Particles\ParryEffect.cs" />
+    <Compile Include="Effects\Particles\Particle.cs" />
+    <Compile Include="Effects\Particles\PunchEffectStraight.cs" />
+    <Compile Include="Effects\Particles\Ring.cs" />
+    <Compile Include="Effects\Particles\SlashEffectRound.cs" />
+    <Compile Include="Effects\Particles\SlashEffectStraight.cs" />
+    <Compile Include="Effects\Particles\SnakeHead.cs" />
+    <Compile Include="Effects\Particles\WallBreakEffect.cs" />
+    <Compile Include="Effects\Particles\WeaponFlash.cs" />
+    <Compile Include="Effects\RectangleDebug.cs" />
+    <Compile Include="Effects\ScreenFlash.cs" />
+    <Compile Include="Effects\ScreenShake.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusBombEffect.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusDeathEffect.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusEffectVisual.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusPoisonEffect.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusSlowEffect.cs" />
+    <Compile Include="Effects\StatusEffectVisual\StatusStunEffect.cs" />
+    <Compile Include="Effects\VisualEffect.cs" />
     <Compile Include="Enemies\AIEnemyHuman.cs" />
     <Compile Include="Enemies\EnemyHuman.cs" />
     <Compile Include="Enemies\CannonPoisonBreath.cs" />
@@ -173,7 +202,6 @@
     <Compile Include="TileBG.cs" />
     <Compile Include="Bullet.cs" />
     <Compile Include="CollisionTag.cs" />
-    <Compile Include="Effect.cs" />
     <Compile Include="Enemies\Enemy.cs" />
     <Compile Include="FontUtil.cs" />
     <Compile Include="FrameCounter.cs" />
@@ -995,6 +1023,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\snake_tail.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\sounds\sfx\breath.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\sounds\sfx\buff_generic.wav">

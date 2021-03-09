@@ -3,6 +3,7 @@ using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Effects.Particles;
 using System;
 using System.Collections.Generic;
 using System.Linq;

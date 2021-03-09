@@ -18,6 +18,7 @@ using RogueTower.Items;
 using RogueTower.Items.Potions;
 using RogueTower.Items.Weapons;
 using RogueTower.Items.Devices;
+using RogueTower.Effects;
 
 namespace RogueTower
 {

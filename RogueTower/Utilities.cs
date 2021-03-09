@@ -2,12 +2,10 @@
 using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Enemies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RogueTower.Enemies;
 
 namespace RogueTower
 {
@@ -327,6 +325,11 @@ namespace RogueTower
         public static float NextFloat(this Random random)
         {
             return (float)random.NextDouble();
+        }
+
+        public static float NextFloat(this Random random, float lower, float upper)
+        {
+            return lower + random.NextFloat() * (upper - lower);
         }
 
         public static int PositiveMod(int x, int m)

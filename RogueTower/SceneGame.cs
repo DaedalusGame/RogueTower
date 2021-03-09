@@ -1,16 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RogueTower.Effects;
 using RogueTower.Enemies;
 using RogueTower.Items.Potions;
 using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ChaiFoxes.FMODAudio;
-using Humper.Base;
 using static RogueTower.Game;
 using static RogueTower.Util;
 

@@ -38,7 +38,9 @@ namespace RogueTower.Actions.Movement
             if (player.Controls.ClimbUp)
                 Human.Velocity.Y = -0.5f;
             if (player.Controls.ClimbDown)
-                Human.Velocity.Y = 0.5f;
+            {
+                Human.Velocity.Y = player.Controls.AltAttackHeld ? 2 : 0.5f;
+            }
             if (!player.Controls.ClimbUp && !player.Controls.ClimbDown)
                 Human.Velocity.Y = 0;
             if (player.Controls.Jump)
@@ -60,7 +62,17 @@ namespace RogueTower.Actions.Movement
 
         public override void UpdateDelta(float delta)
         {
+            if(Human is Player player)
+            {
+                if (player.Controls.ClimbDown && player.Controls.AltAttackHeld)
+                {
+                    ClimbFrame = 4;
+                    return;
+                }
+            }
+
             ClimbFrame += Human.Velocity.Y * delta * 0.5f;
+            
         }
 
         public override void UpdateDiscrete()

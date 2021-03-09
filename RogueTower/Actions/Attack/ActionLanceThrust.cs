@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using RogueTower.Effects;
 using RogueTower.Enemies;
 using RogueTower.Items.Weapons;
 using static RogueTower.Util;

@@ -1,12 +1,9 @@
 ﻿using Humper;
 using Humper.Base;
-using Microsoft.Xna.Framework;
+using RogueTower.Effects;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RogueTower
 {

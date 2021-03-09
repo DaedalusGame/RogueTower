@@ -25,6 +25,7 @@ namespace RogueTower
         public static Sound bgm_title_theme;
         public static Sound bgm_title_theme_epiano_accompaniment;
         public static SoundChannel Accompaniment1;
+        public static Sound sfx_breath;
         public static Sound sfx_clack;
         public static Sound sfx_explosion1;
         public static Sound sfx_fingersnap_heavy;
@@ -166,6 +167,7 @@ namespace RogueTower
             sfx_player_charging = AudioMgr.LoadStreamedSound("sounds/sfx/player_charge.wav");
             sfx_sawblade = AudioMgr.LoadStreamedSound("sounds/sfx/sawblade.wav");
 
+            sfx_breath = AudioMgr.LoadSound("sounds/sfx/breath.wav");
             sfx_clack = AudioMgr.LoadSound("sounds/sfx/clack.wav");
             sfx_explosion1 = AudioMgr.LoadSound("sounds/sfx/fx_explosion1.wav");
             sfx_fingersnap_heavy = AudioMgr.LoadSound("sounds/sfx/fingersnap_heavy.wav");

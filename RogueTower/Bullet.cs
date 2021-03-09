@@ -4,6 +4,8 @@ using Humper.Base;
 using Humper.Responses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Effects;
+using RogueTower.Effects.Particles;
 using RogueTower.Enemies;
 using RogueTower.Items.Weapons;
 using System;
@@ -278,7 +280,10 @@ namespace RogueTower
     class Explosion : Bullet
     {
         public override RectangleF ActivityZone => World.Bounds;
-        public SoundChannel Sound;
+        public virtual Sound Sound { get; set; } = sfx_explosion1;
+        public virtual float SoundVolume { get; set; } = 1;
+
+        public SoundChannel SoundChannel;
         public int HurtTime;
         public int Invincibility;
         public double Damage;
@@ -288,8 +293,7 @@ namespace RogueTower
             HurtTime = hurttime;
             Invincibility = invincibility;
             Damage = damage;
-            Sound = PlaySFX(sfx_explosion1, 1.0f);
-            Sound.Pitch = 1 - Math.Max(size.X, size.Y);
+            PlaySoundOnStart();
         }
 
         public Explosion(GameWorld world, Vector2 position, int hurttime = 20, int invincibility = 50, double damage = 45) : this(world, position, new Vector2(16,16))
@@ -297,7 +301,13 @@ namespace RogueTower
             HurtTime = hurttime;
             Invincibility = invincibility;
             Damage = damage;
-            Sound = PlaySFX(sfx_explosion1, 1.0f, 0.1f, 0.2f);
+            PlaySoundOnStart();
+        }
+
+        public void PlaySoundOnStart()
+        {
+            SoundChannel = PlaySFX(Sound, SoundVolume);
+            SoundChannel.Pitch = Random.NextFloat(1f, 1.25f);
         }
 
         protected override void UpdateDiscrete()
@@ -322,6 +332,7 @@ namespace RogueTower
 
     class PoisonBreath : Explosion
     {
+        public override Sound Sound => sfx_breath;
         public PoisonBreath(GameWorld world, Vector2 position) : base(world, position)
         {
         }

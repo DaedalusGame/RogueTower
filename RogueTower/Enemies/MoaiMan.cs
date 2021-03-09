@@ -1,16 +1,9 @@
-﻿using Humper;
-using Humper.Base;
-using Microsoft.Xna.Framework;
-using RogueTower.Actions;
-using RogueTower.Actions.Attack;
+﻿using Microsoft.Xna.Framework;
 using RogueTower.Actions.Death;
-using RogueTower.Actions.Hurt;
 using RogueTower.Actions.Movement;
 using RogueTower.Items;
 using RogueTower.Items.Weapons;
 using System;
-using System.Linq;
-using static RogueTower.Util;
 
 namespace RogueTower.Enemies
 {

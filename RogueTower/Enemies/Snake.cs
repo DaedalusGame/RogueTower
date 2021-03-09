@@ -2,6 +2,8 @@
 using Humper.Base;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Effects;
+using RogueTower.Effects.Particles;
 using RogueTower.Items;
 using System;
 using System.Collections.Generic;

@@ -1,13 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using RogueTower.Effects;
+using RogueTower.Effects.Particles;
+using RogueTower.Effects.StatusEffectVisual;
+using RogueTower.Enemies;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static RogueTower.Game;
 using static RogueTower.Util;
-using RogueTower.Enemies;
 
 namespace RogueTower
 {

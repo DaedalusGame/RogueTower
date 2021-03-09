@@ -1,14 +1,14 @@
-﻿using Humper.Base;
-using static RogueTower.Game;
-using ChaiFoxes.FMODAudio;
+﻿using ChaiFoxes.FMODAudio;
+using Humper;
+using Humper.Base;
+using Microsoft.Xna.Framework;
+using RogueTower.Effects;
+using RogueTower.Effects.Particles;
+using RogueTower.Enemies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Humper;
-using RogueTower.Enemies;
+using static RogueTower.Game;
 
 namespace RogueTower
 {

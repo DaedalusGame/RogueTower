@@ -1,17 +1,7 @@
-﻿using RogueTower.Actions.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Humper;
-using Humper.Base;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ChaiFoxes.FMODAudio;
-using static RogueTower.Game;
+﻿using Microsoft.Xna.Framework;
+using RogueTower.Actions.Interfaces;
+using RogueTower.Effects.Particles;
 using static RogueTower.Util;
-using RogueTower.Enemies;
 
 namespace RogueTower.Actions.Attack
 {

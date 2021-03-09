@@ -1,19 +1,17 @@
 ﻿using Humper;
 using Humper.Base;
-using Humper.Responses;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using RogueTower.Actions;
 using RogueTower.Actions.Attack;
 using RogueTower.Actions.Death;
 using RogueTower.Actions.Hurt;
 using RogueTower.Actions.Movement;
+using RogueTower.Effects;
+using RogueTower.Effects.Particles;
 using RogueTower.Items.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static RogueTower.Game;
 using static RogueTower.Util;
 
